@@ -1,0 +1,109 @@
+:root {
+  /* Strictly White Canvas Visual System */
+  --bg-canvas: #ffffff;
+  --bg-surface: #ffffff;
+  --bg-subtle: #f8fafc;
+  --bg-muted: #f1f5f9;
+  --bg-input: #ffffff;
+  --bg-hover: #f8fafc;
+  --bg-active: #f1f5f9;
+  --card-bg: #ffffff;
+  
+  /* Text Colors */
+  --text-primary: #0f172a;
+  --text-color: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --text-light: #94a3b8;
+  --text-inverse: #ffffff;
+
+  /* Borders & Dividers */
+  --border-light: #f1f5f9;
+  --border-subtle: #e2e8f0;
+  --border-color: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --border-focus: #2563eb;
+
+  /* Brand Primary - Royal Indigo Blue */
+  --color-primary: #4f46e5;
+  --color-primary-hover: #4338ca;
+  --color-primary-active: #3730a3;
+  --color-primary-light: #eef2ff;
+  --color-primary-border: #c7d2fe;
+  --color-primary-mid: #6366f1;
+
+  /* Brand Accent - Vibrant Violet */
+  --color-accent: #7c3aed;
+  --color-accent-light: #f5f3ff;
+
+  /* Status Colors */
+  --status-draft-text: #475569;
+  --status-draft-bg: #f1f5f9;
+  --status-draft-border: #e2e8f0;
+
+  --status-pending-text: #b45309;
+  --status-pending-bg: #fef3c7;
+  --status-pending-border: #fde68a;
+
+  --status-approved-text: #047857;
+  --status-approved-bg: #d1fae5;
+  --status-approved-border: #a7f3d0;
+
+  --status-scheduled-text: #1d4ed8;
+  --status-scheduled-bg: #dbeafe;
+  --status-scheduled-border: #bfdbfe;
+
+  --status-published-text: #15803d;
+  --status-published-bg: #dcfce7;
+  --status-published-border: #bbf7d0;
+
+  --status-failed-text: #b91c1c;
+  --status-failed-bg: #fee2e2;
+  --status-failed-border: #fecaca;
+
+  /* Platform Identities */
+  --platform-instagram: #e1306c;
+  --platform-instagram-bg: #fdf2f8;
+  --platform-facebook: #1877f2;
+  --platform-facebook-bg: #eff6ff;
+  --platform-linkedin: #0a66c2;
+  --platform-linkedin-bg: #f0f7ff;
+  --platform-tiktok: #000000;
+  --platform-tiktok-bg: #f4f4f5;
+  --platform-youtube: #ff0000;
+  --platform-youtube-bg: #fef2f2;
+
+  /* Layout Dimensions */
+  --sidebar-width: 256px;
+  --sidebar-collapsed-width: 72px;
+  --topbar-height: 64px;
+  --mobile-bottom-nav-height: 64px;
+
+  /* Typography */
+  --font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  
+  /* Premium Shadows */
+  --shadow-xs: 0 1px 2px 0 rgba(15, 23, 42, 0.04);
+  --shadow-sm: 0 1px 3px 0 rgba(15, 23, 42, 0.06), 0 1px 2px -1px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 4px 8px -2px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
+  --shadow-lg: 0 12px 20px -5px rgba(15, 23, 42, 0.1), 0 4px 8px -4px rgba(15, 23, 42, 0.04);
+  --shadow-xl: 0 24px 32px -8px rgba(15, 23, 42, 0.12), 0 8px 12px -6px rgba(15, 23, 42, 0.05);
+  --shadow-primary: 0 4px 14px rgba(79, 70, 229, 0.25);
+  --shadow-card: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-card-hover: 0 4px 12px rgba(15, 23, 42, 0.1), 0 2px 4px rgba(15, 23, 42, 0.05);
+
+  /* Radii */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 220ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-spring: 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
