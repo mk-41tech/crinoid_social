@@ -1025,6 +1025,26 @@ export const LandingPage: React.FC = () => {
             </a>
             <button
               type="button"
+              onClick={() => {
+                window.history.pushState({}, '', '/privacy');
+                setCurrentView('privacy');
+              }}
+              style={{ background: 'none', border: 'none', color: '#475569', fontWeight: 500, cursor: 'pointer', padding: 0 }}
+            >
+              Privacy Policy
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                window.history.pushState({}, '', '/terms');
+                setCurrentView('terms');
+              }}
+              style={{ background: 'none', border: 'none', color: '#475569', fontWeight: 500, cursor: 'pointer', padding: 0 }}
+            >
+              Terms of Service
+            </button>
+            <button
+              type="button"
               onClick={handleLogIn}
               style={{ background: 'none', border: 'none', color: '#4f46e5', fontWeight: 600, cursor: 'pointer', padding: 0 }}
             >

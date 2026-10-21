@@ -8,7 +8,7 @@ interface ToastItem {
   message: string;
 }
 
-export type AppView = 'landing' | 'login' | 'composer' | 'home' | 'channels' | 'app-home' | 'simulated-auth' | 'auth-callback';
+export type AppView = 'landing' | 'login' | 'composer' | 'home' | 'channels' | 'app-home' | 'simulated-auth' | 'auth-callback' | 'privacy' | 'terms';
 
 interface AppContextType {
   isAuthenticated: boolean;
@@ -130,6 +130,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [currentView, setCurrentView] = useState<AppView>(() => {
     const path = window.location.pathname.toLowerCase();
     const hash = window.location.hash.toLowerCase();
+    if (path.includes('privacy') || hash.includes('privacy')) return 'privacy';
+    if (path.includes('terms') || hash.includes('terms')) return 'terms';
     if (path.includes('auth/callback') || path.includes('callback') || hash.includes('access_token')) return 'auth-callback';
     if (path.includes('composer') || hash.includes('composer')) return 'composer';
     if (path.includes('channels') || hash.includes('channels')) return 'channels';
@@ -142,7 +144,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   useEffect(() => {
     try {
       let targetPath = '/';
-      if (currentView === 'login') targetPath = '/login';
+      if (currentView === 'privacy') targetPath = '/privacy';
+      else if (currentView === 'terms') targetPath = '/terms';
+      else if (currentView === 'login') targetPath = '/login';
       else if (currentView === 'composer') targetPath = '/composer';
       else if (currentView === 'channels') targetPath = '/channels';
       else if (currentView === 'app-home') targetPath = '/app';

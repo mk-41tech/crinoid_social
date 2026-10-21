@@ -10,6 +10,8 @@ import { ConnectedChannelsView } from './components/channels/ConnectedChannelsVi
 import { SimulatedAuthView } from './components/channels/SimulatedAuthView';
 import { ConnectChannelsModal } from './components/channels/ConnectChannelsModal';
 import { AuthCallbackView } from './components/auth/AuthCallbackView';
+import { PrivacyPolicyView } from './components/legal/PrivacyPolicyView';
+import { TermsOfServiceView } from './components/legal/TermsOfServiceView';
 import { ToastContainer } from './components/common/Toast';
 
 const AppContent: React.FC = () => {
@@ -21,6 +23,27 @@ const AppContent: React.FC = () => {
   // =========================================================================
   if (currentView === 'auth-callback' || window.location.pathname.includes('/auth/callback')) {
     return <AuthCallbackView />;
+  }
+
+  // =========================================================================
+  // LEGAL PAGES (Route '/privacy' and '/terms')
+  // =========================================================================
+  if (currentView === 'privacy' || window.location.pathname.includes('/privacy')) {
+    return (
+      <>
+        <PrivacyPolicyView />
+        <ToastContainer />
+      </>
+    );
+  }
+
+  if (currentView === 'terms' || window.location.pathname.includes('/terms')) {
+    return (
+      <>
+        <TermsOfServiceView />
+        <ToastContainer />
+      </>
+    );
   }
 
   // =========================================================================
