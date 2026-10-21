@@ -97,21 +97,46 @@ export const TermsOfServiceView: React.FC = () => {
 
           <section>
             <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#0f172a', marginBottom: '12px' }}>
-              3. YouTube API Services Agreement
+              3. Platform API Terms &amp; Integrations
             </h2>
             <p>
-              Crinoid Social utilizes YouTube API Services to allow you to upload and publish video content directly to your YouTube channel. By connecting your YouTube account and using Crinoid Social, you explicitly agree to be bound by the:
+              Crinoid Social integrates directly with official social media platform APIs to enable content scheduling and publication:
             </p>
-            <ul style={{ paddingLeft: '24px', marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <ul style={{ paddingLeft: '24px', marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <li>
-                <a href="https://www.youtube.com/t/terms" target="_blank" rel="noreferrer" style={{ color: '#4f46e5', textDecoration: 'underline' }}>
-                  YouTube Terms of Service
-                </a>
+                <strong>YouTube / Google:</strong> Crinoid Social utilizes YouTube API Services to allow you to upload and publish video content directly to your YouTube channel. By connecting your YouTube account, you explicitly agree to be bound by the:
+                <ul style={{ paddingLeft: '20px', marginTop: '4px', listStyleType: 'circle' }}>
+                  <li>
+                    <a href="https://www.youtube.com/t/terms" target="_blank" rel="noreferrer" style={{ color: '#4f46e5', textDecoration: 'underline' }}>
+                      YouTube Terms of Service
+                    </a>
+                  </li>
+                  <li>
+                    <a href="https://policies.google.com/privacy" target="_blank" rel="noreferrer" style={{ color: '#4f46e5', textDecoration: 'underline' }}>
+                      Google Privacy Policy
+                    </a>
+                  </li>
+                </ul>
               </li>
               <li>
-                <a href="https://policies.google.com/privacy" target="_blank" rel="noreferrer" style={{ color: '#4f46e5', textDecoration: 'underline' }}>
-                  Google Privacy Policy
-                </a>
+                <strong>Meta (Facebook Pages &amp; Instagram):</strong> Crinoid Social utilizes the Meta Graph API to compose and publish posts to your Facebook Pages and Instagram Professional accounts. By connecting your Meta accounts, you explicitly agree to be bound by the:
+                <ul style={{ paddingLeft: '20px', marginTop: '4px', listStyleType: 'circle' }}>
+                  <li>
+                    <a href="https://www.facebook.com/terms.php" target="_blank" rel="noreferrer" style={{ color: '#4f46e5', textDecoration: 'underline' }}>
+                      Facebook Terms of Service
+                    </a>
+                  </li>
+                  <li>
+                    <a href="https://developers.facebook.com/terms" target="_blank" rel="noreferrer" style={{ color: '#4f46e5', textDecoration: 'underline' }}>
+                      Meta Platform Terms
+                    </a>
+                  </li>
+                  <li>
+                    <a href="https://help.instagram.com/581066165581870" target="_blank" rel="noreferrer" style={{ color: '#4f46e5', textDecoration: 'underline' }}>
+                      Instagram Terms of Use
+                    </a>
+                  </li>
+                </ul>
               </li>
             </ul>
           </section>

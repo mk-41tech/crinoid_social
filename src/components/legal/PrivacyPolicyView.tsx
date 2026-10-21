@@ -127,6 +127,15 @@ export const PrivacyPolicyView: React.FC = () => {
                   <li><code>https://www.googleapis.com/auth/youtube.upload</code>: To upload videos, titles, and descriptions that you explicitly initiate from the Composer to your connected YouTube channel.</li>
                 </ul>
               </li>
+              <li>
+                <strong>Meta (Facebook Pages & Instagram) User Data:</strong> When you connect your Facebook Page or Instagram Professional account using Meta OAuth, we request permission to access:
+                <ul style={{ paddingLeft: '20px', marginTop: '6px', listStyleType: 'circle' }}>
+                  <li><code>pages_show_list</code> &amp; <code>pages_read_engagement</code>: To retrieve your managed Facebook Pages, Page names, avatars, and follower counts to display in your connected channels list.</li>
+                  <li><code>pages_manage_posts</code>: To publish status updates, photos, links, and videos that you author and approve in Crinoid Social to your connected Facebook Page feed.</li>
+                  <li><code>instagram_basic</code>: To identify linked Instagram Business or Creator accounts, handles, profile pictures, and audience reach.</li>
+                  <li><code>instagram_content_publish</code>: To publish single photos, carousels, and videos with captions directly to your Instagram Professional profile upon your confirmation.</li>
+                </ul>
+              </li>
             </ul>
           </section>
 
@@ -182,12 +191,24 @@ export const PrivacyPolicyView: React.FC = () => {
           {/* Section 6 */}
           <section>
             <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#0f172a', marginBottom: '12px' }}>
-              6. How to Disconnect and Delete Your Data
+              6. How to Disconnect and User Data Deletion Instructions
             </h2>
-            <p>You have complete control over your connected accounts and data at all times:</p>
-            <ul style={{ paddingLeft: '24px', display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '10px' }}>
+            <p>You have complete control over your connected accounts and personal data at all times. In compliance with Google API Services and Meta Platform Policies, you may request deletion or revoke access through any of the following methods:</p>
+            <ul style={{ paddingLeft: '24px', display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '10px' }}>
               <li>
-                <strong>In Crinoid Social:</strong> Navigate to <em>Connected Channels</em> and click <strong>Disconnect</strong> on the YouTube account card. This immediately purges the OAuth access token from your session and disconnects the channel.
+                <strong>Within Crinoid Social:</strong> Navigate to <em>Connected Channels</em> and click <strong>Disconnect</strong> on any connected YouTube, Facebook Page, or Instagram account card. This immediately purges the corresponding OAuth access token and channel identifiers from your session.
+              </li>
+              <li>
+                <strong>Facebook &amp; Instagram Data Deletion Instructions:</strong>
+                <div style={{ marginTop: '4px', lineHeight: 1.6 }}>
+                  To remove Crinoid Social's access and delete associated permissions from your Facebook account:
+                  <ol style={{ paddingLeft: '20px', marginTop: '4px' }}>
+                    <li>Go to your Facebook Profile &gt; <strong>Settings &amp; Privacy</strong> &gt; <strong>Settings</strong>.</li>
+                    <li>In the left menu, select <strong>Apps and Websites</strong>.</li>
+                    <li>Locate <strong>Crinoid Social</strong> and click <strong>Remove</strong>.</li>
+                    <li>To delete all activities and request deletion of any cached data, check the option to remove all posts/videos and click <strong>Remove</strong>.</li>
+                  </ol>
+                </div>
               </li>
               <li>
                 <strong>Via Google Security Settings:</strong> You can revoke Crinoid Social's access directly at any time by visiting the official Google Account permissions page:
@@ -204,7 +225,7 @@ export const PrivacyPolicyView: React.FC = () => {
                 </div>
               </li>
               <li>
-                <strong>Data Deletion Requests:</strong> You can contact us at <a href="mailto:crinoidsocial@gmail.com" style={{ color: '#4f46e5' }}>crinoidsocial@gmail.com</a> to request immediate deletion of any associated account records.
+                <strong>Direct Data Deletion Requests:</strong> You can email our privacy and data protection team at <a href="mailto:crinoidsocial@gmail.com" style={{ color: '#4f46e5', fontWeight: 600 }}>crinoidsocial@gmail.com</a> with the subject line <em>"Data Deletion Request"</em>. We will process and confirm complete deletion of your records within 48 business hours.
               </li>
             </ul>
           </section>
@@ -212,11 +233,19 @@ export const PrivacyPolicyView: React.FC = () => {
           {/* Section 7 */}
           <section>
             <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#0f172a', marginBottom: '12px' }}>
-              7. Third-Party Services
+              7. Third-Party Platform Policies &amp; Terms
             </h2>
             <p>
-              Crinoid Social integrates with YouTube API Services. By using our YouTube integration, you are also agreeing to be bound by the <a href="https://www.youtube.com/t/terms" target="_blank" rel="noreferrer" style={{ color: '#4f46e5', textDecoration: 'underline' }}>YouTube Terms of Service</a> and Google's Privacy Policy at <a href="https://policies.google.com/privacy" target="_blank" rel="noreferrer" style={{ color: '#4f46e5', textDecoration: 'underline' }}>https://policies.google.com/privacy</a>.
+              Crinoid Social integrates directly with official platform APIs. By connecting your accounts, you agree to adhere to the respective platform policies:
             </p>
+            <ul style={{ paddingLeft: '24px', display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '10px' }}>
+              <li>
+                <strong>YouTube &amp; Google:</strong> YouTube integration complies with the <a href="https://www.youtube.com/t/terms" target="_blank" rel="noreferrer" style={{ color: '#4f46e5', textDecoration: 'underline' }}>YouTube Terms of Service</a> and <a href="https://policies.google.com/privacy" target="_blank" rel="noreferrer" style={{ color: '#4f46e5', textDecoration: 'underline' }}>Google Privacy Policy</a>.
+              </li>
+              <li>
+                <strong>Meta (Facebook &amp; Instagram):</strong> Meta integration complies with the <a href="https://www.facebook.com/terms.php" target="_blank" rel="noreferrer" style={{ color: '#4f46e5', textDecoration: 'underline' }}>Facebook Terms of Service</a>, <a href="https://developers.facebook.com/terms" target="_blank" rel="noreferrer" style={{ color: '#4f46e5', textDecoration: 'underline' }}>Meta Platform Terms</a>, and <a href="https://help.instagram.com/581066165581870" target="_blank" rel="noreferrer" style={{ color: '#4f46e5', textDecoration: 'underline' }}>Instagram Terms of Use</a>.
+              </li>
+            </ul>
           </section>
 
           {/* Section 8 */}
