@@ -24,6 +24,11 @@ import {
   connectYoutubeWithPopup, 
   fetchMyYoutubeChannel 
 } from '../../services/youtube';
+import {
+  isMetaConfigured,
+  loginWithMeta,
+  fetchFacebookPages
+} from '../../services/meta';
 
 export const SimulatedAuthView: React.FC = () => {
   const { 
@@ -72,6 +77,62 @@ export const SimulatedAuthView: React.FC = () => {
         closeSimulatedAuth();
       } catch (err: any) {
         showToast('error', err.message || 'YouTube connection failed.');
+      } finally {
+        setIsAuthorizing(false);
+      }
+      return;
+    }
+
+    // Live Facebook Page flow via Meta
+    if (platform === 'facebook' && isMetaConfigured()) {
+      setIsAuthorizing(true);
+      try {
+        const userToken = await loginWithMeta();
+        const pages = await fetchFacebookPages(userToken);
+        const page = pages[0];
+        await connectAccount(currentBrand.id, 'facebook', {
+          username: `@${page.name.toLowerCase().replace(/\s+/g, '')}`,
+          name: page.name,
+          avatar: page.avatar,
+          accessToken: page.accessToken,
+          channelId: page.id,
+          followers: page.followers
+        });
+        showToast('success', `Connected live Facebook Page "${page.name}"!`);
+        closeSimulatedAuth();
+      } catch (err: any) {
+        showToast('error', err.message || 'Facebook connection failed.');
+      } finally {
+        setIsAuthorizing(false);
+      }
+      return;
+    }
+
+    // Live Instagram Professional flow via Meta
+    if (platform === 'instagram' && isMetaConfigured()) {
+      setIsAuthorizing(true);
+      try {
+        const userToken = await loginWithMeta();
+        const pages = await fetchFacebookPages(userToken);
+        const pageWithIg = pages.find(p => p.instagramAccount);
+        if (!pageWithIg || !pageWithIg.instagramAccount) {
+          throw new Error(
+            `No linked Instagram Professional account found on your Facebook Pages (${pages.map(p => p.name).join(', ')}). In Facebook, please link your Instagram Professional account under Page Settings > Linked Accounts.`
+          );
+        }
+        const ig = pageWithIg.instagramAccount;
+        await connectAccount(currentBrand.id, 'instagram', {
+          username: `@${ig.username}`,
+          name: ig.name || ig.username,
+          avatar: ig.avatar,
+          accessToken: pageWithIg.accessToken,
+          channelId: ig.id,
+          followers: ig.followers
+        });
+        showToast('success', `Connected live Instagram account "@${ig.username}"!`);
+        closeSimulatedAuth();
+      } catch (err: any) {
+        showToast('error', err.message || 'Instagram connection failed.');
       } finally {
         setIsAuthorizing(false);
       }
@@ -209,6 +270,40 @@ export const SimulatedAuthView: React.FC = () => {
                 </div>
               </div>
             )
+          ) : platform === 'facebook' && isMetaConfigured() ? (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '10px',
+                padding: '12px 14px',
+                borderRadius: 'var(--radius-md)',
+                backgroundColor: '#eff6ff',
+                border: '1px solid #bfdbfe'
+              }}
+            >
+              <ShieldCheck size={18} color="#2563eb" style={{ flexShrink: 0, marginTop: '2px' }} />
+              <div style={{ fontSize: '12.5px', color: '#1e40af', lineHeight: 1.45 }}>
+                <strong>Live Meta OAuth 2.0 Ready:</strong> Click <strong>"Sign in with Facebook"</strong> below to authorize and link your real Facebook Page.
+              </div>
+            </div>
+          ) : platform === 'instagram' && isMetaConfigured() ? (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '10px',
+                padding: '12px 14px',
+                borderRadius: 'var(--radius-md)',
+                backgroundColor: '#fdf2f8',
+                border: '1px solid #fbcfe8'
+              }}
+            >
+              <ShieldCheck size={18} color="#db2777" style={{ flexShrink: 0, marginTop: '2px' }} />
+              <div style={{ fontSize: '12.5px', color: '#9d174d', lineHeight: 1.45 }}>
+                <strong>Live Meta Instagram Graph API Ready:</strong> Click <strong>"Connect with Instagram"</strong> below to authenticate via Facebook and link your Instagram Professional account.
+              </div>
+            </div>
           ) : (
             <div
               style={{
@@ -359,6 +454,10 @@ export const SimulatedAuthView: React.FC = () => {
                   <span>
                     {platform === 'youtube'
                       ? (isYoutubeConfigured() ? 'Sign in with Google' : 'Authorize (Simulated)')
+                      : platform === 'facebook'
+                      ? (isMetaConfigured() ? 'Sign in with Facebook' : 'Authorize (Simulated)')
+                      : platform === 'instagram'
+                      ? (isMetaConfigured() ? 'Connect with Instagram (Meta)' : 'Authorize (Simulated)')
                       : 'Authorize and Connect'}
                   </span>
                   <ArrowRight size={14} />

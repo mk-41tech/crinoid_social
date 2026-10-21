@@ -165,18 +165,18 @@ export const PublishResultModal: React.FC<PublishResultModalProps> = ({
                         rel="noopener noreferrer"
                         style={{
                           fontSize: '12.5px',
-                          color: '#dc2626',
+                          color: p === 'youtube' ? '#dc2626' : p === 'facebook' ? '#1877f2' : p === 'instagram' ? '#db2777' : '#2563eb',
                           fontWeight: 700,
                           display: 'flex',
                           alignItems: 'center',
                           gap: '5px',
                           textDecoration: 'none',
-                          backgroundColor: '#fee2e2',
+                          backgroundColor: p === 'youtube' ? '#fee2e2' : p === 'facebook' ? '#eff6ff' : p === 'instagram' ? '#fdf2f8' : '#eff6ff',
                           padding: '4px 10px',
                           borderRadius: '6px'
                         }}
                       >
-                        <span>View Live on YouTube</span>
+                        <span>View Live on {PLATFORM_CONFIG[p].name}</span>
                         <ExternalLink size={13} />
                       </a>
                     ) : (

@@ -3,10 +3,33 @@
 interface ImportMetaEnv {
   readonly VITE_YOUTUBE_CLIENT_ID?: string;
   readonly VITE_YOUTUBE_CLIENT_SECRET?: string;
+  readonly VITE_META_APP_ID?: string;
+  readonly VITE_META_APP_SECRET?: string;
 }
 
 interface ImportMeta {
   readonly env: ImportMetaEnv;
+}
+
+interface Window {
+  fbAsyncInit?: () => void;
+  FB?: {
+    init: (options: { appId: string; cookie?: boolean; xfbml?: boolean; version: string }) => void;
+    login: (
+      callback: (response: {
+        authResponse?: {
+          accessToken: string;
+          userID: string;
+          expiresIn: number;
+          signedRequest: string;
+          grantedScopes?: string;
+        };
+        status: string;
+      }) => void,
+      options?: { scope: string; return_scopes?: boolean }
+    ) => void;
+    getLoginStatus: (callback: (response: any) => void) => void;
+  };
 }
 
 declare namespace google {

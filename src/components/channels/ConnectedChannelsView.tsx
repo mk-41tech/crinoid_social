@@ -21,6 +21,7 @@ import {
   PenSquare
 } from 'lucide-react';
 import { isYoutubeConfigured } from '../../services/youtube';
+import { isMetaConfigured } from '../../services/meta';
 
 export const ConnectedChannelsView: React.FC = () => {
   const { 
@@ -202,6 +203,21 @@ export const ConnectedChannelsView: React.FC = () => {
                           }}
                         >
                           {isYoutubeConfigured() ? 'Live OAuth Ready' : 'YouTube Ready'}
+                        </span>
+                      )}
+                      {(platform === 'facebook' || platform === 'instagram') && (
+                        <span
+                          style={{
+                            fontSize: '10px',
+                            fontWeight: 700,
+                            padding: '1px 6px',
+                            borderRadius: '4px',
+                            backgroundColor: isMetaConfigured() ? '#dcfce7' : '#f1f5f9',
+                            color: isMetaConfigured() ? '#15803d' : '#64748b',
+                            border: `1px solid ${isMetaConfigured() ? '#86efac' : '#cbd5e1'}`
+                          }}
+                        >
+                          {isMetaConfigured() ? 'Live Meta Ready' : `${config.name} Ready`}
                         </span>
                       )}
                     </div>

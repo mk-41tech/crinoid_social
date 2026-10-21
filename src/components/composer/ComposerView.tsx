@@ -12,6 +12,7 @@ import { ScheduleModal } from './ScheduleModal';
 import { ApprovalModal } from './ApprovalModal';
 import { PublishResultModal } from './PublishResultModal';
 import { uploadVideoToYoutube } from '../../services/youtube';
+import { publishToFacebookPage, publishToInstagram } from '../../services/meta';
 import { 
   Upload, 
   Image as ImageIcon, 
@@ -323,46 +324,96 @@ export const ComposerView: React.FC = () => {
     }
 
     const ytAccount = currentBrand.accounts.find(a => a.platform === 'youtube');
+    const fbAccount = currentBrand.accounts.find(a => a.platform === 'facebook');
+    const igAccount = currentBrand.accounts.find(a => a.platform === 'instagram');
+
     const isLiveYouTubePublish = selectedPlatforms.includes('youtube') && Boolean(ytAccount?.accessToken);
+    const isLiveFacebookPublish = selectedPlatforms.includes('facebook') && Boolean(fbAccount?.accessToken);
+    const isLiveInstagramPublish = selectedPlatforms.includes('instagram') && Boolean(igAccount?.accessToken);
 
-    if (isLiveYouTubePublish) {
+    const isAnyLivePublish = isLiveYouTubePublish || isLiveFacebookPublish || isLiveInstagramPublish;
+
+    if (isAnyLivePublish) {
       setIsPublishingReal(true);
+      const urls: Record<string, string> = {};
+
       try {
-        let videoFile = uploadedVideoFile;
-        if (!videoFile && draft.mediaUrls.length > 0) {
-          try {
-            const res = await fetch(draft.mediaUrls[0]);
-            const blob = await res.blob();
-            videoFile = new File([blob], 'youtube_video.mp4', { type: blob.type || 'video/mp4' });
-          } catch {}
+        // 1. Live YouTube Upload
+        if (isLiveYouTubePublish) {
+          let videoFile = uploadedVideoFile;
+          if (!videoFile && draft.mediaUrls.length > 0) {
+            try {
+              const res = await fetch(draft.mediaUrls[0]);
+              const blob = await res.blob();
+              videoFile = new File([blob], 'youtube_video.mp4', { type: blob.type || 'video/mp4' });
+            } catch {}
+          }
+
+          if (!videoFile) {
+            showToast('error', 'Please attach an MP4/MOV video file to publish to YouTube.');
+          } else {
+            const ytTitle = draft.platformVariants?.youtube?.title || draft.commonCaption.slice(0, 100) || 'Untitled Video';
+            const ytDesc = draft.platformVariants?.youtube?.caption || draft.commonCaption || '';
+
+            showToast('info', 'Uploading video to YouTube Data API...');
+            const ytResult = await uploadVideoToYoutube({
+              accessToken: ytAccount!.accessToken!,
+              file: videoFile,
+              title: ytTitle,
+              description: ytDesc,
+              privacyStatus: 'public',
+              onProgress: (pct) => setUploadProgressPercent(pct)
+            });
+            urls.youtube = ytResult.url;
+            showToast('success', `Live on YouTube: ${ytResult.url}`);
+          }
         }
 
-        if (!videoFile) {
-          showToast('error', 'Please upload an MP4/MOV video file to publish to your live YouTube channel.');
-          setIsPublishingReal(false);
-          return;
+        // 2. Live Facebook Page Publish
+        if (isLiveFacebookPublish) {
+          const fbCaption = draft.platformVariants?.facebook?.caption || draft.commonCaption;
+          const fbImage = draft.mediaUrls.length > 0 ? draft.mediaUrls[0] : undefined;
+
+          showToast('info', 'Publishing to your Facebook Page...');
+          const fbResult = await publishToFacebookPage({
+            pageId: fbAccount!.channelId!,
+            pageAccessToken: fbAccount!.accessToken!,
+            message: fbCaption,
+            imageUrl: fbImage,
+            linkUrl: draft.linkUrl
+          });
+          urls.facebook = fbResult.url;
+          showToast('success', `Live on Facebook: ${fbResult.url}`);
         }
 
-        const ytTitle = draft.platformVariants?.youtube?.title || draft.commonCaption.slice(0, 100) || 'Untitled Video';
-        const ytDesc = draft.platformVariants?.youtube?.caption || draft.commonCaption || '';
+        // 3. Live Instagram Professional Publish
+        if (isLiveInstagramPublish) {
+          const igCaption = draft.platformVariants?.instagram?.caption || draft.commonCaption;
+          const igImage = draft.mediaUrls.length > 0 ? draft.mediaUrls[0] : undefined;
 
-        showToast('info', 'Uploading video to YouTube Data API...');
-        const ytResult = await uploadVideoToYoutube({
-          accessToken: ytAccount!.accessToken!,
-          file: videoFile,
-          title: ytTitle,
-          description: ytDesc,
-          privacyStatus: 'public',
-          onProgress: (pct) => setUploadProgressPercent(pct)
-        });
+          if (!igImage) {
+            showToast('error', 'Instagram requires at least one image or video to publish.');
+          } else {
+            showToast('info', 'Publishing to your Instagram Professional account...');
+            const igResult = await publishToInstagram({
+              igUserId: igAccount!.channelId!,
+              pageAccessToken: igAccount!.accessToken!,
+              caption: igCaption,
+              imageUrl: igImage
+            });
+            urls.instagram = igResult.url;
+            showToast('success', `Live on Instagram: ${igResult.url}`);
+          }
+        }
 
-        const urls = { youtube: ytResult.url };
         setRealPublishUrls(urls);
-        updateDraft({ status: 'published', publishedUrl: ytResult.url });
-        showToast('success', `Live on YouTube: ${ytResult.url}`);
+        updateDraft({
+          status: 'published',
+          publishedUrl: urls.facebook || urls.instagram || urls.youtube
+        });
         setShowPublishModal(true);
       } catch (err: any) {
-        showToast('error', `YouTube upload error: ${err.message}`);
+        showToast('error', `Live publishing error: ${err.message}`);
       } finally {
         setIsPublishingReal(false);
       }
