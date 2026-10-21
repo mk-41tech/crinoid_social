@@ -6,15 +6,19 @@ import { PLATFORM_CONFIG } from '../../config/platformsConfig';
 interface PublishResultModalProps {
   draft: PostDraft;
   selectedPlatforms: SocialPlatform[];
+  liveUrls?: Record<string, string>;
+  isRealPublish?: boolean;
   onClose: () => void;
 }
 
 export const PublishResultModal: React.FC<PublishResultModalProps> = ({
   draft,
   selectedPlatforms,
+  liveUrls = {},
+  isRealPublish = false,
   onClose
 }) => {
-  const [step, setStep] = useState<number>(1);
+  const [step, setStep] = useState<number>(isRealPublish ? 4 : 1);
 
   useEffect(() => {
     const timer1 = setTimeout(() => setStep(2), 700);
@@ -134,27 +138,55 @@ export const PublishResultModal: React.FC<PublishResultModalProps> = ({
                 Published Channels
               </div>
 
-              {selectedPlatforms.map(p => (
-                <div
-                  key={p}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '8px 12px',
-                    borderRadius: 'var(--radius-md)',
-                    backgroundColor: 'var(--bg-subtle)',
-                    border: '1px solid var(--border-subtle)'
-                  }}
-                >
-                  <span style={{ fontSize: '13px', fontWeight: 600, color: PLATFORM_CONFIG[p].brandColor }}>
-                    {PLATFORM_CONFIG[p].name}
-                  </span>
-                  <span style={{ fontSize: '12px', color: '#16a34a', fontWeight: 600 }}>
-                    Published (Simulated)
-                  </span>
-                </div>
-              ))}
+              {selectedPlatforms.map(p => {
+                const liveUrl = liveUrls[p] || (p === 'youtube' ? draft.publishedUrl : undefined);
+
+                return (
+                  <div
+                    key={p}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '10px 14px',
+                      borderRadius: 'var(--radius-md)',
+                      backgroundColor: 'var(--bg-subtle)',
+                      border: '1px solid var(--border-subtle)'
+                    }}
+                  >
+                    <span style={{ fontSize: '13px', fontWeight: 700, color: PLATFORM_CONFIG[p].brandColor }}>
+                      {PLATFORM_CONFIG[p].name}
+                    </span>
+
+                    {liveUrl ? (
+                      <a
+                        href={liveUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          fontSize: '12.5px',
+                          color: '#dc2626',
+                          fontWeight: 700,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '5px',
+                          textDecoration: 'none',
+                          backgroundColor: '#fee2e2',
+                          padding: '4px 10px',
+                          borderRadius: '6px'
+                        }}
+                      >
+                        <span>View Live on YouTube</span>
+                        <ExternalLink size={13} />
+                      </a>
+                    ) : (
+                      <span style={{ fontSize: '12px', color: '#16a34a', fontWeight: 600 }}>
+                        Published (Simulated)
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
 
@@ -163,16 +195,24 @@ export const PublishResultModal: React.FC<PublishResultModalProps> = ({
             style={{
               padding: '12px 14px',
               borderRadius: 'var(--radius-md)',
-              backgroundColor: '#eff6ff',
-              border: '1px solid #bfdbfe',
+              backgroundColor: isRealPublish ? '#f0fdf4' : '#eff6ff',
+              border: isRealPublish ? '1px solid #bbf7d0' : '1px solid #bfdbfe',
               display: 'flex',
               alignItems: 'center',
               gap: '10px'
             }}
           >
-            <ShieldCheck size={18} color="#2563eb" style={{ flexShrink: 0 }} />
-            <div style={{ fontSize: '12px', color: '#1e40af', lineHeight: 1.4 }}>
-              <strong>Notice:</strong> This is a frontend demonstration. Content was not sent to external social networks.
+            {isRealPublish ? (
+              <CheckCircle2 size={18} color="#16a34a" style={{ flexShrink: 0 }} />
+            ) : (
+              <ShieldCheck size={18} color="#2563eb" style={{ flexShrink: 0 }} />
+            )}
+            <div style={{ fontSize: '12px', color: isRealPublish ? '#15803d' : '#1e40af', lineHeight: 1.4 }}>
+              {isRealPublish ? (
+                <span><strong>Live Upload:</strong> Successfully dispatched to your authorized YouTube channel via YouTube Data API v3.</span>
+              ) : (
+                <span><strong>Notice:</strong> This is a frontend demonstration. Content was not sent to external social networks.</span>
+              )}
             </div>
           </div>
         </div>

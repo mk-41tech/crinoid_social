@@ -17,6 +17,7 @@ import {
   Radio, 
   ShieldCheck 
 } from 'lucide-react';
+import { isYoutubeConfigured } from '../../services/youtube';
 
 export const ConnectChannelsModal: React.FC = () => {
   const { 
@@ -177,6 +178,21 @@ export const ConnectChannelsModal: React.FC = () => {
                       <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>
                         {config.name}
                       </span>
+                      {platform === 'youtube' && (
+                        <span
+                          style={{
+                            fontSize: '10px',
+                            fontWeight: 700,
+                            padding: '1px 6px',
+                            borderRadius: '4px',
+                            backgroundColor: isYoutubeConfigured() ? '#dcfce7' : '#f1f5f9',
+                            color: isYoutubeConfigured() ? '#15803d' : '#64748b',
+                            border: `1px solid ${isYoutubeConfigured() ? '#86efac' : '#cbd5e1'}`
+                          }}
+                        >
+                          {isYoutubeConfigured() ? 'Live OAuth Ready' : 'YouTube Ready'}
+                        </span>
+                      )}
                     </div>
                     <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
                       {catalog?.username || catalog?.name}

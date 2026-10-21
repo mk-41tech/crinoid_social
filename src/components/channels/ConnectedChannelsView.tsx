@@ -20,6 +20,7 @@ import {
   ExternalLink,
   PenSquare
 } from 'lucide-react';
+import { isYoutubeConfigured } from '../../services/youtube';
 
 export const ConnectedChannelsView: React.FC = () => {
   const { 
@@ -184,9 +185,26 @@ export const ConnectedChannelsView: React.FC = () => {
                     {getPlatformIcon(platform, 22)}
                   </div>
                   <div>
-                    <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
-                      {config.name}
-                    </h3>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+                        {config.name}
+                      </h3>
+                      {platform === 'youtube' && (
+                        <span
+                          style={{
+                            fontSize: '10px',
+                            fontWeight: 700,
+                            padding: '1px 6px',
+                            borderRadius: '4px',
+                            backgroundColor: isYoutubeConfigured() ? '#dcfce7' : '#f1f5f9',
+                            color: isYoutubeConfigured() ? '#15803d' : '#64748b',
+                            border: `1px solid ${isYoutubeConfigured() ? '#86efac' : '#cbd5e1'}`
+                          }}
+                        >
+                          {isYoutubeConfigured() ? 'Live OAuth Ready' : 'YouTube Ready'}
+                        </span>
+                      )}
+                    </div>
                     <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
                       Char Limit: {config.charLimit.toLocaleString()}
                     </span>
@@ -194,7 +212,23 @@ export const ConnectedChannelsView: React.FC = () => {
                 </div>
 
                 {/* Connection Status Badge */}
-                <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  {isConnected && connectedAccount?.accessToken && (
+                    <span
+                      style={{
+                        fontSize: '10.5px',
+                        fontWeight: 700,
+                        padding: '2px 7px',
+                        borderRadius: '999px',
+                        backgroundColor: '#fee2e2',
+                        color: '#dc2626',
+                        border: '1px solid #fecaca'
+                      }}
+                      title="Authenticated with live Google OAuth 2.0"
+                    >
+                      Live OAuth
+                    </span>
+                  )}
                   {isConnected ? (
                     <span
                       style={{

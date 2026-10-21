@@ -16,8 +16,14 @@ import {
   Lock, 
   Sparkles,
   Loader2,
-  X
+  X,
+  ExternalLink
 } from 'lucide-react';
+import { 
+  isYoutubeConfigured, 
+  connectYoutubeWithPopup, 
+  fetchMyYoutubeChannel 
+} from '../../services/youtube';
 
 export const SimulatedAuthView: React.FC = () => {
   const { 
@@ -48,8 +54,32 @@ export const SimulatedAuthView: React.FC = () => {
   };
 
   const handleAuthorize = async () => {
+    // Live Google OAuth 2.0 flow for YouTube if configured
+    if (platform === 'youtube' && isYoutubeConfigured()) {
+      setIsAuthorizing(true);
+      try {
+        const accessToken = await connectYoutubeWithPopup(currentBrand.id);
+        const channel = await fetchMyYoutubeChannel(accessToken);
+        await connectAccount(currentBrand.id, 'youtube', {
+          username: channel.customUrl || `@${channel.title.toLowerCase().replace(/\s+/g, '')}`,
+          name: channel.title,
+          avatar: channel.avatarUrl,
+          accessToken,
+          channelId: channel.id,
+          followers: channel.subscriberCount
+        });
+        showToast('success', `Connected live YouTube channel "${channel.title}"!`);
+        closeSimulatedAuth();
+      } catch (err: any) {
+        showToast('error', err.message || 'YouTube connection failed.');
+      } finally {
+        setIsAuthorizing(false);
+      }
+      return;
+    }
+
+    // Simulated flow
     setIsAuthorizing(true);
-    // Simulate brief network / OAuth authorization handshake
     setTimeout(async () => {
       await connectAccount(currentBrand.id, platform);
       setIsAuthorizing(false);
@@ -139,23 +169,64 @@ export const SimulatedAuthView: React.FC = () => {
 
         {/* Content Body */}
         <div style={{ padding: '24px 28px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          {/* Simulated Disclaimer Banner */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'flex-start',
-              gap: '10px',
-              padding: '12px 14px',
-              borderRadius: 'var(--radius-md)',
-              backgroundColor: '#eff6ff',
-              border: '1px solid #bfdbfe'
-            }}
-          >
-            <ShieldCheck size={18} color="#2563eb" style={{ flexShrink: 0, marginTop: '2px' }} />
-            <div style={{ fontSize: '12.5px', color: '#1e40af', lineHeight: 1.45 }}>
-              <strong>Simulated Authentication Demo:</strong> This flow demonstrates the full channel connection workflow. No real passwords or external OAuth credentials are required.
+          {/* Channel Mode Banner */}
+          {platform === 'youtube' ? (
+            isYoutubeConfigured() ? (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '10px',
+                  padding: '12px 14px',
+                  borderRadius: 'var(--radius-md)',
+                  backgroundColor: '#f0fdf4',
+                  border: '1px solid #bbf7d0'
+                }}
+              >
+                <ShieldCheck size={18} color="#16a34a" style={{ flexShrink: 0, marginTop: '2px' }} />
+                <div style={{ fontSize: '12.5px', color: '#166534', lineHeight: 1.45 }}>
+                  <strong>Live Google OAuth 2.0 Ready:</strong> Click <strong>"Sign in with Google"</strong> below to securely connect your YouTube channel.
+                </div>
+              </div>
+            ) : (
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '6px',
+                  padding: '12px 14px',
+                  borderRadius: 'var(--radius-md)',
+                  backgroundColor: '#fffbeb',
+                  border: '1px solid #fde68a'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#b45309', fontWeight: 700, fontSize: '12.5px' }}>
+                  <Sparkles size={15} />
+                  <span>Live YouTube Ready &bull; Simulated Demo Mode</span>
+                </div>
+                <div style={{ fontSize: '12px', color: '#92400e', lineHeight: 1.45 }}>
+                  Credentials are blank in <code>.env</code>. You can click <strong>Authorize Simulation</strong> to test, or add your <code>VITE_YOUTUBE_CLIENT_ID</code> to <code>.env</code> anytime for real Google publishing.
+                </div>
+              </div>
+            )
+          ) : (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '10px',
+                padding: '12px 14px',
+                borderRadius: 'var(--radius-md)',
+                backgroundColor: '#eff6ff',
+                border: '1px solid #bfdbfe'
+              }}
+            >
+              <ShieldCheck size={18} color="#2563eb" style={{ flexShrink: 0, marginTop: '2px' }} />
+              <div style={{ fontSize: '12.5px', color: '#1e40af', lineHeight: 1.45 }}>
+                <strong>Simulated Authentication Demo:</strong> This flow demonstrates the full channel connection workflow. No real passwords or external OAuth credentials are required.
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Account to Connect */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -285,7 +356,11 @@ export const SimulatedAuthView: React.FC = () => {
                 </>
               ) : (
                 <>
-                  <span>Authorize and Connect</span>
+                  <span>
+                    {platform === 'youtube'
+                      ? (isYoutubeConfigured() ? 'Sign in with Google' : 'Authorize (Simulated)')
+                      : 'Authorize and Connect'}
+                  </span>
                   <ArrowRight size={14} />
                 </>
               )}

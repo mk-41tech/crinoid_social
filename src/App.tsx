@@ -9,11 +9,19 @@ import { ComposerView } from './components/composer/ComposerView';
 import { ConnectedChannelsView } from './components/channels/ConnectedChannelsView';
 import { SimulatedAuthView } from './components/channels/SimulatedAuthView';
 import { ConnectChannelsModal } from './components/channels/ConnectChannelsModal';
+import { AuthCallbackView } from './components/auth/AuthCallbackView';
 import { ToastContainer } from './components/common/Toast';
 
 const AppContent: React.FC = () => {
   const { isAuthenticated, currentView } = useApp();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+
+  // =========================================================================
+  // 0. OAUTH CALLBACK (Route '/auth/callback')
+  // =========================================================================
+  if (currentView === 'auth-callback' || window.location.pathname.includes('/auth/callback')) {
+    return <AuthCallbackView />;
+  }
 
   // =========================================================================
   // 1. PUBLIC MARKETING LANDING PAGE (Route '/')

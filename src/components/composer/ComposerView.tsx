@@ -11,6 +11,7 @@ import { LinkAttachmentCard } from './LinkAttachmentCard';
 import { ScheduleModal } from './ScheduleModal';
 import { ApprovalModal } from './ApprovalModal';
 import { PublishResultModal } from './PublishResultModal';
+import { uploadVideoToYoutube } from '../../services/youtube';
 import { 
   Upload, 
   Image as ImageIcon, 
@@ -33,7 +34,8 @@ import {
   CheckCircle2,
   Sparkles,
   Radio,
-  Plus
+  Plus,
+  Loader2
 } from 'lucide-react';
 
 export const ComposerView: React.FC = () => {
@@ -65,6 +67,12 @@ export const ComposerView: React.FC = () => {
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [showApprovalModal, setShowApprovalModal] = useState(false);
   const [showPublishModal, setShowPublishModal] = useState(false);
+
+  // Real YouTube Live Publishing State
+  const [uploadedVideoFile, setUploadedVideoFile] = useState<File | null>(null);
+  const [isPublishingReal, setIsPublishingReal] = useState<boolean>(false);
+  const [realPublishUrls, setRealPublishUrls] = useState<Record<string, string>>({});
+  const [uploadProgressPercent, setUploadProgressPercent] = useState<number>(0);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const captionTextareaRef = useRef<HTMLTextAreaElement>(null);
@@ -222,6 +230,7 @@ export const ComposerView: React.FC = () => {
 
       if (isVideo) {
         detectedType = 'video';
+        setUploadedVideoFile(file);
       }
       const fakeUrl = URL.createObjectURL(file);
       newUrls.push(fakeUrl);
@@ -306,12 +315,60 @@ export const ComposerView: React.FC = () => {
     return { valid: errors.length === 0, errors };
   };
 
-  const handlePublishNow = () => {
+  const handlePublishNow = async () => {
     const check = validateBeforePublish();
     if (!check.valid) {
       showToast('error', check.errors[0]);
       return;
     }
+
+    const ytAccount = currentBrand.accounts.find(a => a.platform === 'youtube');
+    const isLiveYouTubePublish = selectedPlatforms.includes('youtube') && Boolean(ytAccount?.accessToken);
+
+    if (isLiveYouTubePublish) {
+      setIsPublishingReal(true);
+      try {
+        let videoFile = uploadedVideoFile;
+        if (!videoFile && draft.mediaUrls.length > 0) {
+          try {
+            const res = await fetch(draft.mediaUrls[0]);
+            const blob = await res.blob();
+            videoFile = new File([blob], 'youtube_video.mp4', { type: blob.type || 'video/mp4' });
+          } catch {}
+        }
+
+        if (!videoFile) {
+          showToast('error', 'Please upload an MP4/MOV video file to publish to your live YouTube channel.');
+          setIsPublishingReal(false);
+          return;
+        }
+
+        const ytTitle = draft.platformVariants?.youtube?.title || draft.commonCaption.slice(0, 100) || 'Untitled Video';
+        const ytDesc = draft.platformVariants?.youtube?.caption || draft.commonCaption || '';
+
+        showToast('info', 'Uploading video to YouTube Data API...');
+        const ytResult = await uploadVideoToYoutube({
+          accessToken: ytAccount!.accessToken!,
+          file: videoFile,
+          title: ytTitle,
+          description: ytDesc,
+          privacyStatus: 'public',
+          onProgress: (pct) => setUploadProgressPercent(pct)
+        });
+
+        const urls = { youtube: ytResult.url };
+        setRealPublishUrls(urls);
+        updateDraft({ status: 'published', publishedUrl: ytResult.url });
+        showToast('success', `Live on YouTube: ${ytResult.url}`);
+        setShowPublishModal(true);
+      } catch (err: any) {
+        showToast('error', `YouTube upload error: ${err.message}`);
+      } finally {
+        setIsPublishingReal(false);
+      }
+      return;
+    }
+
     setShowPublishModal(true);
     updateDraft({ status: 'published' });
   };
@@ -436,10 +493,10 @@ export const ComposerView: React.FC = () => {
           <button
             type="button"
             onClick={handlePublishNow}
-            disabled={currentBrand.accounts.length === 0}
+            disabled={currentBrand.accounts.length === 0 || isPublishingReal}
             className="btn btn-primary btn-sm"
             style={{ 
-              cursor: currentBrand.accounts.length === 0 ? 'not-allowed' : 'pointer', 
+              cursor: currentBrand.accounts.length === 0 || isPublishingReal ? 'not-allowed' : 'pointer', 
               display: 'flex', 
               alignItems: 'center', 
               gap: '6px', 
@@ -447,8 +504,17 @@ export const ComposerView: React.FC = () => {
               opacity: currentBrand.accounts.length === 0 ? 0.6 : 1
             }}
           >
-            <Send size={14} />
-            <span>Publish Now</span>
+            {isPublishingReal ? (
+              <>
+                <Loader2 size={14} className="animate-spin" />
+                <span>Uploading {uploadProgressPercent > 0 ? `${uploadProgressPercent}%` : 'to YouTube...'}</span>
+              </>
+            ) : (
+              <>
+                <Send size={14} />
+                <span>Publish Now</span>
+              </>
+            )}
           </button>
         </div>
       </div>
@@ -1202,7 +1268,12 @@ export const ComposerView: React.FC = () => {
         <PublishResultModal
           draft={draft}
           selectedPlatforms={selectedPlatforms}
-          onClose={() => setShowPublishModal(false)}
+          liveUrls={realPublishUrls}
+          isRealPublish={Boolean(realPublishUrls.youtube)}
+          onClose={() => {
+            setShowPublishModal(false);
+            setRealPublishUrls({});
+          }}
         />
       )}
     </div>

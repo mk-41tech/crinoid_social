@@ -7,9 +7,12 @@ export interface SocialAccount {
   username: string;
   avatar: string;
   brandId: string;
-  followers?: string;
+  followers?: string | number;
   status: 'connected' | 'disconnected' | 'needs_reauth';
   connectedAt?: string;
+  accessToken?: string;
+  channelId?: string;
+  publishedUrl?: string;
 }
 
 export interface BrandUser {
@@ -61,6 +64,8 @@ export interface PostDraft {
   scheduledAt?: string;
   assignedReviewerId?: string;
   updatedAt: string;
+  publishedUrl?: string;
+  videoFile?: File;
 }
 
 export interface NavModule {

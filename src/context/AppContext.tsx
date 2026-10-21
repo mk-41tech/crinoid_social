@@ -8,7 +8,7 @@ interface ToastItem {
   message: string;
 }
 
-export type AppView = 'landing' | 'login' | 'composer' | 'home' | 'channels' | 'app-home' | 'simulated-auth';
+export type AppView = 'landing' | 'login' | 'composer' | 'home' | 'channels' | 'app-home' | 'simulated-auth' | 'auth-callback';
 
 interface AppContextType {
   isAuthenticated: boolean;
@@ -32,7 +32,11 @@ interface AppContextType {
   // Channels and Simulated Auth
   connectedAccounts: Record<string, SocialAccount[]>;
   currentBrandAccounts: SocialAccount[];
-  connectAccount: (brandId: string, platform: SocialPlatform) => Promise<SocialAccount>;
+  connectAccount: (
+    brandId: string, 
+    platform: SocialPlatform, 
+    customData?: { username?: string; name?: string; avatar?: string; accessToken?: string; channelId?: string; followers?: string | number }
+  ) => Promise<SocialAccount>;
   disconnectAccount: (brandId: string, platform: SocialPlatform) => void;
   resetBrandAccounts: (brandId: string, mode: 'clear' | 'load_defaults') => void;
   showConnectModal: boolean;
@@ -126,6 +130,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [currentView, setCurrentView] = useState<AppView>(() => {
     const path = window.location.pathname.toLowerCase();
     const hash = window.location.hash.toLowerCase();
+    if (path.includes('auth/callback') || path.includes('callback') || hash.includes('access_token')) return 'auth-callback';
     if (path.includes('composer') || hash.includes('composer')) return 'composer';
     if (path.includes('channels') || hash.includes('channels')) return 'channels';
     if (path.includes('login') || hash.includes('login')) return 'login';
@@ -235,7 +240,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   // Channel Connection Actions
-  const connectAccount = async (brandId: string, platform: SocialPlatform): Promise<SocialAccount> => {
+  const connectAccount = async (
+    brandId: string, 
+    platform: SocialPlatform,
+    customData?: { username?: string; name?: string; avatar?: string; accessToken?: string; channelId?: string; followers?: string | number }
+  ): Promise<SocialAccount> => {
     const brandCatalog = BRAND_CHANNELS_CATALOG[brandId] || BRAND_CHANNELS_CATALOG['brand-crinoid'];
     const catalogItem = brandCatalog?.[platform] || {
       platform,
@@ -250,10 +259,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const newAccount: SocialAccount = {
       id: `acc-${platform}-${Date.now()}`,
       platform,
-      name: catalogItem.name,
-      username: catalogItem.username,
-      avatar: catalogItem.avatar,
+      name: customData?.name || catalogItem.name,
+      username: customData?.username || catalogItem.username,
+      avatar: customData?.avatar || catalogItem.avatar,
       brandId,
+      followers: customData?.followers !== undefined ? customData.followers : (platform === 'youtube' ? '12.4K' : undefined),
+      accessToken: customData?.accessToken,
+      channelId: customData?.channelId,
       status: 'connected',
       connectedAt: new Date().toISOString()
     };
