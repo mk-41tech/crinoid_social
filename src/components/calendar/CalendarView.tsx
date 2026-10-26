@@ -290,6 +290,7 @@ export const CalendarView: React.FC = () => {
   const [cancelTarget, setCancelTarget] = useState<CalendarPost | null>(null);
   const [errorTarget, setErrorTarget] = useState<CalendarPost | null>(null);
   const [detailTarget, setDetailTarget] = useState<CalendarPost | null>(null);
+  const [deleteConfirmTarget, setDeleteConfirmTarget] = useState<CalendarPost | null>(null);
 
   // Drag and drop state
   const [draggedPostId, setDraggedPostId] = useState<string | null>(null);
@@ -541,11 +542,27 @@ export const CalendarView: React.FC = () => {
   };
 
   const handleDeletePost = (postId: string) => {
-    setPosts(prev => prev.filter(p => p.id !== postId));
-    if (detailTarget?.id === postId) {
-      setDetailTarget(null);
+    try {
+      setPosts(prev => prev.filter(p => p.id !== postId));
+      if (detailTarget?.id === postId) {
+        setDetailTarget(null);
+      }
+      if (deleteConfirmTarget?.id === postId) {
+        setDeleteConfirmTarget(null);
+      }
+      try {
+        const dbSaved = localStorage.getItem('crinoid_posts_database_v1');
+        if (dbSaved) {
+          const parsed = JSON.parse(dbSaved);
+          const updated = parsed.filter((p: any) => p.id !== postId);
+          localStorage.setItem('crinoid_posts_database_v1', JSON.stringify(updated));
+        }
+      } catch {}
+
+      showToast('success', 'Post deleted successfully');
+    } catch (err: any) {
+      showToast('error', err?.message || 'Failed to delete post. Please try again.');
     }
-    showToast('info', 'Post deleted');
   };
 
   // Drag and drop handlers
@@ -838,16 +855,26 @@ export const CalendarView: React.FC = () => {
             <Clock size={12} />
           </button>
           <button
+            type="button"
             title="Duplicate"
-            onClick={() => handleDuplicatePost(post)}
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              handleDuplicatePost(post);
+            }}
             style={{ border: 'none', background: 'none', cursor: 'pointer', padding: '3px', color: 'var(--text-secondary)' }}
           >
             <Copy size={12} />
           </button>
           {post.status === 'failed' && (
             <button
+              type="button"
               title="View Error Details"
-              onClick={() => setErrorTarget(post)}
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                setErrorTarget(post);
+              }}
               style={{ border: 'none', background: 'none', cursor: 'pointer', padding: '3px', color: '#dc2626' }}
             >
               <AlertCircle size={12} />
@@ -855,18 +882,25 @@ export const CalendarView: React.FC = () => {
           )}
           {post.status === 'scheduled' && (
             <button
+              type="button"
               title="Cancel Scheduled Post"
-              onClick={() => setCancelTarget(post)}
-              style={{ border: 'none', background: 'none', cursor: 'pointer', padding: '3px', color: '#dc2626' }}
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                setCancelTarget(post);
+              }}
+              style={{ border: 'none', background: 'none', cursor: 'pointer', padding: '3px', color: '#d97706' }}
             >
-              <Trash2 size={12} />
+              <Clock4 size={12} />
             </button>
           )}
           <button
+            type="button"
             title="Delete Post"
             onClick={(e) => {
               e.stopPropagation();
-              handleDeletePost(post.id);
+              e.preventDefault();
+              setDeleteConfirmTarget(post);
             }}
             style={{ border: 'none', background: 'none', cursor: 'pointer', padding: '3px', color: '#dc2626' }}
           >
@@ -1179,29 +1213,6 @@ export const CalendarView: React.FC = () => {
               </button>
             ))}
           </div>
-
-          {/* Create Post Button */}
-          <button
-            type="button"
-            onClick={() => handleCreatePost()}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '7px 16px',
-              fontSize: '13px',
-              fontWeight: 600,
-              borderRadius: '6px',
-              border: 'none',
-              backgroundColor: 'var(--color-primary)',
-              color: '#ffffff',
-              cursor: 'pointer',
-              boxShadow: '0 1px 2px rgba(79, 70, 229, 0.2)'
-            }}
-          >
-            <Plus size={16} />
-            <span>Create Post</span>
-          </button>
         </div>
       </div>
 
@@ -1249,56 +1260,45 @@ export const CalendarView: React.FC = () => {
         onClearFilters={handleClearFilters}
       />
 
-      {/* 4. Empty State if filtering matches 0 posts */}
-      {filteredPosts.length === 0 && (
+      {/* Filter Active Notice when matching 0 posts */}
+      {filteredPosts.length === 0 && (filters.searchQuery.trim().length > 0 || filters.platform !== 'all' || filters.status !== 'all' || filters.campaign !== 'all') && (
         <div style={{
-          padding: '48px 24px',
-          textAlign: 'center',
+          padding: '14px 18px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
           backgroundColor: 'var(--bg-subtle)',
-          borderRadius: '12px',
+          borderRadius: '8px',
           border: '1px dashed var(--border-subtle)',
-          margin: '20px 0'
+          marginBottom: '16px'
         }}>
-          <CalendarIcon size={36} style={{ color: 'var(--text-light)', marginBottom: '8px' }} />
-          <h3 style={{ margin: '0 0 4px', fontSize: '15px', color: 'var(--text-primary)' }}>No posts found</h3>
-          <p style={{ margin: '0 0 16px', fontSize: '13px', color: 'var(--text-muted)' }}>
-            No scheduled or draft posts match your current filter selection.
-          </p>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '8px' }}>
-            <button
-              onClick={handleClearFilters}
-              style={{
-                padding: '6px 14px',
-                fontSize: '12.5px',
-                borderRadius: '6px',
-                border: '1px solid var(--border-subtle)',
-                backgroundColor: '#ffffff',
-                cursor: 'pointer'
-              }}
-            >
-              Clear Filters
-            </button>
-            <button
-              onClick={() => handleCreatePost()}
-              style={{
-                padding: '6px 14px',
-                fontSize: '12.5px',
-                borderRadius: '6px',
-                border: 'none',
-                backgroundColor: 'var(--color-primary)',
-                color: '#ffffff',
-                fontWeight: 600,
-                cursor: 'pointer'
-              }}
-            >
-              Create Post
-            </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <CalendarIcon size={16} style={{ color: 'var(--text-muted)' }} />
+            <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
+              No scheduled or draft posts match your current filter selection.
+            </span>
           </div>
+          <button
+            type="button"
+            onClick={handleClearFilters}
+            style={{
+              padding: '6px 14px',
+              fontSize: '12.5px',
+              borderRadius: '6px',
+              border: '1px solid var(--border-subtle)',
+              backgroundColor: '#ffffff',
+              color: 'var(--text-primary)',
+              fontWeight: 500,
+              cursor: 'pointer'
+            }}
+          >
+            Clear Filters
+          </button>
         </div>
       )}
 
       {/* 5. Calendar Views Grid */}
-      {filteredPosts.length > 0 && viewMode === 'month' && (
+      {viewMode === 'month' && (
         <div className="cal-month-container" style={{ border: '1px solid var(--border-subtle)', borderRadius: '10px', overflow: 'hidden' }}>
           {/* Weekday Names Header */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', backgroundColor: 'var(--bg-subtle)', borderBottom: '1px solid var(--border-subtle)' }}>
@@ -1397,7 +1397,7 @@ export const CalendarView: React.FC = () => {
       )}
 
       {/* Week View */}
-      {filteredPosts.length > 0 && viewMode === 'week' && (
+      {viewMode === 'week' && (
         <div style={{ border: '1px solid var(--border-subtle)', borderRadius: '10px', overflow: 'hidden', minHeight: '540px' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', backgroundColor: 'var(--bg-subtle)', borderBottom: '1px solid var(--border-subtle)' }}>
             {weekDays.map(day => (
@@ -1485,7 +1485,7 @@ export const CalendarView: React.FC = () => {
       )}
 
       {/* Day View */}
-      {filteredPosts.length > 0 && viewMode === 'day' && (
+      {viewMode === 'day' && (
         <div style={{ border: '1px solid var(--border-subtle)', borderRadius: '10px', padding: '20px', minHeight: '400px', backgroundColor: isPastDate(dayDateStr) ? '#f8fafc' : '#ffffff', opacity: isPastDate(dayDateStr) ? 0.75 : 1 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid var(--border-subtle)' }}>
             <div>
@@ -1538,7 +1538,7 @@ export const CalendarView: React.FC = () => {
       )}
 
       {/* List View */}
-      {filteredPosts.length > 0 && viewMode === 'list' && (
+      {viewMode === 'list' && (
         <div style={{ border: '1px solid var(--border-subtle)', borderRadius: '10px', overflow: 'hidden', backgroundColor: '#ffffff' }}>
           <div style={{
             display: 'grid',
@@ -1559,98 +1559,130 @@ export const CalendarView: React.FC = () => {
             <div style={{ textAlign: 'right' }}>Actions</div>
           </div>
 
-          <div>
-            {filteredPosts.map(post => {
-              const d = new Date(post.scheduledAt);
-              return (
-                <div
-                  key={post.id}
-                  onClick={() => setDetailTarget(post)}
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: '120px 80px 1fr 140px 110px 100px 120px',
-                    padding: '12px 16px',
-                    alignItems: 'center',
-                    borderBottom: '1px solid var(--border-subtle)',
-                    cursor: 'pointer',
-                    fontSize: '12.5px',
-                    transition: 'background-color 0.1s'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-subtle)'}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#ffffff'}
-                >
-                  <div>
-                    <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
-                      {d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+          {filteredPosts.length === 0 ? (
+            <div style={{ padding: '60px 24px', textAlign: 'center', backgroundColor: '#ffffff' }}>
+              <CalendarIcon size={36} style={{ color: 'var(--text-light)', marginBottom: '8px' }} />
+              <h3 style={{ margin: '0 0 4px', fontSize: '15px', color: 'var(--text-primary)' }}>No posts found</h3>
+              <p style={{ margin: '0 0 16px', fontSize: '13px', color: 'var(--text-muted)' }}>
+                No scheduled or draft posts match your current filter selection.
+              </p>
+              <button
+                type="button"
+                onClick={handleClearFilters}
+                style={{
+                  padding: '6px 14px',
+                  fontSize: '12.5px',
+                  borderRadius: '6px',
+                  border: '1px solid var(--border-subtle)',
+                  backgroundColor: '#ffffff',
+                  cursor: 'pointer'
+                }}
+              >
+                Clear Filters
+              </button>
+            </div>
+          ) : (
+            <div>
+              {filteredPosts.map(post => {
+                const d = new Date(post.scheduledAt);
+                return (
+                  <div
+                    key={post.id}
+                    onClick={() => setDetailTarget(post)}
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: '120px 80px 1fr 140px 110px 100px 120px',
+                      padding: '12px 16px',
+                      alignItems: 'center',
+                      borderBottom: '1px solid var(--border-subtle)',
+                      cursor: 'pointer',
+                      fontSize: '12.5px',
+                      transition: 'background-color 0.1s'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-subtle)'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#ffffff'}
+                  >
+                    <div>
+                      <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
+                        {d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      </div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                        {d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                      </div>
                     </div>
-                    <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                      {d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+
+                    <div>{renderPlatformIcons(post.platforms)}</div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingRight: '12px' }}>
+                      {post.thumbnailUrl && (
+                        <img src={post.thumbnailUrl} alt="thumb" style={{ width: '32px', height: '32px', borderRadius: '4px', objectFit: 'cover' }} />
+                      )}
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {post.caption}
+                      </span>
+                    </div>
+
+                    <div style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>
+                      {post.campaign || 'General'}
+                    </div>
+
+                    <div>{renderStatusBadge(post.status)}</div>
+
+                    <div>
+                      {post.approvalStatus === 'approved' && (
+                        <span style={{ color: '#059669', fontSize: '11px', fontWeight: 600 }}>Approved</span>
+                      )}
+                      {post.approvalStatus === 'in_review' && (
+                        <span style={{ color: '#d97706', fontSize: '11px', fontWeight: 600 }}>In Review</span>
+                      )}
+                      {(!post.approvalStatus || post.approvalStatus === 'draft') && (
+                        <span style={{ color: 'var(--text-light)', fontSize: '11px' }}>—</span>
+                      )}
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '4px' }} onClick={(e) => e.stopPropagation()}>
+                      <button
+                        type="button"
+                        title="Edit in Composer"
+                        onClick={() => handleEditPost(post)}
+                        style={{ border: 'none', background: 'none', cursor: 'pointer', padding: '4px', color: 'var(--text-secondary)' }}
+                      >
+                        <Edit3 size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        title="Reschedule"
+                        onClick={() => setRescheduleTarget(post)}
+                        style={{ border: 'none', background: 'none', cursor: 'pointer', padding: '4px', color: 'var(--text-secondary)' }}
+                      >
+                        <Clock size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        title="Duplicate"
+                        onClick={() => handleDuplicatePost(post)}
+                        style={{ border: 'none', background: 'none', cursor: 'pointer', padding: '4px', color: 'var(--text-secondary)' }}
+                      >
+                        <Copy size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        title="Delete Post"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          setDeleteConfirmTarget(post);
+                        }}
+                        style={{ border: 'none', background: 'none', cursor: 'pointer', padding: '4px', color: '#dc2626' }}
+                      >
+                        <Trash2 size={14} />
+                      </button>
                     </div>
                   </div>
-
-                  <div>{renderPlatformIcons(post.platforms)}</div>
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingRight: '12px' }}>
-                    {post.thumbnailUrl && (
-                      <img src={post.thumbnailUrl} alt="thumb" style={{ width: '32px', height: '32px', borderRadius: '4px', objectFit: 'cover' }} />
-                    )}
-                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {post.caption}
-                    </span>
-                  </div>
-
-                  <div style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>
-                    {post.campaign || 'General'}
-                  </div>
-
-                  <div>{renderStatusBadge(post.status)}</div>
-
-                  <div>
-                    {post.approvalStatus === 'approved' && (
-                      <span style={{ color: '#059669', fontSize: '11px', fontWeight: 600 }}>Approved</span>
-                    )}
-                    {post.approvalStatus === 'in_review' && (
-                      <span style={{ color: '#d97706', fontSize: '11px', fontWeight: 600 }}>In Review</span>
-                    )}
-                    {(!post.approvalStatus || post.approvalStatus === 'draft') && (
-                      <span style={{ color: 'var(--text-light)', fontSize: '11px' }}>—</span>
-                    )}
-                  </div>
-
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '4px' }} onClick={(e) => e.stopPropagation()}>
-                    <button
-                      title="Edit in Composer"
-                      onClick={() => handleEditPost(post)}
-                      style={{ border: 'none', background: 'none', cursor: 'pointer', padding: '4px', color: 'var(--text-secondary)' }}
-                    >
-                      <Edit3 size={14} />
-                    </button>
-                    <button
-                      title="Reschedule"
-                      onClick={() => setRescheduleTarget(post)}
-                      style={{ border: 'none', background: 'none', cursor: 'pointer', padding: '4px', color: 'var(--text-secondary)' }}
-                    >
-                      <Clock size={14} />
-                    </button>
-                    <button
-                      title="Duplicate"
-                      onClick={() => handleDuplicatePost(post)}
-                      style={{ border: 'none', background: 'none', cursor: 'pointer', padding: '4px', color: 'var(--text-secondary)' }}
-                    >
-                      <Copy size={14} />
-                    </button>
-                    <button
-                      title="Delete Post"
-                      onClick={() => handleDeletePost(post.id)}
-                      style={{ border: 'none', background: 'none', cursor: 'pointer', padding: '4px', color: '#dc2626' }}
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 
@@ -1709,8 +1741,130 @@ export const CalendarView: React.FC = () => {
         onDuplicate={handleDuplicatePost}
         onReschedule={(post) => setRescheduleTarget(post)}
         onCancel={(post) => setCancelTarget(post)}
-        onDelete={handleDeletePost}
+        onDelete={(postId) => {
+          const p = posts.find(item => item.id === postId);
+          if (p) {
+            setDeleteConfirmTarget(p);
+          } else {
+            handleDeletePost(postId);
+          }
+        }}
       />
+
+      {/* Delete Scheduled Post Confirmation Modal */}
+      {deleteConfirmTarget && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          backgroundColor: 'rgba(15, 23, 42, 0.45)',
+          backdropFilter: 'blur(3px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '16px'
+        }}>
+          <div style={{
+            backgroundColor: '#ffffff',
+            borderRadius: '12px',
+            width: '100%',
+            maxWidth: '440px',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              padding: '16px 20px',
+              borderBottom: '1px solid var(--border-subtle)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Trash2 size={18} style={{ color: '#dc2626' }} />
+                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                  Delete Scheduled Post
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setDeleteConfirmTarget(null)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-light)', padding: '4px' }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div style={{ padding: '20px' }}>
+              <p style={{ margin: '0 0 12px', fontSize: '13.5px', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+                Are you sure you want to permanently delete post <strong>{deleteConfirmTarget.id}</strong>? This action cannot be undone.
+              </p>
+
+              <div style={{
+                padding: '12px',
+                backgroundColor: 'var(--bg-subtle)',
+                borderRadius: '8px',
+                marginBottom: '16px',
+                fontSize: '13px',
+                color: 'var(--text-secondary)'
+              }}>
+                <p style={{ margin: '0 0 4px', fontWeight: 600, color: 'var(--text-primary)' }}>Scheduled Time</p>
+                <p style={{ margin: '0 0 8px', fontSize: '12.5px' }}>{new Date(deleteConfirmTarget.scheduledAt).toLocaleString()}</p>
+                <p style={{ margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  "{deleteConfirmTarget.caption || 'No caption'}"
+                </p>
+              </div>
+            </div>
+
+            <div style={{
+              padding: '12px 20px',
+              borderTop: '1px solid var(--border-subtle)',
+              backgroundColor: 'var(--bg-subtle)',
+              display: 'flex',
+              justifyContent: 'flex-end',
+              gap: '8px'
+            }}>
+              <button
+                type="button"
+                onClick={() => setDeleteConfirmTarget(null)}
+                style={{
+                  padding: '7px 14px',
+                  fontSize: '13px',
+                  borderRadius: '6px',
+                  border: '1px solid var(--border-subtle)',
+                  backgroundColor: '#ffffff',
+                  color: 'var(--text-secondary)',
+                  cursor: 'pointer'
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  handleDeletePost(deleteConfirmTarget.id);
+                  setDeleteConfirmTarget(null);
+                }}
+                style={{
+                  padding: '7px 16px',
+                  fontSize: '13px',
+                  borderRadius: '6px',
+                  border: 'none',
+                  backgroundColor: '#dc2626',
+                  color: '#ffffff',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <Trash2 size={13} />
+                Delete Post
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Unsaved Changes Confirmation Modal */}
       {showUnsavedModal && (

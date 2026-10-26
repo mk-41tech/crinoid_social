@@ -16,19 +16,13 @@ import {
   CheckCircle2,
   XCircle,
   AlertTriangle,
-  RotateCcw,
   Search,
-  Filter,
   Eye,
-  Clock,
-  User,
   MessageSquare,
-  Check,
   Plus,
   Send,
   Sparkles,
-  Layers,
-  ArrowRight
+  Layers
 } from 'lucide-react';
 
 const STORAGE_APPROVAL_POSTS = 'crinoid_approval_posts_v1';
@@ -876,76 +870,6 @@ export const ApprovalView: React.FC = () => {
                     >
                       <Eye size={13} /> Review Details
                     </button>
-
-                    {/* Quick decision buttons */}
-                    <div style={{ display: 'flex', gap: '6px' }}>
-                      {item.status === 'in_review' && (
-                        <>
-                          <button
-                            type="button"
-                            title="Request Changes"
-                            onClick={() => {
-                              setReviewTarget(item);
-                            }}
-                            style={{
-                              padding: '5px 8px',
-                              fontSize: '11.5px',
-                              borderRadius: '4px',
-                              border: '1px solid #fde68a',
-                              backgroundColor: '#fffbeb',
-                              color: '#b45309',
-                              fontWeight: 600,
-                              cursor: 'pointer'
-                            }}
-                          >
-                            Changes
-                          </button>
-
-                          <button
-                            type="button"
-                            title="Approve Post"
-                            onClick={() => handleApprove(item.id)}
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '4px',
-                              padding: '5px 12px',
-                              fontSize: '11.5px',
-                              borderRadius: '4px',
-                              border: 'none',
-                              backgroundColor: '#059669',
-                              color: '#ffffff',
-                              fontWeight: 600,
-                              cursor: 'pointer'
-                            }}
-                          >
-                            <Check size={12} /> Approve
-                          </button>
-                        </>
-                      )}
-
-                      {item.status === 'changes_requested' && (
-                        <button
-                          type="button"
-                          onClick={() => setReviewTarget(item)}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                            padding: '5px 10px',
-                            fontSize: '11.5px',
-                            borderRadius: '4px',
-                            border: '1px solid var(--color-primary-border)',
-                            backgroundColor: 'var(--color-primary-light)',
-                            color: 'var(--color-primary)',
-                            fontWeight: 600,
-                            cursor: 'pointer'
-                          }}
-                        >
-                          <RotateCcw size={12} /> Resubmit
-                        </button>
-                      )}
-                    </div>
                   </div>
                 </div>
               ))}

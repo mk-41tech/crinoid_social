@@ -288,6 +288,7 @@ export const PostsView: React.FC = () => {
 
   // Modal Targets
   const [viewModalPost, setViewModalPost] = useState<PostRecord | null>(null);
+  const [sidePanelMode, setSidePanelMode] = useState<'view' | 'edit'>('view');
   const [logsModalPost, setLogsModalPost] = useState<PostRecord | null>(null);
   const [approvalModalPost, setApprovalModalPost] = useState<PostRecord | null>(null);
   const [deleteModalPost, setDeleteModalPost] = useState<PostRecord | null>(null);
@@ -366,15 +367,21 @@ export const PostsView: React.FC = () => {
     setCurrentView('composer');
   };
 
+  const handleView = (post: PostRecord) => {
+    setViewModalPost(post);
+    setSidePanelMode('view');
+  };
+
   const handleEdit = (post: PostRecord) => {
-    updateDraft({
-      brandId: post.brandId,
-      commonCaption: post.caption,
-      thumbnailUrl: post.thumbnailUrl || '',
-      platforms: post.platforms,
-      scheduledAt: post.scheduledDate
-    });
-    setCurrentView('composer');
+    setViewModalPost(post);
+    setSidePanelMode('edit');
+  };
+
+  const handleSavePost = async (updatedPost: PostRecord) => {
+    await new Promise(resolve => setTimeout(resolve, 250));
+    setPosts(prev => prev.map(p => p.id === updatedPost.id ? updatedPost : p));
+    setViewModalPost(updatedPost);
+    showToast('success', `Post ${updatedPost.id} updated successfully.`);
   };
 
   const handleDuplicate = (post: PostRecord) => {
@@ -525,29 +532,6 @@ export const PostsView: React.FC = () => {
               Phase 2
             </span>
           </button>
-
-          {/* Create Post Button */}
-          <button
-            type="button"
-            onClick={handleCreatePost}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '7px 16px',
-              fontSize: '13px',
-              fontWeight: 600,
-              borderRadius: '6px',
-              border: 'none',
-              backgroundColor: 'var(--color-primary)',
-              color: '#ffffff',
-              cursor: 'pointer',
-              boxShadow: '0 1px 2px rgba(79, 70, 229, 0.2)'
-            }}
-          >
-            <Plus size={16} />
-            <span>Create Post</span>
-          </button>
         </div>
       </div>
 
@@ -679,25 +663,9 @@ export const PostsView: React.FC = () => {
           <h3 style={{ margin: '0 0 4px', fontSize: '16px', color: 'var(--text-primary)' }}>
             No posts found in this tab
           </h3>
-          <p style={{ margin: '0 0 16px', fontSize: '13px', color: 'var(--text-muted)' }}>
+          <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-muted)' }}>
             {searchQuery ? `No posts matched "${searchQuery}"` : `There are currently no posts with status "${activeTab.replace('_', ' ')}"`}
           </p>
-          <button
-            type="button"
-            onClick={handleCreatePost}
-            style={{
-              padding: '7px 16px',
-              fontSize: '13px',
-              fontWeight: 600,
-              borderRadius: '6px',
-              border: 'none',
-              backgroundColor: 'var(--color-primary)',
-              color: '#ffffff',
-              cursor: 'pointer'
-            }}
-          >
-            Create New Post
-          </button>
         </div>
       )}
 
@@ -799,13 +767,13 @@ export const PostsView: React.FC = () => {
                   <div style={{ display: 'flex', gap: '4px' }}>
                     <button
                       title="View Post Details"
-                      onClick={() => setViewModalPost(post)}
+                      onClick={() => handleView(post)}
                       style={{ padding: '5px', border: '1px solid var(--border-subtle)', borderRadius: '4px', background: '#fff', cursor: 'pointer', color: 'var(--text-secondary)' }}
                     >
                       <Eye size={13} />
                     </button>
                     <button
-                      title="Edit in Composer"
+                      title="Edit Post"
                       onClick={() => handleEdit(post)}
                       style={{ padding: '5px', border: '1px solid var(--border-subtle)', borderRadius: '4px', background: '#fff', cursor: 'pointer', color: 'var(--text-secondary)' }}
                     >
@@ -887,7 +855,7 @@ export const PostsView: React.FC = () => {
             <div
               key={post.id}
               className="posts-table-row"
-              onClick={() => setViewModalPost(post)}
+              onClick={() => handleView(post)}
               style={{ cursor: 'pointer' }}
             >
               <div style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
@@ -922,7 +890,7 @@ export const PostsView: React.FC = () => {
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '4px' }} onClick={(e) => e.stopPropagation()}>
                 <button
                   title="View"
-                  onClick={() => setViewModalPost(post)}
+                  onClick={() => handleView(post)}
                   style={{ padding: '4px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}
                 >
                   <Eye size={14} />
@@ -958,8 +926,10 @@ export const PostsView: React.FC = () => {
       <PostViewModal
         post={viewModalPost}
         isOpen={!!viewModalPost}
+        initialMode={sidePanelMode}
         onClose={() => setViewModalPost(null)}
         onEdit={handleEdit}
+        onSave={handleSavePost}
         onDuplicate={handleDuplicate}
         onReschedule={(p) => setRescheduleModalPost(p)}
         onDelete={(p) => setDeleteModalPost(p)}

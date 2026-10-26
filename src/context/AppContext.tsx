@@ -135,6 +135,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     if (path.includes('terms') || hash.includes('terms')) return 'terms';
     if (path.includes('auth/callback') || path.includes('callback') || hash.includes('access_token')) return 'auth-callback';
     if (path.includes('composer') || hash.includes('composer')) return 'composer';
+    if (path.includes('calendar') || hash.includes('calendar')) return 'calendar';
+    if (path.includes('posts') || hash.includes('posts')) return 'posts';
+    if (path.includes('approval') || hash.includes('approval')) return 'approval';
     if (path.includes('channels') || hash.includes('channels')) return 'channels';
     if (path.includes('login') || hash.includes('login')) return 'login';
     if (path.includes('app') || hash.includes('app')) return 'app-home';
@@ -149,6 +152,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       else if (currentView === 'terms') targetPath = '/terms';
       else if (currentView === 'login') targetPath = '/login';
       else if (currentView === 'composer') targetPath = '/composer';
+      else if (currentView === 'calendar') targetPath = '/calendar';
+      else if (currentView === 'posts') targetPath = '/posts';
+      else if (currentView === 'approval') targetPath = '/approval';
       else if (currentView === 'channels') targetPath = '/channels';
       else if (currentView === 'app-home') targetPath = '/app';
       else if (currentView === 'landing' || currentView === 'home') targetPath = '/';

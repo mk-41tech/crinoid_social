@@ -542,72 +542,86 @@ export const ApprovalReviewModal: React.FC<ApprovalReviewModalProps> = ({
             Close
           </button>
 
-          {/* Decision Buttons */}
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button
-              type="button"
-              onClick={() => setActiveAction('reject')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '5px',
-                padding: '7px 12px',
-                fontSize: '12.5px',
-                borderRadius: '6px',
-                border: '1px solid #fecaca',
-                backgroundColor: '#fff5f5',
-                color: '#dc2626',
-                cursor: 'pointer',
-                fontWeight: 500
-              }}
-            >
-              <XCircle size={14} /> Reject
-            </button>
+          {/* Decision Buttons — only shown when post is actively reviewable */}
+          {(post.status === 'in_review' || post.status === 'resubmitted') ? (
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                type="button"
+                onClick={() => setActiveAction('reject')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  padding: '7px 12px',
+                  fontSize: '12.5px',
+                  borderRadius: '6px',
+                  border: '1px solid #fecaca',
+                  backgroundColor: '#fff5f5',
+                  color: '#dc2626',
+                  cursor: 'pointer',
+                  fontWeight: 500
+                }}
+              >
+                <XCircle size={14} /> Reject
+              </button>
 
-            <button
-              type="button"
-              onClick={() => setActiveAction('changes')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '5px',
-                padding: '7px 12px',
-                fontSize: '12.5px',
-                borderRadius: '6px',
-                border: '1px solid #fde68a',
-                backgroundColor: '#fffbeb',
-                color: '#b45309',
-                cursor: 'pointer',
-                fontWeight: 500
-              }}
-            >
-              <AlertTriangle size={14} /> Request Changes
-            </button>
+              <button
+                type="button"
+                onClick={() => setActiveAction('changes')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  padding: '7px 12px',
+                  fontSize: '12.5px',
+                  borderRadius: '6px',
+                  border: '1px solid #fde68a',
+                  backgroundColor: '#fffbeb',
+                  color: '#b45309',
+                  cursor: 'pointer',
+                  fontWeight: 500
+                }}
+              >
+                <AlertTriangle size={14} /> Request Changes
+              </button>
 
-            <button
-              type="button"
-              onClick={() => {
-                onApprove(post.id);
-                onClose();
-              }}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '7px 16px',
-                fontSize: '12.5px',
-                borderRadius: '6px',
-                border: 'none',
-                backgroundColor: '#059669',
-                color: '#ffffff',
-                fontWeight: 600,
-                cursor: 'pointer',
-                boxShadow: '0 1px 2px rgba(5, 150, 105, 0.2)'
-              }}
-            >
-              <CheckCircle2 size={14} /> Approve Post
-            </button>
-          </div>
+              <button
+                type="button"
+                onClick={() => {
+                  onApprove(post.id);
+                  onClose();
+                }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '7px 16px',
+                  fontSize: '12.5px',
+                  borderRadius: '6px',
+                  border: 'none',
+                  backgroundColor: '#059669',
+                  color: '#ffffff',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  boxShadow: '0 1px 2px rgba(5, 150, 105, 0.2)'
+                }}
+              >
+                <CheckCircle2 size={14} /> Approve Post
+              </button>
+            </div>
+          ) : post.status === 'changes_requested' ? (
+            <span style={{ fontSize: '12px', color: '#b45309', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <AlertTriangle size={13} /> Awaiting resubmission from author
+            </span>
+          ) : post.status === 'approved' ? (
+            <span style={{ fontSize: '12px', color: '#047857', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <CheckCircle2 size={13} /> Post approved — ready to schedule or publish
+            </span>
+          ) : post.status === 'rejected' ? (
+            <span style={{ fontSize: '12px', color: '#dc2626', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <XCircle size={13} /> Post rejected
+            </span>
+          ) : null}
         </div>
       </div>
     </div>
