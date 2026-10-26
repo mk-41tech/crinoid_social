@@ -39,7 +39,17 @@ import {
   Loader2
 } from 'lucide-react';
 
-export const ComposerView: React.FC = () => {
+export interface ComposerViewProps {
+  onClose?: () => void;
+  onPostScheduled?: (newPost?: any) => void;
+  isInPageTab?: boolean;
+}
+
+export const ComposerView: React.FC<ComposerViewProps> = ({
+  onClose,
+  onPostScheduled,
+  isInPageTab = false
+}) => {
   const {
     currentBrand,
     draft,
@@ -429,7 +439,36 @@ export const ComposerView: React.FC = () => {
       status: 'scheduled',
       scheduledAt: `${scheduledDateTime} (${tz})`
     });
-    showToast('success', `Demo post scheduled for ${scheduledDateTime} (${tz}).`);
+
+    const newPost = {
+      id: `cal-post-${Date.now()}`,
+      brandId: currentBrand.id,
+      caption: draft.commonCaption || 'Scheduled post',
+      platforms: selectedPlatforms.length > 0 ? selectedPlatforms : ['linkedin'],
+      status: 'scheduled',
+      approvalStatus: 'approved',
+      scheduledAt: scheduledDateTime.includes('T') ? scheduledDateTime : `${scheduledDateTime}T10:00:00`,
+      thumbnailUrl: draft.thumbnailUrl || (draft.mediaUrls && draft.mediaUrls[0]) || '',
+      mediaType: draft.mediaType || 'image',
+      author: { id: 'u-1', name: 'Muthukumar', role: 'Social Lead' },
+      campaign: 'Social Campaign',
+      createdAt: new Date().toISOString()
+    };
+
+    // Also persist into calendar posts storage so it is immediately visible on the Content Calendar
+    try {
+      const STORAGE_CALENDAR_POSTS = 'crinoid_calendar_posts_v1';
+      const existing = localStorage.getItem(STORAGE_CALENDAR_POSTS);
+      const posts: any[] = existing ? JSON.parse(existing) : [];
+      localStorage.setItem(STORAGE_CALENDAR_POSTS, JSON.stringify([newPost, ...posts]));
+    } catch (e) {
+      console.warn('Failed to save to calendar posts', e);
+    }
+
+    showToast('success', `Post scheduled for ${scheduledDateTime} (${tz}).`);
+    if (onPostScheduled) {
+      onPostScheduled(newPost);
+    }
   };
 
   const handleApprovalSubmit = (reviewerId: string, note: string) => {
@@ -437,7 +476,35 @@ export const ComposerView: React.FC = () => {
       status: 'pending_approval',
       assignedReviewerId: reviewerId
     });
+
+    const approvalPost = {
+      id: `cal-post-${Date.now()}`,
+      brandId: currentBrand.id,
+      caption: draft.commonCaption || 'Post pending approval',
+      platforms: selectedPlatforms.length > 0 ? selectedPlatforms : ['linkedin'],
+      status: 'scheduled',
+      approvalStatus: 'in_review',
+      scheduledAt: draft.scheduledAt?.includes('T') ? draft.scheduledAt.split(' ')[0] : (draft.scheduledAt || new Date().toISOString()),
+      thumbnailUrl: draft.thumbnailUrl || (draft.mediaUrls && draft.mediaUrls[0]) || '',
+      mediaType: draft.mediaType || 'image',
+      author: { id: 'u-1', name: 'Muthukumar', role: 'Social Lead' },
+      campaign: 'Social Campaign',
+      createdAt: new Date().toISOString()
+    };
+
+    try {
+      const STORAGE_CALENDAR_POSTS = 'crinoid_calendar_posts_v1';
+      const existing = localStorage.getItem(STORAGE_CALENDAR_POSTS);
+      const posts: any[] = existing ? JSON.parse(existing) : [];
+      localStorage.setItem(STORAGE_CALENDAR_POSTS, JSON.stringify([approvalPost, ...posts]));
+    } catch (e) {
+      console.warn('Failed to save to calendar posts', e);
+    }
+
     showToast('info', 'Submitted for demo approval.');
+    if (isInPageTab && onPostScheduled) {
+      onPostScheduled(approvalPost);
+    }
   };
 
   // Compute character limit indicator
@@ -448,7 +515,13 @@ export const ComposerView: React.FC = () => {
   const isOverLimit = currentText.length > activeCharLimit;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - var(--topbar-height))', backgroundColor: '#ffffff' }}>
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      height: isInPageTab ? '100%' : 'calc(100vh - var(--topbar-height))',
+      minHeight: isInPageTab ? 'calc(100vh - 120px)' : undefined,
+      backgroundColor: '#ffffff'
+    }}>
       {/* Composer Top Toolbar */}
       <div
         style={{
@@ -465,7 +538,13 @@ export const ComposerView: React.FC = () => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
           <button
             type="button"
-            onClick={() => setCurrentView('home')}
+            onClick={() => {
+              if (onClose) {
+                onClose();
+              } else {
+                draft.scheduledAt ? setCurrentView('calendar') : setCurrentView('home');
+              }
+            }}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -480,7 +559,16 @@ export const ComposerView: React.FC = () => {
               fontWeight: 600
             }}
           >
-            &larr; Back
+            {isInPageTab ? (
+              <>
+                <X size={14} />
+                <span>Close</span>
+              </>
+            ) : (
+              <>
+                &larr; Back
+              </>
+            )}
           </button>
 
           <div style={{ height: '18px', width: '1px', backgroundColor: 'var(--border-subtle)' }} />
@@ -496,6 +584,42 @@ export const ComposerView: React.FC = () => {
             <Clock size={13} color="#10b981" />
             <span>{lastSavedTime ? `Saved at ${lastSavedTime}` : 'Saved'}</span>
           </div>
+
+          {/* Intended Post Date indicator from Calendar */}
+          {draft.scheduledAt && (() => {
+            let label = draft.scheduledAt;
+            try {
+              const isoPart = draft.scheduledAt.split(' ')[0];
+              const dateObj = new Date(isoPart);
+              if (!isNaN(dateObj.getTime())) {
+                label = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+              }
+            } catch {
+              label = draft.scheduledAt;
+            }
+            return (
+              <div
+                onClick={() => setShowScheduleModal(true)}
+                title="Click to adjust scheduled date"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '4px 10px',
+                  borderRadius: '6px',
+                  backgroundColor: 'var(--color-primary-light)',
+                  color: 'var(--color-primary)',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  border: '1px solid var(--border-subtle)'
+                }}
+              >
+                <Calendar size={13} />
+                <span>Scheduled: {label}</span>
+              </div>
+            );
+          })()}
         </div>
 
         {/* Action Buttons */}
@@ -1303,6 +1427,7 @@ export const ComposerView: React.FC = () => {
       {showScheduleModal && (
         <ScheduleModal
           selectedPlatforms={selectedPlatforms}
+          initialScheduledAt={draft.scheduledAt}
           onConfirmSchedule={handleScheduleConfirm}
           onClose={() => setShowScheduleModal(false)}
         />
@@ -1324,6 +1449,31 @@ export const ComposerView: React.FC = () => {
           onClose={() => {
             setShowPublishModal(false);
             setRealPublishUrls({});
+            if (isInPageTab && onPostScheduled) {
+              const pubPost = {
+                id: `cal-post-${Date.now()}`,
+                brandId: currentBrand.id,
+                caption: draft.commonCaption || 'Published post',
+                platforms: selectedPlatforms.length > 0 ? selectedPlatforms : ['linkedin'],
+                status: 'published',
+                approvalStatus: 'approved',
+                scheduledAt: new Date().toISOString(),
+                thumbnailUrl: draft.thumbnailUrl || (draft.mediaUrls && draft.mediaUrls[0]) || '',
+                mediaType: draft.mediaType || 'image',
+                author: { id: 'u-1', name: 'Muthukumar', role: 'Social Lead' },
+                campaign: 'Social Campaign',
+                createdAt: new Date().toISOString()
+              };
+              try {
+                const STORAGE_CALENDAR_POSTS = 'crinoid_calendar_posts_v1';
+                const existing = localStorage.getItem(STORAGE_CALENDAR_POSTS);
+                const posts: any[] = existing ? JSON.parse(existing) : [];
+                localStorage.setItem(STORAGE_CALENDAR_POSTS, JSON.stringify([pubPost, ...posts]));
+              } catch (e) {
+                console.warn('Failed to save to calendar posts', e);
+              }
+              onPostScheduled(pubPost);
+            }
           }}
         />
       )}

@@ -8,7 +8,7 @@ interface ToastItem {
   message: string;
 }
 
-export type AppView = 'landing' | 'login' | 'composer' | 'calendar' | 'posts' | 'approval' | 'home' | 'channels' | 'app-home' | 'simulated-auth' | 'auth-callback' | 'privacy' | 'terms';
+export type AppView = 'landing' | 'login' | 'composer' | 'create-post' | 'calendar' | 'posts' | 'approval' | 'home' | 'channels' | 'app-home' | 'simulated-auth' | 'auth-callback' | 'privacy' | 'terms';
 
 interface AppContextType {
   isAuthenticated: boolean;
@@ -61,7 +61,8 @@ const createDefaultDraft = (brandId: string, initialPlatforms: SocialPlatform[] 
     instagram: { caption: '', hashtags: '#crinoid #innovation #social' },
     facebook: { caption: '' },
     linkedin: { caption: '' },
-    youtube: { title: '', caption: '', youtubeCategory: 'Technology' }
+    youtube: { title: '', caption: '', youtubeCategory: 'Technology' },
+    x: { caption: '' }
   },
   mediaUrls: [],
   mediaType: 'image',

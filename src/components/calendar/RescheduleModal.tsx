@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { CalendarPost } from './types';
 import { Calendar as CalendarIcon, Clock, X, AlertCircle } from 'lucide-react';
 
@@ -24,10 +24,16 @@ export const RescheduleModal: React.FC<RescheduleModalProps> = ({
     ? post.scheduledAt.split('T')[1].substring(0, 5)
     : '10:00';
 
+  const todayStr = new Date().toISOString().split('T')[0];
   const [date, setDate] = useState(initialDate);
   const [time, setTime] = useState(initialTime);
+  const [pastDateError, setPastDateError] = useState(false);
 
   const handleSave = () => {
+    if (date < todayStr) {
+      setPastDateError(true);
+      return;
+    }
     const newDateTime = `${date}T${time}:00`;
     onConfirm(post.id, newDateTime);
     onClose();
@@ -100,12 +106,16 @@ export const RescheduleModal: React.FC<RescheduleModalProps> = ({
               <input
                 type="date"
                 value={date}
-                onChange={(e) => setDate(e.target.value)}
+                min={todayStr}
+                onChange={(e) => {
+                  setDate(e.target.value);
+                  setPastDateError(e.target.value < todayStr);
+                }}
                 style={{
                   width: '100%',
                   padding: '8px 10px',
                   borderRadius: '6px',
-                  border: '1px solid var(--border-subtle)',
+                  border: `1px solid ${pastDateError ? '#dc2626' : 'var(--border-subtle)'}`,
                   fontSize: '13px'
                 }}
               />
@@ -129,6 +139,23 @@ export const RescheduleModal: React.FC<RescheduleModalProps> = ({
             </div>
           </div>
 
+          {pastDateError && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '8px',
+              padding: '10px 12px',
+              borderRadius: '6px',
+              backgroundColor: '#fee2e2',
+              color: '#dc2626',
+              fontSize: '12px',
+              lineHeight: '1.4',
+              marginBottom: '10px'
+            }}>
+              <AlertCircle size={15} style={{ flexShrink: 0, marginTop: '1px' }} />
+              <span>Cannot reschedule to a past date. Please select today or a future date.</span>
+            </div>
+          )}
           <div style={{
             display: 'flex',
             alignItems: 'flex-start',

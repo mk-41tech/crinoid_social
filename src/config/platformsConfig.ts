@@ -103,8 +103,28 @@ export const PLATFORM_CONFIG: Record<SocialPlatform, PlatformRules> = {
     mediaTypeLabel: 'Video Only',
     mediaUploadNotice: 'Supports MP4, MOV video files only (photos not supported on YouTube)',
     description: 'Long-form and Short video publishing with metadata, titles, and thumbnails.'
+  },
+  x: {
+    name: 'X (Twitter)',
+    charLimit: 280,
+    brandColor: '#0f1419',
+    bgColor: '#F3F4F6',
+    supportedMedia: ['image', 'video', 'carousel', 'link'],
+    supportsFirstComment: false,
+    supportsLinkAttachment: true,
+    supportsTitle: false,
+    supportsAltText: true,
+    requiresMedia: false,
+    requiresVideo: false,
+    requiresTitle: false,
+    supportsImages: true,
+    supportsVideos: true,
+    maxVideoSizeMB: 512,
+    mediaTypeLabel: 'Photo or Video',
+    mediaUploadNotice: 'Supports JPG, PNG up to 5MB or MP4 videos up to 512MB',
+    description: 'Real-time updates, micro-blogging, and trending conversations.'
   }
 };
 
-export const ALL_PLATFORMS: SocialPlatform[] = ['instagram', 'facebook', 'linkedin', 'youtube'];
-export const INITIAL_CONNECT_PLATFORMS: SocialPlatform[] = ['instagram', 'facebook', 'youtube', 'linkedin'];
+export const ALL_PLATFORMS: SocialPlatform[] = ['instagram', 'facebook', 'linkedin', 'x', 'youtube'];
+export const INITIAL_CONNECT_PLATFORMS: SocialPlatform[] = ['instagram', 'facebook', 'x', 'linkedin', 'youtube'];

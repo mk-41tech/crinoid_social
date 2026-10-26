@@ -7,19 +7,41 @@ interface ScheduleModalProps {
   selectedPlatforms: SocialPlatform[];
   onConfirmSchedule: (datetime: string, timezone: string) => void;
   onClose: () => void;
+  initialScheduledAt?: string;
 }
 
 export const ScheduleModal: React.FC<ScheduleModalProps> = ({
   selectedPlatforms,
   onConfirmSchedule,
-  onClose
+  onClose,
+  initialScheduledAt
 }) => {
-  // Default to tomorrow 10:00 AM
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const defaultDate = tomorrow.toISOString().split('T')[0];
-  const [date, setDate] = useState(defaultDate);
-  const [time, setTime] = useState('10:00');
+  // Initialize date from initialScheduledAt (e.g. from calendar date selection) or default to tomorrow
+  const getInitialDate = () => {
+    if (initialScheduledAt) {
+      if (initialScheduledAt.includes('T')) {
+        return initialScheduledAt.split('T')[0];
+      }
+      if (/^\d{4}-\d{2}-\d{2}/.test(initialScheduledAt)) {
+        return initialScheduledAt.substring(0, 10);
+      }
+    }
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return tomorrow.toISOString().split('T')[0];
+  };
+
+  const getInitialTime = () => {
+    if (initialScheduledAt && initialScheduledAt.includes('T')) {
+      const timePart = initialScheduledAt.split('T')[1];
+      const match = timePart.match(/^\d{2}:\d{2}/);
+      if (match) return match[0];
+    }
+    return '10:00';
+  };
+
+  const [date, setDate] = useState(getInitialDate);
+  const [time, setTime] = useState(getInitialTime);
   const [timezone, setTimezone] = useState('UTC+05:30 (IST)');
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -112,6 +134,7 @@ export const ScheduleModal: React.FC<ScheduleModalProps> = ({
                 <input
                   type="date"
                   value={date}
+                  min={new Date().toISOString().split('T')[0]}
                   onChange={(e) => setDate(e.target.value)}
                   required
                   style={{

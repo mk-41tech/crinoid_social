@@ -261,6 +261,15 @@ export const BRAND_CHANNELS_CATALOG: Record<string, Record<SocialPlatform, MockC
       authProfileName: 'Muthukumar',
       authProfileAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
       description: 'YouTube Brand Channel'
+    },
+    x: {
+      platform: 'x',
+      name: 'Crinoid Tech',
+      username: '@crinoidtech',
+      avatar: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=120&auto=format&fit=crop&q=80',
+      authProfileName: 'Muthukumar (Social Lead)',
+      authProfileAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
+      description: 'X (Twitter) Official Profile'
     }
   },
   'brand-nexus': {
@@ -299,6 +308,15 @@ export const BRAND_CHANNELS_CATALOG: Record<string, Record<SocialPlatform, MockC
       authProfileName: 'Arun',
       authProfileAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&auto=format&fit=crop&q=80',
       description: 'YouTube Channel'
+    },
+    x: {
+      platform: 'x',
+      name: 'Nexus Lifestyle',
+      username: '@nexuslifestyle',
+      avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=120&auto=format&fit=crop&q=80',
+      authProfileName: 'Kavitha',
+      authProfileAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&auto=format&fit=crop&q=80',
+      description: 'X (Twitter) Brand Profile'
     }
   },
   'brand-horizon': {
@@ -337,6 +355,15 @@ export const BRAND_CHANNELS_CATALOG: Record<string, Record<SocialPlatform, MockC
       authProfileName: 'Karthik',
       authProfileAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&auto=format&fit=crop&q=80',
       description: 'YouTube Showcase Channel'
+    },
+    x: {
+      platform: 'x',
+      name: 'Horizon Studio',
+      username: '@horizonstudio',
+      avatar: 'https://images.unsplash.com/photo-1557683316-973673baf926?w=120&auto=format&fit=crop&q=80',
+      authProfileName: 'Karthik',
+      authProfileAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&auto=format&fit=crop&q=80',
+      description: 'X (Twitter) Design Feed'
     }
   }
 };

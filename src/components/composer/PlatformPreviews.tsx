@@ -7,7 +7,8 @@ import {
   InstagramIcon, 
   FacebookIcon, 
   LinkedinIcon, 
-  YoutubeIcon 
+  YoutubeIcon,
+  XIcon
 } from '../common/SocialIcons';
 import { 
   Heart, 
@@ -145,6 +146,7 @@ export const PlatformPreviews: React.FC<PlatformPreviewsProps> = ({
                 {p === 'facebook' && <FacebookIcon size={14} color={pConfig.brandColor} />}
                 {p === 'linkedin' && <LinkedinIcon size={14} color={pConfig.brandColor} />}
                 {p === 'youtube' && <YoutubeIcon size={14} color={pConfig.brandColor} />}
+                {p === 'x' && <XIcon size={14} color={pConfig.brandColor} />}
                 <span>{pConfig.name}</span>
               </button>
             );
@@ -444,7 +446,78 @@ export const PlatformPreviews: React.FC<PlatformPreviewsProps> = ({
           </div>
         )}
 
+        {/* X (TWITTER) PREVIEW */}
+        {currentPlatform === 'x' && (
+          <div
+            style={{
+              width: '100%',
+              maxWidth: '440px',
+              backgroundColor: '#ffffff',
+              borderRadius: '16px',
+              border: '1px solid #e7e7e7',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column'
+            }}
+          >
+            {/* X Header */}
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', padding: '16px 16px 10px 16px' }}>
+              <Avatar src={account.avatar} name={account.name} size={40} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{ fontSize: '14px', fontWeight: 700, color: '#0f1419' }}>{account.name}</span>
+                  <span style={{ fontSize: '13px', color: '#536471' }}>{account.username}</span>
+                  <span style={{ fontSize: '13px', color: '#536471' }}>&middot; Just now</span>
+                </div>
+                {/* X Post Text */}
+                <div style={{ fontSize: '14px', color: '#0f1419', lineHeight: 1.45, marginTop: '8px' }}>
+                  {renderFormattedText(captionText)}
+                </div>
 
+                {/* X Media */}
+                {hasMedia && (
+                  <div style={{ marginTop: '10px', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e7e7e7' }}>
+                    <img src={currentMediaUrl} alt="X media" style={{ width: '100%', maxHeight: '260px', objectFit: 'cover' }} />
+                  </div>
+                )}
+
+                {/* Link card */}
+                {draft.linkUrl && (
+                  <div style={{ marginTop: '10px', borderRadius: '10px', overflow: 'hidden', border: '1px solid #e7e7e7' }}>
+                    {draft.linkImage && (
+                      <img src={draft.linkImage} alt="Link" style={{ width: '100%', height: '140px', objectFit: 'cover' }} />
+                    )}
+                    <div style={{ padding: '8px 12px', backgroundColor: '#f7f9f9' }}>
+                      <div style={{ fontSize: '11px', color: '#536471' }}>{draft.linkDomain || 'crinoid.social'}</div>
+                      <div style={{ fontSize: '13px', fontWeight: 600, color: '#0f1419', marginTop: '2px' }}>{draft.linkTitle || 'Read on Crinoid Social'}</div>
+                    </div>
+                  </div>
+                )}
+
+                {/* X Action Bar */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '12px', paddingBottom: '4px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#536471', fontSize: '12.5px', cursor: 'pointer' }}>
+                    <MessageCircle size={16} /><span>24</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#536471', fontSize: '12.5px', cursor: 'pointer' }}>
+                    <Repeat size={16} /><span>12</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#536471', fontSize: '12.5px', cursor: 'pointer' }}>
+                    <Heart size={16} /><span>183</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#536471', fontSize: '12.5px', cursor: 'pointer' }}>
+                    <ExternalLink size={16} />
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#536471', fontSize: '12.5px', cursor: 'pointer' }}>
+                    <Share2 size={16} />
+                  </div>
+                </div>
+              </div>
+              <XIcon size={18} color="#0f1419" />
+            </div>
+          </div>
+        )}
 
         {/* YOUTUBE PREVIEW */}
         {currentPlatform === 'youtube' && (

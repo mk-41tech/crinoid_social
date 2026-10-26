@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { CalendarPost } from './types';
 import { 
   X, 
@@ -23,6 +23,7 @@ interface PostDetailDrawerProps {
   onDuplicate: (post: CalendarPost) => void;
   onReschedule: (post: CalendarPost) => void;
   onCancel: (post: CalendarPost) => void;
+  onDelete?: (postId: string) => void;
 }
 
 export const PostDetailDrawer: React.FC<PostDetailDrawerProps> = ({
@@ -32,7 +33,8 @@ export const PostDetailDrawer: React.FC<PostDetailDrawerProps> = ({
   onEdit,
   onDuplicate,
   onReschedule,
-  onCancel
+  onCancel,
+  onDelete
 }) => {
   if (!isOpen || !post) return null;
 
@@ -276,29 +278,59 @@ export const PostDetailDrawer: React.FC<PostDetailDrawerProps> = ({
           gap: '8px',
           flexWrap: 'wrap'
         }}>
-          <button
-            type="button"
-            onClick={() => {
-              onCancel(post);
-              onClose();
-            }}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '8px 12px',
-              fontSize: '12.5px',
-              borderRadius: '6px',
-              border: '1px solid #fecaca',
-              backgroundColor: '#fff5f5',
-              color: '#dc2626',
-              cursor: 'pointer',
-              fontWeight: 500
-            }}
-          >
-            <AlertTriangle size={14} />
-            Cancel Schedule
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {post.status === 'scheduled' && (
+              <button
+                type="button"
+                onClick={() => {
+                  onCancel(post);
+                  onClose();
+                }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '8px 12px',
+                  fontSize: '12.5px',
+                  borderRadius: '6px',
+                  border: '1px solid #fecaca',
+                  backgroundColor: '#fff5f5',
+                  color: '#dc2626',
+                  cursor: 'pointer',
+                  fontWeight: 500
+                }}
+              >
+                <AlertTriangle size={14} />
+                Cancel Schedule
+              </button>
+            )}
+
+            {onDelete && (
+              <button
+                type="button"
+                onClick={() => {
+                  onDelete(post.id);
+                  onClose();
+                }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '8px 12px',
+                  fontSize: '12.5px',
+                  borderRadius: '6px',
+                  border: '1px solid #fecaca',
+                  backgroundColor: '#fff5f5',
+                  color: '#dc2626',
+                  cursor: 'pointer',
+                  fontWeight: 500
+                }}
+              >
+                <Trash2 size={14} />
+                Delete
+              </button>
+            )}
+          </div>
 
           <div style={{ display: 'flex', gap: '8px' }}>
             <button
