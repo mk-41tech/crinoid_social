@@ -1,0 +1,173 @@
+/* ============================================================
+   CRINOID SOCIAL - APPROVAL MODULE STYLES
+   ============================================================ */
+
+.approval-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 24px;
+  background-color: #ffffff;
+  overflow-y: auto;
+}
+
+.approval-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+/* Tabs */
+.approval-tabs-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: 20px;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.approval-tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  background: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s ease;
+}
+
+.approval-tab-btn:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-hover);
+  border-radius: 6px 6px 0 0;
+}
+
+.approval-tab-btn.active {
+  color: var(--color-primary);
+  font-weight: 600;
+  border-bottom-color: var(--color-primary);
+}
+
+.approval-tab-count {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background-color: var(--bg-muted);
+  color: var(--text-muted);
+}
+
+.approval-tab-btn.active .approval-tab-count {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+/* Approval Card */
+.approval-card {
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  background-color: #ffffff;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+  position: relative;
+}
+
+.approval-card:hover {
+  border-color: var(--color-primary-border);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+/* Multi-step pipeline tracker */
+.pipeline-step-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  padding: 4px 8px;
+  background-color: var(--bg-subtle);
+  border-radius: 6px;
+  border: 1px solid var(--border-subtle);
+}
+
+.pipeline-step-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.pipeline-step-indicator.approved {
+  background-color: #10b981;
+  color: #ffffff;
+}
+
+.pipeline-step-indicator.pending {
+  background-color: #f59e0b;
+  color: #ffffff;
+}
+
+.pipeline-step-indicator.changes_requested {
+  background-color: #ef4444;
+  color: #ffffff;
+}
+
+/* Mention Tag */
+.mention-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  background-color: #e0e7ff;
+  color: #4338ca;
+  font-weight: 600;
+  border-radius: 4px;
+  font-size: 11.5px;
+}
+
+/* Comment Thread */
+.comment-bubble {
+  padding: 10px 12px;
+  border-radius: 8px;
+  background-color: var(--bg-subtle);
+  border: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12.5px;
+}
+
+.comment-bubble.decision-approved {
+  background-color: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+.comment-bubble.decision-rejected {
+  background-color: #fef2f2;
+  border-color: #fecaca;
+}
+
+.comment-bubble.decision-changes {
+  background-color: #fffbeb;
+  border-color: #fde68a;
+}
+
+/* Drawer Animation */
+.approval-drawer {
+  animation: slideInRight 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}

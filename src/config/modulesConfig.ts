@@ -55,14 +55,14 @@ export const SIDEBAR_SECTIONS: ModuleSection[] = [
       {
         id: 'calendar',
         label: 'Calendar',
-        status: 'coming-soon',
-        badge: 'Soon'
+        status: 'available',
+        view: 'calendar'
       },
       {
         id: 'posts',
         label: 'Posts',
-        status: 'coming-soon',
-        badge: 'Soon'
+        status: 'available',
+        view: 'posts'
       },
       {
         id: 'content-library',
@@ -73,8 +73,8 @@ export const SIDEBAR_SECTIONS: ModuleSection[] = [
       {
         id: 'approval',
         label: 'Approval',
-        status: 'coming-soon',
-        badge: 'Soon'
+        status: 'available',
+        view: 'approval'
       }
     ]
   },
@@ -263,3 +263,6 @@ export const MODULES_CONFIG = SIDEBAR_SECTIONS.map(s => ({
   subItems: s.items.map(i => i.label),
   description: `${s.title} module operations`
 }));
+
+
+

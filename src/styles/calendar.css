@@ -1,0 +1,1012 @@
+/* ==========================================================================
+   CONTENT CALENDAR — Redesigned (Zoho Social-inspired, Buffer-clean aesthetic)
+   ========================================================================== */
+
+/* ── Page wrapper ─────────────────────────────────────────────────────────── */
+.cal-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ── Calendar outer card ──────────────────────────────────────────────────── */
+.calendar-container {
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-xs);
+}
+
+/* ── Calendar Header ──────────────────────────────────────────────────────── */
+.calendar-header {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  background-color: #ffffff;
+}
+
+.cal-header-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cal-nav-btn {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: #ffffff;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.cal-nav-btn:hover {
+  border-color: var(--border-strong);
+  background-color: var(--bg-subtle);
+  color: var(--text-primary);
+}
+
+.calendar-month-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  min-width: 150px;
+  margin: 0 6px;
+}
+
+.cal-today-btn {
+  padding: 5px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: #ffffff;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.cal-today-btn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background-color: var(--color-primary-light);
+}
+
+/* ── View Toggle ──────────────────────────────────────────────────────────── */
+.calendar-view-toggle {
+  display: flex;
+  background-color: var(--bg-subtle);
+  padding: 3px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  gap: 1px;
+}
+
+.calendar-view-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-muted);
+  border-radius: 5px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.calendar-view-btn.active {
+  background-color: #ffffff;
+  color: var(--color-primary);
+  font-weight: 600;
+  box-shadow: var(--shadow-xs);
+}
+
+.calendar-view-btn:not(.active):hover {
+  color: var(--text-secondary);
+  background-color: var(--bg-muted);
+}
+
+/* ── Filter Bar ───────────────────────────────────────────────────────────── */
+.calendar-filters-bar {
+  padding: 10px 20px;
+  background-color: var(--bg-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.cal-filter-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-right: 2px;
+}
+
+/* ── Dropdown wrapper ── */
+.cal-filter-dropdown {
+  position: relative;
+}
+
+/* ── Trigger button ── */
+.cal-filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: #ffffff;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.cal-filter-btn:hover:not(.active) {
+  border-color: var(--border-strong);
+  background-color: var(--bg-subtle);
+  color: var(--text-primary);
+}
+
+/* Active = at least one option selected */
+.cal-filter-btn.active {
+  border-color: #22c55e;
+  color: var(--text-primary);
+  background-color: #f0fdf4;
+  font-weight: 600;
+}
+
+.cal-filter-btn.open {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px var(--color-primary-border);
+}
+
+/* Label text inside button */
+.cal-filter-btn-label {
+  line-height: 1;
+}
+
+/* Green pencil icon shown when active */
+.cal-filter-edit-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  background-color: #22c55e;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+/* × button to clear THIS filter (inline on the trigger) */
+.cal-filter-clear-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: #d1fae5;
+  color: #15803d;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.cal-filter-clear-btn:hover {
+  background-color: #bbf7d0;
+  color: #166534;
+}
+
+/* Chevron (always visible, flips on open) */
+.cal-filter-chevron {
+  flex-shrink: 0;
+  color: var(--text-muted);
+  transition: color var(--transition-fast);
+}
+
+.cal-filter-btn.active .cal-filter-chevron {
+  color: var(--text-secondary);
+}
+
+/* ── Dropdown panel ── */
+.cal-filter-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 500;
+  min-width: 210px;
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  animation: calMenuFadeIn 0.13s ease;
+}
+
+@keyframes calMenuFadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.cal-filter-menu-header {
+  padding: 8px 12px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid var(--border-light);
+}
+
+/* ── Option row ── */
+.cal-filter-option {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--text-primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color var(--transition-fast);
+}
+
+.cal-filter-option:hover {
+  background-color: var(--bg-subtle);
+}
+
+.cal-filter-option.selected {
+  background-color: #f0fdf4;
+}
+
+/* Green rounded checkbox — matches screenshot exactly */
+.cal-filter-checkbox {
+  width: 17px;
+  height: 17px;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: transparent;
+  background-color: transparent;
+  transition: all var(--transition-fast);
+}
+
+.cal-filter-checkbox.checked {
+  background-color: #22c55e;  /* vivid green, like screenshot */
+  border-color: #22c55e;
+  color: #ffffff;
+}
+
+/* Icon bubble next to label (platform / status dot) */
+.cal-filter-option-icon-bubble {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background-color: var(--bg-muted);
+  flex-shrink: 0;
+}
+
+.cal-filter-option-label {
+  flex: 1;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+/* Clear-selection link at bottom of open dropdown */
+.cal-filter-clear-row {
+  display: block;
+  width: 100%;
+  padding: 7px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-primary);
+  background: none;
+  border: none;
+  border-top: 1px solid var(--border-light);
+  cursor: pointer;
+  text-align: left;
+  transition: background-color var(--transition-fast);
+}
+
+.cal-filter-clear-row:hover {
+  background-color: var(--color-primary-light);
+}
+
+/* ── Global clear-all button (outside dropdowns) ── */
+.cal-filter-clear-all {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--status-failed-text);
+  background: none;
+  border: 1px solid var(--status-failed-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.cal-filter-clear-all:hover {
+  background-color: var(--status-failed-bg);
+}
+
+/* ── Date Click Popover ───────────────────────────────────────────────────── */
+.cal-date-popover {
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  min-width: 170px;
+  animation: calMenuFadeIn 0.12s ease;
+}
+
+.cal-date-popover-header {
+  padding: 8px 12px 6px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.cal-date-popover-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color var(--transition-fast);
+}
+
+.cal-date-popover-option:hover {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+/* ==========================================================================
+   MONTH GRID VIEW
+   ========================================================================== */
+
+.cal-month-view {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.calendar-grid-header {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  border-bottom: 1px solid var(--border-subtle);
+  background-color: var(--bg-subtle);
+  text-align: center;
+  width: 100%;
+}
+
+.calendar-weekday {
+  padding: 9px 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  background-color: var(--border-light);
+  gap: 1px;
+  width: 100%;
+}
+
+.calendar-day-cell {
+  min-height: 120px;
+  background-color: #ffffff;
+  padding: 7px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  position: relative;
+  transition: background-color var(--transition-fast);
+  cursor: pointer;
+  min-width: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.calendar-day-cell:hover {
+  background-color: #fafbfc;
+}
+
+.calendar-day-cell.other-month {
+  background-color: #fafafa;
+  opacity: 0.55;
+  cursor: default;
+  pointer-events: none;
+}
+
+.calendar-day-cell.today {
+  background-color: #f5f3ff;
+}
+
+.calendar-day-cell.selected {
+  background-color: var(--color-primary-light);
+}
+
+.calendar-day-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.calendar-day-num {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.calendar-day-cell.today .calendar-day-num {
+  background-color: var(--color-primary);
+  color: #ffffff;
+}
+
+.calendar-add-post-btn {
+  opacity: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  background-color: var(--bg-muted);
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.calendar-day-cell:hover .calendar-add-post-btn {
+  opacity: 1;
+}
+
+.calendar-add-post-btn:hover {
+  background-color: var(--color-primary);
+  color: #ffffff;
+}
+
+.cal-day-posts {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ── Post Cards inside Month Calendar ───────────────────────────────────── */
+.cal-post-card {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 6px 3px 9px;
+  background-color: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-radius: 5px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+}
+
+.cal-post-card:hover {
+  border-color: var(--color-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.cal-post-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.cal-post-meta {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.cal-post-platforms {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-wrap: nowrap;
+}
+
+.cal-post-time {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-left: 2px;
+}
+
+.cal-post-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-primary);
+  font-weight: 500;
+  font-size: 10.5px;
+}
+
+/* Status stripe */
+.cal-status-stripe {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+}
+
+.cal-status-draft     { background-color: var(--status-draft-text); }
+.cal-status-pending   { background-color: var(--status-pending-text); }
+.cal-status-approved  { background-color: var(--status-approved-text); }
+.cal-status-scheduled { background-color: var(--status-scheduled-text); }
+.cal-status-published { background-color: var(--status-published-text); }
+.cal-status-failed    { background-color: var(--status-failed-text); }
+
+/* ==========================================================================
+   WEEK VIEW
+   ========================================================================== */
+.cal-week-view {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  min-height: 480px;
+  border-top: 1px solid var(--border-subtle);
+  width: 100%;
+}
+
+.cal-week-col {
+  border-right: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+  transition: background-color var(--transition-fast);
+  min-width: 0;
+  overflow: hidden;
+}
+
+.cal-week-col:last-child {
+  border-right: none;
+}
+
+.cal-week-col.today {
+  background-color: #f9f8ff;
+}
+
+.cal-week-col-header {
+  padding: 10px 10px 8px;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  background-color: var(--bg-subtle);
+}
+
+.cal-week-col-header.today {
+  background-color: var(--color-primary-light);
+}
+
+.cal-week-day-name {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.cal-week-day-num {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.cal-week-day-num.today {
+  background-color: var(--color-primary);
+  color: #ffffff;
+}
+
+.cal-week-col-body {
+  flex: 1;
+  padding: 8px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow-y: auto;
+}
+
+.cal-week-empty {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 8px;
+  font-size: 11.5px;
+  color: var(--text-light);
+  background: none;
+  border: 1px dashed var(--border-subtle);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  width: 100%;
+  transition: all var(--transition-fast);
+}
+
+.cal-week-empty:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background-color: var(--color-primary-light);
+}
+
+.cal-week-post-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  padding: 6px 8px 6px 10px;
+  background-color: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  font-size: 11.5px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  position: relative;
+  overflow: hidden;
+}
+
+.cal-week-post-card:hover {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ==========================================================================
+   DAY VIEW
+   ========================================================================== */
+.cal-day-view {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.cal-day-view-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 14px;
+  border-bottom: 1px solid var(--border-subtle);
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.cal-day-view-title {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.cal-day-view-subtitle {
+  display: block;
+  font-size: 12.5px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.cal-day-posts-list {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 0;
+}
+
+.cal-day-post-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border-light);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.cal-day-post-row:hover {
+  background-color: var(--bg-subtle);
+}
+
+.cal-day-post-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow: hidden;
+}
+
+.cal-day-post-platforms {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.cal-day-post-time {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.cal-day-post-content {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cal-day-post-author {
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+.cal-day-post-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.cal-day-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 52px 20px;
+  text-align: center;
+  gap: 6px;
+}
+
+.cal-create-post-link {
+  margin-top: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* ==========================================================================
+   LIST VIEW
+   ========================================================================== */
+.calendar-list-view {
+  display: flex;
+  flex-direction: column;
+}
+
+.calendar-list-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 20px;
+  border-bottom: 1px solid var(--border-light);
+  transition: background-color var(--transition-fast);
+  cursor: pointer;
+  gap: 16px;
+}
+
+.calendar-list-row:hover {
+  background-color: var(--bg-subtle);
+}
+
+.cal-list-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  overflow: hidden;
+}
+
+.cal-list-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow: hidden;
+}
+
+.cal-list-content {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cal-list-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cal-list-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.cal-list-time {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-primary);
+  white-space: nowrap;
+}
+
+.cal-list-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* ── Drag & Drop Hover Feedback ────────────────────────────────────────── */
+.calendar-day-cell.drag-over {
+  background-color: var(--color-primary-light) !important;
+  border: 2px dashed var(--color-primary) !important;
+}
+
+.cal-week-col.drag-over {
+  background-color: var(--color-primary-light) !important;
+  outline: 2px dashed var(--color-primary);
+}
+
+/* ── Approval Stage Indicator ─────────────────────────────────────────── */
+.cal-approval-badge {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 4px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.cal-approval-approved {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.cal-approval-review {
+  background-color: #fef3c7;
+  color: #b45309;
+}
+
+.cal-approval-draft {
+  background-color: #f1f5f9;
+  color: #64748b;
+}
+
+.cal-approval-scheduled {
+  background-color: #dbeafe;
+  color: #1d4ed8;
+}
+
+.cal-approval-rejected {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+/* ── Card Action Buttons on Hover ──────────────────────────────────────── */
+.cal-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.cal-post-card:hover .cal-card-actions {
+  opacity: 1;
+}
+
+.cal-card-action-btn {
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0;
+  transition: all var(--transition-fast);
+}
+
+.cal-card-action-btn:hover {
+  background-color: var(--bg-muted);
+  color: var(--text-primary);
+}
+
+.cal-card-action-btn.danger:hover {
+  background-color: #fee2e2;
+  color: #ef4444;
+}
+
+.cal-card-action-btn.error:hover {
+  background-color: #fee2e2;
+  color: #dc2626;
+}

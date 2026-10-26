@@ -6,6 +6,9 @@ import { Topbar } from './components/layout/Topbar';
 import { Sidebar } from './components/layout/Sidebar';
 import { HomeView } from './components/layout/HomeView';
 import { ComposerView } from './components/composer/ComposerView';
+import { CalendarView } from './components/calendar/CalendarView';
+import { PostsView } from './components/posts/PostsView';
+import { ApprovalView } from './components/approval/ApprovalView';
 import { ConnectedChannelsView } from './components/channels/ConnectedChannelsView';
 import { SimulatedAuthView } from './components/channels/SimulatedAuthView';
 import { ConnectChannelsModal } from './components/channels/ConnectChannelsModal';
@@ -102,6 +105,9 @@ const AppContent: React.FC = () => {
         {/* Dynamic Workspace Content */}
         <main style={{ flex: 1, overflowY: 'auto', backgroundColor: '#ffffff', minHeight: 0 }}>
           {currentView === 'composer' && <ComposerView />}
+          {currentView === 'calendar' && <CalendarView />}
+          {currentView === 'posts' && <PostsView />}
+          {currentView === 'approval' && <ApprovalView />}
           {currentView === 'channels' && <ConnectedChannelsView />}
           {(currentView === 'home' || currentView === 'app-home') && <HomeView />}
         </main>
@@ -124,3 +130,6 @@ export const App: React.FC = () => {
 };
 
 export default App;
+
+
+
