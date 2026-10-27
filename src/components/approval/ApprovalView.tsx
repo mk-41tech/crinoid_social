@@ -5,11 +5,12 @@ import {
   ApprovalStatus, 
   ApprovalPostItem, 
   ApprovalRule, 
-  ApprovalComment 
+  ApprovalComment,
+  ApprovalHistoryEvent 
 } from './types';
 import { ApprovalReviewModal } from './ApprovalReviewModal';
 import { ApprovalRulesTab } from './ApprovalRulesTab';
-import { InstagramIcon, FacebookIcon } from '../common/SocialIcons';
+import { InstagramIcon, FacebookIcon, LinkedinIcon, YoutubeIcon, XIcon } from '../common/SocialIcons';
 import '../../styles/approval.css';
 import {
   ShieldCheck,
@@ -22,7 +23,9 @@ import {
   Plus,
   Send,
   Sparkles,
-  Layers
+  Layers,
+  Clock,
+  History
 } from 'lucide-react';
 
 const STORAGE_APPROVAL_POSTS = 'crinoid_approval_posts_v1';
@@ -55,6 +58,7 @@ const getInitialApprovalItems = (brandId: string): ApprovalPostItem[] => {
       },
       status: 'in_review',
       submittedAt: formatISO(-3),
+      reviewedAt: formatISO(-2),
       scheduledAt: formatISO(48),
       campaign: 'Spring Active 2026',
       version: 1,
@@ -76,6 +80,26 @@ const getInitialApprovalItems = (brandId: string): ApprovalPostItem[] => {
           assignedApproverName: 'Nexus Brand Director',
           status: 'pending',
           isClientStep: true
+        }
+      ],
+      history: [
+        {
+          id: 'hist-501-1',
+          type: 'submission',
+          action: 'Submitted for Approval',
+          user: { id: 'u-2', name: 'Priya', role: 'Content Creator' },
+          timestamp: formatISO(-3),
+          note: 'Submitted post copy and high-res apparel media for client campaign review.'
+        },
+        {
+          id: 'hist-501-2',
+          type: 'decision',
+          action: 'Step 1 Approved: Copy & Media Verification',
+          user: { id: 'u-1', name: 'Muthukumar', role: 'Social Lead' },
+          timestamp: formatISO(-2),
+          stepNumber: 1,
+          stepTitle: 'Copy & Media Verification',
+          note: 'Step 1 copy and hashtags look solid. Approved and routed to Client review.'
         }
       ],
       comments: [
@@ -133,6 +157,16 @@ const getInitialApprovalItems = (brandId: string): ApprovalPostItem[] => {
           status: 'pending'
         }
       ],
+      history: [
+        {
+          id: 'hist-502-1',
+          type: 'submission',
+          action: 'Submitted for Approval',
+          user: { id: 'u-2', name: 'Priya', role: 'Content Creator' },
+          timestamp: formatISO(-1),
+          note: 'Ready for quick approval review before weekend scheduling.'
+        }
+      ],
       comments: [
         {
           id: 'comm-3',
@@ -165,6 +199,7 @@ const getInitialApprovalItems = (brandId: string): ApprovalPostItem[] => {
       },
       status: 'changes_requested',
       submittedAt: formatISO(-12),
+      reviewedAt: formatISO(-10),
       campaign: 'Brand Awareness',
       version: 1,
       requiresClientApproval: false,
@@ -175,6 +210,24 @@ const getInitialApprovalItems = (brandId: string): ApprovalPostItem[] => {
           assignedRole: 'Social Lead',
           assignedApproverName: 'Muthukumar',
           status: 'changes_requested'
+        }
+      ],
+      history: [
+        {
+          id: 'hist-503-1',
+          type: 'submission',
+          action: 'Submitted for Approval',
+          user: { id: 'u-2', name: 'Priya', role: 'Content Creator' },
+          timestamp: formatISO(-12),
+          note: 'Submitted creative studio carousel.'
+        },
+        {
+          id: 'hist-503-2',
+          type: 'changes_requested',
+          action: 'Changes Requested',
+          user: { id: 'u-1', name: 'Muthukumar', role: 'Social Lead' },
+          timestamp: formatISO(-10),
+          note: 'Please adjust the color grading on slide 2 and add official brand hashtags before we approve.'
         }
       ],
       comments: [
@@ -210,6 +263,7 @@ const getInitialApprovalItems = (brandId: string): ApprovalPostItem[] => {
       },
       status: 'approved',
       submittedAt: formatISO(-24),
+      reviewedAt: formatISO(-20),
       scheduledAt: formatISO(-18),
       campaign: 'Product Launch 2026',
       version: 1,
@@ -222,6 +276,24 @@ const getInitialApprovalItems = (brandId: string): ApprovalPostItem[] => {
           assignedApproverName: 'Karthik',
           status: 'approved',
           completedAt: formatISO(-20)
+        }
+      ],
+      history: [
+        {
+          id: 'hist-504-1',
+          type: 'submission',
+          action: 'Submitted for Approval',
+          user: { id: 'u-1', name: 'Muthukumar', role: 'Social Lead' },
+          timestamp: formatISO(-24),
+          note: 'Product launch announcement copy submitted.'
+        },
+        {
+          id: 'hist-504-2',
+          type: 'decision',
+          action: 'Approved (Final Sign-off)',
+          user: { id: 'u-3', name: 'Karthik', role: 'Approver' },
+          timestamp: formatISO(-20),
+          note: 'Looks great! Approved for automated distribution.'
         }
       ],
       comments: [
@@ -256,6 +328,7 @@ const getInitialApprovalItems = (brandId: string): ApprovalPostItem[] => {
       },
       status: 'rejected',
       submittedAt: formatISO(-30),
+      reviewedAt: formatISO(-28),
       campaign: 'Promotions',
       version: 1,
       requiresClientApproval: false,
@@ -267,6 +340,24 @@ const getInitialApprovalItems = (brandId: string): ApprovalPostItem[] => {
           assignedApproverName: 'Muthukumar',
           status: 'rejected',
           completedAt: formatISO(-28)
+        }
+      ],
+      history: [
+        {
+          id: 'hist-505-1',
+          type: 'submission',
+          action: 'Submitted for Approval',
+          user: { id: 'u-2', name: 'Priya', role: 'Content Creator' },
+          timestamp: formatISO(-30),
+          note: 'Flash sale copy submitted for compliance check.'
+        },
+        {
+          id: 'hist-505-2',
+          type: 'decision',
+          action: 'Rejected',
+          user: { id: 'u-1', name: 'Muthukumar', role: 'Social Lead' },
+          timestamp: formatISO(-28),
+          note: 'Discount codes above 50% violate marketing guidelines without finance sign-off.'
         }
       ],
       comments: [
@@ -315,18 +406,31 @@ const getInitialApprovalRules = (): ApprovalRule[] => [
 ];
 
 export const ApprovalView: React.FC = () => {
-  const { currentBrand, setCurrentView, updateDraft, showToast } = useApp();
+  const { currentBrand, currentUser, setCurrentView, updateDraft, showToast } = useApp();
 
   const [activeTab, setActiveTab] = useState<ApprovalTab>('pending');
   const [searchQuery, setSearchQuery] = useState('');
   const [platformFilter, setPlatformFilter] = useState<string>('all');
   const [clientFilter, setClientFilter] = useState<boolean | 'all'>('all');
 
-  // Persistence
+  // Persistence with backwards-compatible history upgrade
   const [items, setItems] = useState<ApprovalPostItem[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_APPROVAL_POSTS);
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed: ApprovalPostItem[] = JSON.parse(saved);
+        return parsed.map(item => ({
+          ...item,
+          history: item.history || (item.comments ? item.comments.map(c => ({
+            id: `hist-${c.id}`,
+            type: c.type === 'decision' ? 'decision' : 'comment',
+            action: c.decision ? c.decision.toUpperCase() : 'Reviewer Note',
+            user: { id: c.authorId, name: c.authorName, role: c.authorRole },
+            timestamp: c.timestamp,
+            note: c.content
+          })) : [])
+        }));
+      }
     } catch (e) {
       console.warn('Failed to parse cached approval items', e);
     }
@@ -362,10 +466,16 @@ export const ApprovalView: React.FC = () => {
   // Selected item for review modal
   const [reviewTarget, setReviewTarget] = useState<ApprovalPostItem | null>(null);
 
-  // Tab Counts
+  // Synchronize reviewTarget live with state
+  const activeReviewItem = useMemo(() => {
+    if (!reviewTarget) return null;
+    return items.find(i => i.id === reviewTarget.id) || reviewTarget;
+  }, [items, reviewTarget]);
+
+  // Tab Counts: include in_review, submitted, resubmitted in pending
   const tabCounts = useMemo(() => {
     return {
-      pending: items.filter(i => i.status === 'in_review' || i.status === 'resubmitted').length,
+      pending: items.filter(i => i.status === 'in_review' || i.status === 'resubmitted' || i.status === 'submitted' || i.status === 'draft').length,
       changes_requested: items.filter(i => i.status === 'changes_requested').length,
       approved: items.filter(i => i.status === 'approved').length,
       rejected: items.filter(i => i.status === 'rejected').length,
@@ -379,7 +489,7 @@ export const ApprovalView: React.FC = () => {
     return items.filter(item => {
       // Tab filter
       if (activeTab === 'pending') {
-        if (item.status !== 'in_review' && item.status !== 'resubmitted') return false;
+        if (item.status !== 'in_review' && item.status !== 'resubmitted' && item.status !== 'submitted' && item.status !== 'draft') return false;
       } else if (activeTab === 'changes_requested') {
         if (item.status !== 'changes_requested') return false;
       } else if (activeTab === 'approved') {
@@ -411,50 +521,126 @@ export const ApprovalView: React.FC = () => {
     });
   }, [items, activeTab, platformFilter, clientFilter, searchQuery]);
 
-  // Review Decisions
+  // Review Decisions with multi-step enforcement, timestamps, and history logging
   const handleApprove = (postId: string, note = 'Approved post for scheduling and publishing.') => {
+    const actor = currentUser || { id: 'u-1', name: 'Muthukumar', role: 'Social Lead' as const, avatar: '' };
+    const nowIso = new Date().toISOString();
+
     setItems(prev => prev.map(item => {
       if (item.id === postId) {
-        const updatedSteps = item.steps.map(s => ({ ...s, status: 'approved' as const }));
+        // Multi-step rule enforcement: find first pending or changes_requested step
+        const stepIdx = item.steps.findIndex(s => s.status === 'pending' || s.status === 'changes_requested');
+        const updatedSteps = [...item.steps];
+
+        let isFinalStep = true;
+        let approvedStepTitle = 'Final Approval';
+        let isClient = false;
+
+        if (stepIdx !== -1) {
+          const currentStep = updatedSteps[stepIdx];
+          approvedStepTitle = currentStep.title;
+          isClient = !!currentStep.isClientStep;
+
+          updatedSteps[stepIdx] = {
+            ...currentStep,
+            status: 'approved',
+            completedAt: nowIso
+          };
+
+          // Check if there are further pending steps
+          if (stepIdx + 1 < updatedSteps.length) {
+            isFinalStep = false;
+            updatedSteps[stepIdx + 1] = {
+              ...updatedSteps[stepIdx + 1],
+              status: 'pending'
+            };
+          }
+        }
+
+        const newStatus: ApprovalStatus = isFinalStep ? 'approved' : 'in_review';
+        const newClientStatus = isClient ? 'approved' : item.clientApprovalStatus;
+
+        const historyEvent: ApprovalHistoryEvent = {
+          id: `hist-${Date.now()}`,
+          type: 'decision',
+          action: isFinalStep ? 'Approved (Final Sign-off)' : `Step ${stepIdx + 1} Approved: ${approvedStepTitle}`,
+          user: { id: actor.id, name: actor.name, role: actor.role, avatar: actor.avatar },
+          timestamp: nowIso,
+          note,
+          stepNumber: stepIdx !== -1 ? stepIdx + 1 : undefined,
+          stepTitle: approvedStepTitle,
+          isClientApproval: isClient
+        };
+
+        const commentItem: ApprovalComment = {
+          id: `comm-${Date.now()}`,
+          authorId: actor.id,
+          authorName: actor.name,
+          authorRole: actor.role,
+          authorAvatar: actor.avatar,
+          content: note,
+          timestamp: nowIso,
+          type: 'decision',
+          decision: 'approved'
+        };
+
         return {
           ...item,
-          status: 'approved',
+          status: newStatus,
+          reviewedAt: nowIso,
+          clientApprovalStatus: newClientStatus,
           steps: updatedSteps,
-          comments: [
-            ...item.comments,
-            {
-              id: `comm-${Date.now()}`,
-              authorId: 'u-1',
-              authorName: 'Muthukumar',
-              authorRole: 'Social Lead',
-              content: note,
-              timestamp: new Date().toISOString(),
-              type: 'decision',
-              decision: 'approved'
-            }
-          ]
+          history: [...(item.history || []), historyEvent],
+          comments: [...item.comments, commentItem]
         };
       }
       return item;
     }));
-    showToast('success', `Post ${postId} approved! Ready to schedule or publish.`);
+
+    showToast('success', `Approval saved.`);
   };
 
   const handleReject = (postId: string, reason: string) => {
+    const actor = currentUser || { id: 'u-1', name: 'Muthukumar', role: 'Social Lead' as const, avatar: '' };
+    const nowIso = new Date().toISOString();
+
     setItems(prev => prev.map(item => {
       if (item.id === postId) {
+        const stepIdx = item.steps.findIndex(s => s.status === 'pending' || s.status === 'changes_requested');
+        const updatedSteps = [...item.steps];
+        if (stepIdx !== -1) {
+          updatedSteps[stepIdx] = {
+            ...updatedSteps[stepIdx],
+            status: 'rejected',
+            completedAt: nowIso
+          };
+        }
+
+        const historyEvent: ApprovalHistoryEvent = {
+          id: `hist-${Date.now()}`,
+          type: 'decision',
+          action: 'Rejected',
+          user: { id: actor.id, name: actor.name, role: actor.role, avatar: actor.avatar },
+          timestamp: nowIso,
+          note: reason
+        };
+
         return {
           ...item,
           status: 'rejected',
+          reviewedAt: nowIso,
+          steps: updatedSteps,
+          history: [...(item.history || []), historyEvent],
           comments: [
             ...item.comments,
             {
               id: `comm-${Date.now()}`,
-              authorId: 'u-1',
-              authorName: 'Muthukumar',
-              authorRole: 'Social Lead',
+              authorId: actor.id,
+              authorName: actor.name,
+              authorRole: actor.role,
+              authorAvatar: actor.avatar,
               content: `Rejected: ${reason}`,
-              timestamp: new Date().toISOString(),
+              timestamp: nowIso,
               type: 'decision',
               decision: 'rejected'
             }
@@ -463,28 +649,50 @@ export const ApprovalView: React.FC = () => {
       }
       return item;
     }));
+
     showToast('error', `Post ${postId} rejected.`);
   };
 
   const handleRequestChanges = (postId: string, feedback: string) => {
+    const actor = currentUser || { id: 'u-1', name: 'Muthukumar', role: 'Social Lead' as const, avatar: '' };
+    const nowIso = new Date().toISOString();
+
     setItems(prev => prev.map(item => {
       if (item.id === postId) {
-        const updatedSteps = item.steps.map((s, idx) => 
-          idx === 0 ? { ...s, status: 'changes_requested' as const } : s
-        );
+        const stepIdx = item.steps.findIndex(s => s.status === 'pending' || s.status === 'changes_requested');
+        const updatedSteps = [...item.steps];
+        if (stepIdx !== -1) {
+          updatedSteps[stepIdx] = {
+            ...updatedSteps[stepIdx],
+            status: 'changes_requested'
+          };
+        }
+
+        const historyEvent: ApprovalHistoryEvent = {
+          id: `hist-${Date.now()}`,
+          type: 'changes_requested',
+          action: 'Changes Requested',
+          user: { id: actor.id, name: actor.name, role: actor.role, avatar: actor.avatar },
+          timestamp: nowIso,
+          note: feedback
+        };
+
         return {
           ...item,
           status: 'changes_requested',
+          reviewedAt: nowIso,
           steps: updatedSteps,
+          history: [...(item.history || []), historyEvent],
           comments: [
             ...item.comments,
             {
               id: `comm-${Date.now()}`,
-              authorId: 'u-1',
-              authorName: 'Muthukumar',
-              authorRole: 'Social Lead',
+              authorId: actor.id,
+              authorName: actor.name,
+              authorRole: actor.role,
+              authorAvatar: actor.avatar,
               content: `Changes Requested: ${feedback}`,
-              timestamp: new Date().toISOString(),
+              timestamp: nowIso,
               type: 'decision',
               decision: 'changes_requested'
             }
@@ -493,28 +701,48 @@ export const ApprovalView: React.FC = () => {
       }
       return item;
     }));
-    showToast('warning', `Changes requested for post ${postId}. Submitter notified.`);
+
+    showToast('warning', `Changes requested for post ${postId}.`);
   };
 
   const handleResubmit = (postId: string, newCaption?: string) => {
+    const actor = currentUser || { id: 'u-2', name: 'Priya', role: 'Content Creator' as const, avatar: '' };
+    const nowIso = new Date().toISOString();
+
     setItems(prev => prev.map(item => {
       if (item.id === postId) {
+        const newVersion = item.version + 1;
+        // Reset steps to pending for re-evaluation
         const updatedSteps = item.steps.map(s => ({ ...s, status: 'pending' as const }));
+
+        const historyEvent: ApprovalHistoryEvent = {
+          id: `hist-${Date.now()}`,
+          type: 'resubmission',
+          action: `Resubmitted for Approval (v${newVersion})`,
+          user: { id: actor.id, name: actor.name, role: actor.role, avatar: actor.avatar },
+          timestamp: nowIso,
+          note: `Post edited and resubmitted for approval review.`,
+          version: newVersion
+        };
+
         return {
           ...item,
           caption: newCaption || item.caption,
           status: 'resubmitted',
-          version: item.version + 1,
+          version: newVersion,
+          resubmittedAt: nowIso,
           steps: updatedSteps,
+          history: [...(item.history || []), historyEvent],
           comments: [
             ...item.comments,
             {
               id: `comm-${Date.now()}`,
-              authorId: item.author.id,
-              authorName: item.author.name,
-              authorRole: item.author.role,
-              content: `Edited and resubmitted (v${item.version + 1}) for approval.`,
-              timestamp: new Date().toISOString(),
+              authorId: actor.id,
+              authorName: actor.name,
+              authorRole: actor.role,
+              authorAvatar: actor.avatar,
+              content: `Edited and resubmitted (v${newVersion}) for approval.`,
+              timestamp: nowIso,
               type: 'decision',
               decision: 'resubmitted'
             }
@@ -523,32 +751,98 @@ export const ApprovalView: React.FC = () => {
       }
       return item;
     }));
+
     showToast('success', `Post ${postId} resubmitted for approval.`);
   };
 
-  const handleAddComment = (postId: string, commentText: string, mentions: string[]) => {
+  const handleAssignApprover = (postId: string, user: { id: string; name: string; role: string; avatar?: string }) => {
+    const actor = currentUser || { id: 'u-1', name: 'Muthukumar', role: 'Social Lead' as const, avatar: '' };
+    const nowIso = new Date().toISOString();
+
     setItems(prev => prev.map(item => {
       if (item.id === postId) {
+        // Also update current pending step's approver
+        const updatedSteps = item.steps.map(s => 
+          (s.status === 'pending' || s.status === 'changes_requested')
+            ? { ...s, assignedApproverName: user.name, assignedRole: user.role }
+            : s
+        );
+
+        const historyEvent: ApprovalHistoryEvent = {
+          id: `hist-${Date.now()}`,
+          type: 'assignment',
+          action: 'Approver Assigned',
+          user: { id: actor.id, name: actor.name, role: actor.role, avatar: actor.avatar },
+          timestamp: nowIso,
+          note: `Assigned review to ${user.name} (${user.role})`
+        };
+
         return {
           ...item,
-          comments: [
-            ...item.comments,
-            {
-              id: `comm-${Date.now()}`,
-              authorId: 'u-1',
-              authorName: 'Muthukumar',
-              authorRole: 'Social Lead',
-              content: commentText,
-              mentions,
-              timestamp: new Date().toISOString(),
-              type: 'comment'
-            }
-          ]
+          assignedApprover: user,
+          steps: updatedSteps,
+          history: [...(item.history || []), historyEvent]
         };
       }
       return item;
     }));
+
+    showToast('info', `Assigned approver updated to ${user.name}.`);
+  };
+
+  const handleAddComment = (postId: string, commentText: string, mentions: string[]) => {
+    const actor = currentUser || { id: 'u-1', name: 'Muthukumar', role: 'Social Lead' as const, avatar: '' };
+    const nowIso = new Date().toISOString();
+
+    setItems(prev => prev.map(item => {
+      if (item.id === postId) {
+        const newComment: ApprovalComment = {
+          id: `comm-${Date.now()}`,
+          authorId: actor.id,
+          authorName: actor.name,
+          authorRole: actor.role,
+          authorAvatar: actor.avatar,
+          content: commentText,
+          mentions,
+          timestamp: nowIso,
+          type: 'comment'
+        };
+
+        const historyEvent: ApprovalHistoryEvent = {
+          id: `hist-${Date.now()}`,
+          type: 'comment',
+          action: mentions.length > 0 ? `Comment with @mentions (${mentions.join(', ')})` : 'Reviewer Note',
+          user: { id: actor.id, name: actor.name, role: actor.role, avatar: actor.avatar },
+          timestamp: nowIso,
+          note: commentText
+        };
+
+        return {
+          ...item,
+          comments: [...item.comments, newComment],
+          history: [...(item.history || []), historyEvent]
+        };
+      }
+      return item;
+    }));
+
     showToast('info', 'Comment added with @mentions.');
+  };
+
+  const handleScheduleOrPublish = (postId: string) => {
+    const post = items.find(i => i.id === postId);
+    if (post) {
+      updateDraft({
+        brandId: post.brandId,
+        commonCaption: post.caption,
+        platforms: post.platforms,
+        mediaUrls: post.mediaUrls,
+        mediaType: post.mediaType,
+        thumbnailUrl: post.thumbnailUrl || ''
+      });
+      showToast('success', `Post loaded into Composer for scheduling / publishing.`);
+      setCurrentView('composer');
+    }
   };
 
   const handleToggleRule = (ruleId: string) => {
@@ -561,6 +855,9 @@ export const ApprovalView: React.FC = () => {
       {platforms.map(p => {
         if (p === 'instagram') return <InstagramIcon key={p} size={12} color="#E4405F" />;
         if (p === 'facebook') return <FacebookIcon key={p} size={12} color="#1877F2" />;
+        if (p === 'linkedin') return <LinkedinIcon key={p} size={12} color="#0A66C2" />;
+        if (p === 'youtube') return <YoutubeIcon key={p} size={12} color="#FF0000" />;
+        if (p === 'x') return <XIcon key={p} size={12} color="#0f1419" />;
         return (
           <span key={p} style={{ fontSize: '9px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)' }}>
             {p[0]}
@@ -616,8 +913,7 @@ export const ApprovalView: React.FC = () => {
           { key: 'changes_requested', label: 'Changes Requested' },
           { key: 'approved', label: 'Approved' },
           { key: 'rejected', label: 'Rejected' },
-          { key: 'all', label: 'All Requests' },
-          { key: 'rules', label: 'Approval Rules & Governance' }
+          { key: 'all', label: 'All Requests' }
         ].map(tab => (
           <button
             key={tab.key}
@@ -700,7 +996,7 @@ export const ApprovalView: React.FC = () => {
         </div>
       )}
 
-      {/* 4. Tab Content: Approval Rules Tab */}
+      {/* 4. Tab Content: Approval Rules Tab (if active) */}
       {activeTab === 'rules' && (
         <ApprovalRulesTab
           rules={rules}
@@ -751,11 +1047,11 @@ export const ApprovalView: React.FC = () => {
                           fontWeight: 700,
                           padding: '1px 5px',
                           borderRadius: '4px',
-                          backgroundColor: '#f5f3ff',
-                          color: '#7c3aed',
-                          border: '1px solid #ddd6fe'
+                          backgroundColor: item.clientApprovalStatus === 'approved' ? '#ecfdf5' : '#f5f3ff',
+                          color: item.clientApprovalStatus === 'approved' ? '#059669' : '#7c3aed',
+                          border: `1px solid ${item.clientApprovalStatus === 'approved' ? '#a7f3d0' : '#ddd6fe'}`
                         }}>
-                          Client Review
+                          {item.clientApprovalStatus === 'approved' ? 'Client Approved' : 'Client Review'}
                         </span>
                       )}
                       <span style={{
@@ -834,13 +1130,38 @@ export const ApprovalView: React.FC = () => {
                     <span>Reviewer: <strong>{item.assignedApprover.name}</strong></span>
                   </div>
 
-                  {/* Comments count indicator */}
-                  {item.comments.length > 0 && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: 'var(--color-primary)' }}>
-                      <MessageSquare size={12} />
-                      <span>{item.comments.length} reviewer notes recorded</span>
-                    </div>
-                  )}
+                  {/* Timestamps row */}
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    fontSize: '10.5px',
+                    color: 'var(--text-light)',
+                    paddingTop: '2px'
+                  }}>
+                    <span>Submitted: {new Date(item.submittedAt).toLocaleDateString()}</span>
+                    {item.reviewedAt ? (
+                      <span>Decision: {new Date(item.reviewedAt).toLocaleDateString()}</span>
+                    ) : item.resubmittedAt ? (
+                      <span>Resubmitted: {new Date(item.resubmittedAt).toLocaleDateString()}</span>
+                    ) : null}
+                  </div>
+
+                  {/* Comments count indicator & History counter */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '11px' }}>
+                    {item.comments.length > 0 ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--color-primary)' }}>
+                        <MessageSquare size={12} />
+                        <span>{item.comments.length} notes</span>
+                      </div>
+                    ) : <span />}
+                    {item.history && item.history.length > 0 && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '3px', color: 'var(--text-muted)' }}>
+                        <History size={11} />
+                        <span>{item.history.length} log events</span>
+                      </div>
+                    )}
+                  </div>
 
                   {/* Actions Footer */}
                   <div style={{
@@ -870,6 +1191,25 @@ export const ApprovalView: React.FC = () => {
                     >
                       <Eye size={13} /> Review Details
                     </button>
+
+                    {item.status === 'approved' && (
+                      <button
+                        type="button"
+                        onClick={() => handleScheduleOrPublish(item.id)}
+                        style={{
+                          fontSize: '11px',
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          border: 'none',
+                          backgroundColor: '#ecfdf5',
+                          color: '#047857',
+                          fontWeight: 600,
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Publish →
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
@@ -880,14 +1220,16 @@ export const ApprovalView: React.FC = () => {
 
       {/* 6. Review Dialog Drawer */}
       <ApprovalReviewModal
-        post={reviewTarget}
-        isOpen={!!reviewTarget}
+        post={activeReviewItem}
+        isOpen={!!activeReviewItem}
         onClose={() => setReviewTarget(null)}
         onApprove={handleApprove}
         onReject={handleReject}
         onRequestChanges={handleRequestChanges}
         onResubmit={handleResubmit}
         onAddComment={handleAddComment}
+        onAssignApprover={handleAssignApprover}
+        onScheduleOrPublish={handleScheduleOrPublish}
       />
     </div>
   );

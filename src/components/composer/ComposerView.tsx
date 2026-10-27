@@ -59,7 +59,8 @@ export const ComposerView: React.FC<ComposerViewProps> = ({
     lastSavedTime,
     showToast,
     setCurrentView,
-    setShowConnectModal
+    setShowConnectModal,
+    currentUser
   } = useApp();
 
   const [selectedPlatforms, setSelectedPlatforms] = useState<SocialPlatform[]>(draft.platforms || []);
@@ -497,8 +498,73 @@ export const ComposerView: React.FC<ComposerViewProps> = ({
       const existing = localStorage.getItem(STORAGE_CALENDAR_POSTS);
       const posts: any[] = existing ? JSON.parse(existing) : [];
       localStorage.setItem(STORAGE_CALENDAR_POSTS, JSON.stringify([approvalPost, ...posts]));
+
+      // Also persist to Approval workflow queue
+      const STORAGE_APPROVAL_POSTS = 'crinoid_approval_posts_v1';
+      const existingApproval = localStorage.getItem(STORAGE_APPROVAL_POSTS);
+      const approvalItems: any[] = existingApproval ? JSON.parse(existingApproval) : [];
+      const reviewer = currentBrand.users.find(u => u.id === reviewerId) || { id: 'u-3', name: 'Karthik', role: 'Approver' as const, avatar: '' };
+      const authorUser = currentUser || { id: 'u-2', name: 'Priya', role: 'Content Creator' as const, avatar: '' };
+      const nowIso = new Date().toISOString();
+
+      const newAppItem = {
+        id: `APP-${Math.floor(100 + Math.random() * 900)}`,
+        brandId: currentBrand.id,
+        caption: draft.commonCaption || 'New submitted post',
+        platforms: selectedPlatforms.length > 0 ? selectedPlatforms : ['linkedin'],
+        mediaUrls: draft.mediaUrls || [],
+        mediaType: draft.mediaType || 'image',
+        thumbnailUrl: draft.thumbnailUrl || (draft.mediaUrls && draft.mediaUrls[0]) || '',
+        author: {
+          id: authorUser.id,
+          name: authorUser.name,
+          role: authorUser.role,
+          avatar: authorUser.avatar
+        },
+        assignedApprover: {
+          id: reviewer.id,
+          name: reviewer.name,
+          role: reviewer.role,
+          avatar: reviewer.avatar
+        },
+        status: 'in_review',
+        submittedAt: nowIso,
+        version: 1,
+        requiresClientApproval: false,
+        steps: [
+          {
+            stepNumber: 1,
+            title: 'Review & Sign-Off',
+            assignedRole: reviewer.role,
+            assignedApproverName: reviewer.name,
+            status: 'pending'
+          }
+        ],
+        history: [
+          {
+            id: `hist-${Date.now()}`,
+            type: 'submission',
+            action: 'Submitted for Approval',
+            user: { id: authorUser.id, name: authorUser.name, role: authorUser.role, avatar: authorUser.avatar },
+            timestamp: nowIso,
+            note: note || 'Submitted post for approval review.'
+          }
+        ],
+        comments: note ? [
+          {
+            id: `comm-${Date.now()}`,
+            authorId: authorUser.id,
+            authorName: authorUser.name,
+            authorRole: authorUser.role,
+            content: note,
+            timestamp: nowIso,
+            type: 'comment'
+          }
+        ] : []
+      };
+      localStorage.setItem(STORAGE_APPROVAL_POSTS, JSON.stringify([newAppItem, ...approvalItems]));
     } catch (e) {
-      console.warn('Failed to save to calendar posts', e);
+      console.warn('Failed to save to calendar/approval posts', e);
     }
 
     showToast('info', 'Submitted for demo approval.');

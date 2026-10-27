@@ -457,6 +457,8 @@ export const PostsView: React.FC = () => {
   };
 
   const handleSubmitApproval = (postId: string, reviewerId: string, reviewerName: string, note: string) => {
+    const target = posts.find(p => p.id === postId);
+
     setPosts(prev => prev.map(p => {
       if (p.id === postId) {
         return {
@@ -476,6 +478,68 @@ export const PostsView: React.FC = () => {
       }
       return p;
     }));
+
+    if (target) {
+      try {
+        const STORAGE_APPROVAL_POSTS = 'crinoid_approval_posts_v1';
+        const existing = localStorage.getItem(STORAGE_APPROVAL_POSTS);
+        const appItems: any[] = existing ? JSON.parse(existing) : [];
+        const nowIso = new Date().toISOString();
+        const newAppItem = {
+          id: target.id,
+          brandId: target.brandId,
+          caption: target.caption,
+          platforms: target.platforms,
+          mediaUrls: target.mediaUrls || [],
+          mediaType: target.mediaType || 'image',
+          thumbnailUrl: target.thumbnailUrl || (target.mediaUrls && target.mediaUrls[0]) || '',
+          author: target.author,
+          assignedApprover: {
+            id: reviewerId,
+            name: reviewerName,
+            role: reviewerName.includes('Karthik') ? 'Approver' : 'Social Lead'
+          },
+          status: 'in_review',
+          submittedAt: nowIso,
+          version: 1,
+          requiresClientApproval: false,
+          steps: [
+            {
+              stepNumber: 1,
+              title: 'Review & Sign-Off',
+              assignedRole: reviewerName.includes('Karthik') ? 'Approver' : 'Social Lead',
+              assignedApproverName: reviewerName,
+              status: 'pending'
+            }
+          ],
+          history: [
+            {
+              id: `hist-${Date.now()}`,
+              type: 'submission',
+              action: 'Submitted for Approval',
+              user: target.author,
+              timestamp: nowIso,
+              note
+            }
+          ],
+          comments: note ? [
+            {
+              id: `comm-${Date.now()}`,
+              authorId: target.author.id,
+              authorName: target.author.name,
+              authorRole: target.author.role,
+              content: note,
+              timestamp: nowIso,
+              type: 'comment'
+            }
+          ] : []
+        };
+        localStorage.setItem(STORAGE_APPROVAL_POSTS, JSON.stringify([newAppItem, ...appItems.filter(i => i.id !== target.id)]));
+      } catch (e) {
+        console.warn('Failed to sync to approval items', e);
+      }
+    }
+
     showToast('success', `Post submitted for approval to ${reviewerName}`);
   };
 

@@ -1,23 +1,26 @@
 import React, { useState } from 'react';
-import { ApprovalPostItem, ApprovalComment } from './types';
+import { useApp } from '../../context/AppContext';
+import { ApprovalPostItem, ApprovalHistoryEvent } from './types';
 import { 
   X, 
   CheckCircle2, 
   XCircle, 
   AlertTriangle, 
-  RotateCcw, 
   MessageSquare, 
   User, 
   Clock, 
-  Share2, 
   Send, 
-  AtSign, 
-  ExternalLink,
-  ShieldCheck,
-  Check,
-  Edit3
+  ShieldCheck, 
+  Check, 
+  Edit3,
+  Calendar,
+  History,
+  UserCheck,
+  CalendarCheck,
+  Tag
 } from 'lucide-react';
-import { InstagramIcon, FacebookIcon } from '../common/SocialIcons';
+import { InstagramIcon, FacebookIcon, LinkedinIcon, YoutubeIcon, XIcon } from '../common/SocialIcons';
+import { Avatar } from '../common/Avatar';
 
 interface ApprovalReviewModalProps {
   post: ApprovalPostItem | null;
@@ -28,6 +31,8 @@ interface ApprovalReviewModalProps {
   onRequestChanges: (postId: string, feedback: string) => void;
   onResubmit: (postId: string, newCaption?: string) => void;
   onAddComment: (postId: string, commentText: string, mentions: string[]) => void;
+  onAssignApprover: (postId: string, user: { id: string; name: string; role: string; avatar?: string }) => void;
+  onScheduleOrPublish?: (postId: string) => void;
 }
 
 export const ApprovalReviewModal: React.FC<ApprovalReviewModalProps> = ({
@@ -38,16 +43,40 @@ export const ApprovalReviewModal: React.FC<ApprovalReviewModalProps> = ({
   onReject,
   onRequestChanges,
   onResubmit,
-  onAddComment
+  onAddComment,
+  onAssignApprover,
+  onScheduleOrPublish
 }) => {
-  if (!isOpen || !post) return null;
+  const { currentBrand, currentUser } = useApp();
 
+  const [activeTab, setActiveTab] = useState<'comments' | 'history'>('comments');
   const [activeAction, setActiveAction] = useState<'idle' | 'reject' | 'changes' | 'resubmit'>('idle');
   const [feedbackText, setFeedbackText] = useState('');
   const [commentInput, setCommentInput] = useState('');
-  const [editedCaption, setEditedCaption] = useState(post.caption);
+  const [editedCaption, setEditedCaption] = useState(post?.caption || '');
 
-  const availableMentions = ['@Muthukumar', '@Priya', '@Karthik', '@NexusClient'];
+  // Synchronize caption when post changes
+  React.useEffect(() => {
+    if (post) {
+      setEditedCaption(post.caption);
+      setActiveAction('idle');
+      setFeedbackText('');
+      setCommentInput('');
+    }
+  }, [post?.id, post?.version]);
+
+  if (!isOpen || !post) return null;
+
+  // Authorization check
+  const isApproverRole = !currentUser || ['approver', 'social lead', 'brand manager', 'admin'].includes((currentUser.role || '').toLowerCase());
+  const isAuthor = !!(currentUser && currentUser.id === post.author.id);
+  const canReview = isApproverRole && !isAuthor;
+
+  // Dynamic @mentions list from current brand users
+  const availableMentions = currentBrand.users.map(u => `@${u.name.replace(/\s+/g, '')}`);
+  if (post.requiresClientApproval && !availableMentions.includes('@Client')) {
+    availableMentions.push('@Client');
+  }
 
   const handleInsertMention = (mention: string) => {
     setCommentInput(prev => (prev ? `${prev} ${mention} ` : `${mention} `));
@@ -80,6 +109,21 @@ export const ApprovalReviewModal: React.FC<ApprovalReviewModalProps> = ({
     }
   };
 
+  // Find next pending step for multi-step workflow
+  const pendingStep = post.steps.find(s => s.status === 'pending' || s.status === 'changes_requested');
+  const isMultiStep = post.steps.length > 1;
+
+  const renderPlatformIcon = (platform: string) => {
+    switch (platform) {
+      case 'instagram': return <InstagramIcon size={12} color="#E4405F" />;
+      case 'facebook': return <FacebookIcon size={12} color="#1877F2" />;
+      case 'linkedin': return <LinkedinIcon size={12} color="#0A66C2" />;
+      case 'youtube': return <YoutubeIcon size={12} color="#FF0000" />;
+      case 'x': return <XIcon size={12} color="#0f1419" />;
+      default: return null;
+    }
+  };
+
   return (
     <div style={{
       position: 'fixed',
@@ -94,7 +138,7 @@ export const ApprovalReviewModal: React.FC<ApprovalReviewModalProps> = ({
         className="approval-drawer"
         style={{
           width: '100%',
-          maxWidth: '560px',
+          maxWidth: '580px',
           height: '100%',
           backgroundColor: '#ffffff',
           boxShadow: '-6px 0 24px rgba(0,0,0,0.12)',
@@ -133,14 +177,14 @@ export const ApprovalReviewModal: React.FC<ApprovalReviewModalProps> = ({
                   fontWeight: 700,
                   padding: '2px 6px',
                   borderRadius: '4px',
-                  backgroundColor: '#f5f3ff',
-                  color: '#7c3aed',
-                  border: '1px solid #ddd6fe',
+                  backgroundColor: post.clientApprovalStatus === 'approved' ? '#ecfdf5' : '#f5f3ff',
+                  color: post.clientApprovalStatus === 'approved' ? '#059669' : '#7c3aed',
+                  border: `1px solid ${post.clientApprovalStatus === 'approved' ? '#a7f3d0' : '#ddd6fe'}`,
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '3px'
                 }}>
-                  <ShieldCheck size={12} /> Client Approval
+                  <ShieldCheck size={12} /> {post.clientApprovalStatus === 'approved' ? 'Client Approved' : 'Client Review'}
                 </span>
               )}
             </div>
@@ -150,6 +194,7 @@ export const ApprovalReviewModal: React.FC<ApprovalReviewModalProps> = ({
           </div>
           <button
             onClick={onClose}
+            aria-label="Close"
             style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-light)', padding: '4px' }}
           >
             <X size={20} />
@@ -164,10 +209,13 @@ export const ApprovalReviewModal: React.FC<ApprovalReviewModalProps> = ({
             backgroundColor: 'var(--bg-subtle)',
             borderRadius: '8px',
             border: '1px solid var(--border-subtle)',
-            marginBottom: '18px'
+            marginBottom: '16px'
           }}>
-            <div style={{ fontSize: '11.5px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '8px' }}>
-              Multi-Step Approval Workflow:
+            <div style={{ fontSize: '11.5px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span>Multi-Step Approval Workflow:</span>
+              <span style={{ fontSize: '11px', color: 'var(--text-light)' }}>
+                {post.steps.filter(s => s.status === 'approved').length} of {post.steps.length} Steps Complete
+              </span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
               {post.steps.map((step, idx) => (
@@ -208,6 +256,106 @@ export const ApprovalReviewModal: React.FC<ApprovalReviewModalProps> = ({
                   )}
                 </div>
               ))}
+            </div>
+          </div>
+
+          {/* Assigned Approver & Workflow Timestamps Box */}
+          <div style={{
+            padding: '12px 14px',
+            backgroundColor: '#ffffff',
+            borderRadius: '8px',
+            border: '1px solid var(--border-subtle)',
+            marginBottom: '16px',
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: '12px'
+          }}>
+            {/* Assigned Approver with Selection */}
+            <div>
+              <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
+                Assigned Approver
+              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Avatar 
+                  src={post.assignedApprover.avatar} 
+                  name={post.assignedApprover.name} 
+                  size={26} 
+                />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <select
+                    value={post.assignedApprover.id}
+                    onChange={(e) => {
+                      const selected = currentBrand.users.find(u => u.id === e.target.value);
+                      if (selected) {
+                        onAssignApprover(post.id, {
+                          id: selected.id,
+                          name: selected.name,
+                          role: selected.role,
+                          avatar: selected.avatar
+                        });
+                      }
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '4px 6px',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      borderRadius: '4px',
+                      border: '1px solid var(--border-subtle)',
+                      backgroundColor: 'var(--bg-subtle)',
+                      color: 'var(--text-primary)',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {currentBrand.users.map(u => (
+                      <option key={u.id} value={u.id}>
+                        {u.name} ({u.role})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Author Information */}
+            <div>
+              <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
+                Post Author
+              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Avatar 
+                  src={post.author.avatar} 
+                  name={post.author.name} 
+                  size={26} 
+                />
+                <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                  {post.author.name} <span style={{ fontWeight: 400, color: 'var(--text-muted)' }}>({post.author.role})</span>
+                </span>
+              </div>
+            </div>
+
+            {/* Workflow Timestamps Grid */}
+            <div style={{ gridColumn: 'span 2', borderTop: '1px solid var(--border-subtle)', paddingTop: '10px', marginTop: '2px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', fontSize: '11.5px' }}>
+                <div>
+                  <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '10.5px' }}>Submitted:</span>
+                  <span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>
+                    {new Date(post.submittedAt).toLocaleString()}
+                  </span>
+                </div>
+                <div>
+                  <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '10.5px' }}>Reviewed / Decided:</span>
+                  <span style={{ fontWeight: 500, color: post.reviewedAt ? 'var(--text-primary)' : 'var(--text-muted)' }}>
+                    {post.reviewedAt ? new Date(post.reviewedAt).toLocaleString() : 'Pending'}
+                  </span>
+                </div>
+                <div>
+                  <span style={{ color: 'var(--text-muted)', display: 'block', fontSize: '10.5px' }}>Resubmitted:</span>
+                  <span style={{ fontWeight: 500, color: post.resubmittedAt ? 'var(--text-primary)' : 'var(--text-muted)' }}>
+                    {post.resubmittedAt ? new Date(post.resubmittedAt).toLocaleString() : '—'}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -328,14 +476,10 @@ export const ApprovalReviewModal: React.FC<ApprovalReviewModalProps> = ({
                   textTransform: 'capitalize'
                 }}
               >
-                {p === 'instagram' && <InstagramIcon size={12} color="#E4405F" />}
-                {p === 'facebook' && <FacebookIcon size={12} color="#1877F2" />}
+                {renderPlatformIcon(p)}
                 {p}
               </span>
             ))}
-            <span style={{ fontSize: '11.5px', color: 'var(--text-light)', marginLeft: 'auto' }}>
-              Submitted {new Date(post.submittedAt).toLocaleString()}
-            </span>
           </div>
 
           {/* Decision Feedback Form when Action is Active */}
@@ -397,124 +541,232 @@ export const ApprovalReviewModal: React.FC<ApprovalReviewModalProps> = ({
             </div>
           )}
 
-          {/* Reviewer Comments & @Mentions Section */}
-          <div style={{ marginBottom: '20px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-              <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <MessageSquare size={14} /> Reviewer Comments & Decision Trail
-              </span>
-              <span style={{ fontSize: '11px', color: 'var(--text-light)' }}>
-                {post.comments.length} entries
-              </span>
-            </div>
+          {/* Sub-Navigation: Reviewer Comments & @Mentions vs. Approval History */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            borderBottom: '1px solid var(--border-subtle)',
+            marginBottom: '14px'
+          }}>
+            <button
+              type="button"
+              onClick={() => setActiveTab('comments')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '8px 12px',
+                fontSize: '12.5px',
+                fontWeight: activeTab === 'comments' ? 600 : 500,
+                color: activeTab === 'comments' ? 'var(--color-primary)' : 'var(--text-muted)',
+                borderBottom: activeTab === 'comments' ? '2px solid var(--color-primary)' : '2px solid transparent',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer'
+              }}
+            >
+              <MessageSquare size={13} />
+              <span>Reviewer Comments ({post.comments.length})</span>
+            </button>
 
-            {/* Comment Thread */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '14px' }}>
-              {post.comments.map(c => (
-                <div
-                  key={c.id}
-                  className={`comment-bubble ${c.decision ? `decision-${c.decision}` : ''}`}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
-                        {c.authorName}
-                      </span>
-                      <span style={{ fontSize: '11px', color: 'var(--text-light)' }}>
-                        ({c.authorRole})
-                      </span>
-                      {c.decision && (
-                        <span style={{
-                          fontSize: '10px',
-                          fontWeight: 700,
-                          padding: '1px 5px',
-                          borderRadius: '4px',
-                          backgroundColor: c.decision === 'approved' ? '#dcfce7' : c.decision === 'rejected' ? '#fee2e2' : '#fef3c7',
-                          color: c.decision === 'approved' ? '#15803d' : c.decision === 'rejected' ? '#b91c1c' : '#b45309',
-                          textTransform: 'uppercase'
-                        }}>
-                          {c.decision.replace('_', ' ')}
-                        </span>
-                      )}
-                    </div>
-                    <span style={{ fontSize: '11px', color: 'var(--text-light)' }}>
-                      {new Date(c.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </span>
-                  </div>
-
-                  <p style={{ margin: 0, color: 'var(--text-secondary)', lineHeight: '1.4' }}>
-                    {c.content}
-                  </p>
-                </div>
-              ))}
-            </div>
-
-            {/* Add Comment Input & @Mention quick chips */}
-            <div style={{
-              borderRadius: '8px',
-              border: '1px solid var(--border-subtle)',
-              padding: '10px 12px',
-              backgroundColor: 'var(--bg-subtle)'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
-                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Quick @mention:</span>
-                {availableMentions.map(mention => (
-                  <button
-                    key={mention}
-                    type="button"
-                    onClick={() => handleInsertMention(mention)}
-                    className="mention-chip"
-                    style={{ border: 'none', cursor: 'pointer' }}
-                  >
-                    {mention}
-                  </button>
-                ))}
-              </div>
-
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <input
-                  type="text"
-                  placeholder="Add a reviewer note or tag team member..."
-                  value={commentInput}
-                  onChange={(e) => setCommentInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      handlePostComment();
-                    }
-                  }}
-                  style={{
-                    flex: 1,
-                    padding: '8px 12px',
-                    fontSize: '12.5px',
-                    borderRadius: '6px',
-                    border: '1px solid var(--border-subtle)',
-                    backgroundColor: '#ffffff',
-                    outline: 'none'
-                  }}
-                />
-                <button
-                  type="button"
-                  onClick={handlePostComment}
-                  style={{
-                    padding: '8px 14px',
-                    fontSize: '12px',
-                    fontWeight: 600,
-                    borderRadius: '6px',
-                    border: 'none',
-                    backgroundColor: 'var(--color-primary)',
-                    color: '#ffffff',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px'
-                  }}
-                >
-                  <Send size={12} /> Post
-                </button>
-              </div>
-            </div>
+            <button
+              type="button"
+              onClick={() => setActiveTab('history')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '8px 12px',
+                fontSize: '12.5px',
+                fontWeight: activeTab === 'history' ? 600 : 500,
+                color: activeTab === 'history' ? 'var(--color-primary)' : 'var(--text-muted)',
+                borderBottom: activeTab === 'history' ? '2px solid var(--color-primary)' : '2px solid transparent',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer'
+              }}
+            >
+              <History size={13} />
+              <span>Approval History ({post.history?.length || 0})</span>
+            </button>
           </div>
+
+          {/* TAB 1: COMMENTS & @MENTIONS */}
+          {activeTab === 'comments' && (
+            <div>
+              {/* Comment Thread */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '14px' }}>
+                {post.comments.length === 0 ? (
+                  <div style={{ padding: '16px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '12.5px' }}>
+                    No comments recorded for this post yet.
+                  </div>
+                ) : (
+                  post.comments.map(c => (
+                    <div
+                      key={c.id}
+                      className={`comment-bubble ${c.decision ? `decision-${c.decision}` : ''}`}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
+                            {c.authorName}
+                          </span>
+                          <span style={{ fontSize: '11px', color: 'var(--text-light)' }}>
+                            ({c.authorRole})
+                          </span>
+                          {c.decision && (
+                            <span style={{
+                              fontSize: '10px',
+                              fontWeight: 700,
+                              padding: '1px 5px',
+                              borderRadius: '4px',
+                              backgroundColor: c.decision === 'approved' ? '#dcfce7' : c.decision === 'rejected' ? '#fee2e2' : '#fef3c7',
+                              color: c.decision === 'approved' ? '#15803d' : c.decision === 'rejected' ? '#b91c1c' : '#b45309',
+                              textTransform: 'uppercase'
+                            }}>
+                              {c.decision.replace('_', ' ')}
+                            </span>
+                          )}
+                        </div>
+                        <span style={{ fontSize: '11px', color: 'var(--text-light)' }}>
+                          {new Date(c.timestamp).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
+                        </span>
+                      </div>
+
+                      <p style={{ margin: '4px 0 0', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
+                        {c.content}
+                      </p>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* Add Comment Input & @Mention quick chips */}
+              <div style={{
+                borderRadius: '8px',
+                border: '1px solid var(--border-subtle)',
+                padding: '10px 12px',
+                backgroundColor: 'var(--bg-subtle)'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px', flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Quick @mention:</span>
+                  {availableMentions.map(mention => (
+                    <button
+                      key={mention}
+                      type="button"
+                      onClick={() => handleInsertMention(mention)}
+                      className="mention-chip"
+                      style={{ border: 'none', cursor: 'pointer' }}
+                    >
+                      {mention}
+                    </button>
+                  ))}
+                </div>
+
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <input
+                    type="text"
+                    placeholder="Add a reviewer note or tag team member..."
+                    value={commentInput}
+                    onChange={(e) => setCommentInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handlePostComment();
+                      }
+                    }}
+                    style={{
+                      flex: 1,
+                      padding: '8px 12px',
+                      fontSize: '12.5px',
+                      borderRadius: '6px',
+                      border: '1px solid var(--border-subtle)',
+                      backgroundColor: '#ffffff',
+                      outline: 'none'
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={handlePostComment}
+                    style={{
+                      padding: '8px 14px',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      borderRadius: '6px',
+                      border: 'none',
+                      backgroundColor: 'var(--color-primary)',
+                      color: '#ffffff',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}
+                  >
+                    <Send size={12} /> Post
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 2: AUDIT & APPROVAL HISTORY */}
+          {activeTab === 'history' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {(!post.history || post.history.length === 0) ? (
+                <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '12.5px' }}>
+                  No historical events logged yet for this post record.
+                </div>
+              ) : (
+                post.history.map((h: ApprovalHistoryEvent) => (
+                  <div
+                    key={h.id}
+                    style={{
+                      padding: '10px 12px',
+                      borderRadius: '8px',
+                      border: '1px solid var(--border-subtle)',
+                      backgroundColor: '#ffffff',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '4px'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{
+                          fontSize: '10.5px',
+                          fontWeight: 700,
+                          padding: '1px 6px',
+                          borderRadius: '4px',
+                          textTransform: 'uppercase',
+                          backgroundColor: h.action.toLowerCase().includes('approved') ? '#dcfce7' : h.action.toLowerCase().includes('rejected') ? '#fee2e2' : h.action.toLowerCase().includes('changes') ? '#fef3c7' : '#eff6ff',
+                          color: h.action.toLowerCase().includes('approved') ? '#15803d' : h.action.toLowerCase().includes('rejected') ? '#b91c1c' : h.action.toLowerCase().includes('changes') ? '#b45309' : '#1d4ed8'
+                        }}>
+                          {h.action}
+                        </span>
+                        {h.isClientApproval && (
+                          <span style={{ fontSize: '10px', color: '#7c3aed', fontWeight: 600 }}>[Client Review]</span>
+                        )}
+                      </div>
+                      <span style={{ fontSize: '11px', color: 'var(--text-light)' }}>
+                        {new Date(h.timestamp).toLocaleString()}
+                      </span>
+                    </div>
+
+                    <div style={{ fontSize: '12px', color: 'var(--text-primary)' }}>
+                      <strong>{h.user.name}</strong> <span style={{ color: 'var(--text-muted)' }}>({h.user.role})</span>
+                    </div>
+
+                    {h.note && (
+                      <div style={{ fontSize: '12px', color: 'var(--text-secondary)', paddingLeft: '8px', borderLeft: '2px solid var(--border-subtle)', marginTop: '2px' }}>
+                        "{h.note}"
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+          )}
         </div>
 
         {/* Drawer Actions Footer */}
@@ -525,7 +777,8 @@ export const ApprovalReviewModal: React.FC<ApprovalReviewModalProps> = ({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          gap: '8px'
+          gap: '8px',
+          flexWrap: 'wrap'
         }}>
           <button
             type="button"
@@ -543,80 +796,116 @@ export const ApprovalReviewModal: React.FC<ApprovalReviewModalProps> = ({
           </button>
 
           {/* Decision Buttons — only shown when post is actively reviewable */}
-          {(post.status === 'in_review' || post.status === 'resubmitted') ? (
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <button
-                type="button"
-                onClick={() => setActiveAction('reject')}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '5px',
-                  padding: '7px 12px',
-                  fontSize: '12.5px',
-                  borderRadius: '6px',
-                  border: '1px solid #fecaca',
-                  backgroundColor: '#fff5f5',
-                  color: '#dc2626',
-                  cursor: 'pointer',
-                  fontWeight: 500
-                }}
-              >
-                <XCircle size={14} /> Reject
-              </button>
+          {(post.status === 'in_review' || post.status === 'submitted' || post.status === 'resubmitted') ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              {!canReview ? (
+                <span style={{ fontSize: '11.5px', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                  {isAuthor ? 'Authors cannot approve their own posts.' : `Review actions restricted for ${currentUser?.role || 'this role'}.`}
+                </span>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setActiveAction('reject')}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      padding: '7px 12px',
+                      fontSize: '12.5px',
+                      borderRadius: '6px',
+                      border: '1px solid #fecaca',
+                      backgroundColor: '#fff5f5',
+                      color: '#dc2626',
+                      cursor: 'pointer',
+                      fontWeight: 500
+                    }}
+                  >
+                    <XCircle size={14} /> Reject
+                  </button>
 
-              <button
-                type="button"
-                onClick={() => setActiveAction('changes')}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '5px',
-                  padding: '7px 12px',
-                  fontSize: '12.5px',
-                  borderRadius: '6px',
-                  border: '1px solid #fde68a',
-                  backgroundColor: '#fffbeb',
-                  color: '#b45309',
-                  cursor: 'pointer',
-                  fontWeight: 500
-                }}
-              >
-                <AlertTriangle size={14} /> Request Changes
-              </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveAction('changes')}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      padding: '7px 12px',
+                      fontSize: '12.5px',
+                      borderRadius: '6px',
+                      border: '1px solid #fde68a',
+                      backgroundColor: '#fffbeb',
+                      color: '#b45309',
+                      cursor: 'pointer',
+                      fontWeight: 500
+                    }}
+                  >
+                    <AlertTriangle size={14} /> Request Changes
+                  </button>
 
-              <button
-                type="button"
-                onClick={() => {
-                  onApprove(post.id);
-                  onClose();
-                }}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '7px 16px',
-                  fontSize: '12.5px',
-                  borderRadius: '6px',
-                  border: 'none',
-                  backgroundColor: '#059669',
-                  color: '#ffffff',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  boxShadow: '0 1px 2px rgba(5, 150, 105, 0.2)'
-                }}
-              >
-                <CheckCircle2 size={14} /> Approve Post
-              </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onApprove(post.id);
+                      onClose();
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '7px 16px',
+                      fontSize: '12.5px',
+                      borderRadius: '6px',
+                      border: 'none',
+                      backgroundColor: '#059669',
+                      color: '#ffffff',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      boxShadow: '0 1px 2px rgba(5, 150, 105, 0.2)'
+                    }}
+                  >
+                    <CheckCircle2 size={14} />
+                    <span>
+                      {pendingStep && isMultiStep 
+                        ? `Approve Step ${pendingStep.stepNumber}: ${pendingStep.title}` 
+                        : 'Approve Post'}
+                    </span>
+                  </button>
+                </>
+              )}
             </div>
           ) : post.status === 'changes_requested' ? (
             <span style={{ fontSize: '12px', color: '#b45309', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <AlertTriangle size={13} /> Awaiting resubmission from author
+              <AlertTriangle size={13} /> Awaiting edits and resubmission from author
             </span>
           ) : post.status === 'approved' ? (
-            <span style={{ fontSize: '12px', color: '#047857', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <CheckCircle2 size={13} /> Post approved — ready to schedule or publish
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '12px', color: '#047857', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <CheckCircle2 size={13} /> Post approved — ready to schedule or publish
+              </span>
+              {onScheduleOrPublish && (
+                <button
+                  type="button"
+                  onClick={() => onScheduleOrPublish(post.id)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    padding: '6px 12px',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    borderRadius: '6px',
+                    border: 'none',
+                    backgroundColor: 'var(--color-primary)',
+                    color: '#ffffff',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <CalendarCheck size={13} /> Schedule / Publish
+                </button>
+              )}
+            </div>
           ) : post.status === 'rejected' ? (
             <span style={{ fontSize: '12px', color: '#dc2626', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '4px' }}>
               <XCircle size={13} /> Post rejected

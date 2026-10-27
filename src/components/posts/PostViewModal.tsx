@@ -29,8 +29,11 @@ import {
   Hash,
   Smile,
   Check,
-  Loader2
+  Loader2,
+  Link as LinkIcon,
+  BarChart3
 } from 'lucide-react';
+import { EmojiPicker } from '../composer/EmojiPicker';
 import { InstagramIcon, FacebookIcon, LinkedinIcon, YoutubeIcon, XIcon } from '../common/SocialIcons';
 
 export interface PostViewModalProps {
@@ -117,6 +120,7 @@ export const PostViewModal: React.FC<PostViewModalProps> = ({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const captionTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const savedSelectionRef = useRef<{ start: number; end: number }>({ start: 0, end: 0 });
 
   // Synchronize mode whenever initialMode or active post changes
   useEffect(() => {
@@ -169,24 +173,37 @@ export const PostViewModal: React.FC<PostViewModalProps> = ({
     });
   };
 
+  const handleToggleEmojiPicker = () => {
+    if (!canEdit) return;
+    if (captionTextareaRef.current) {
+      savedSelectionRef.current = {
+        start: captionTextareaRef.current.selectionStart ?? caption.length,
+        end: captionTextareaRef.current.selectionEnd ?? caption.length
+      };
+    }
+    setShowEmojiPicker(prev => !prev);
+  };
+
   const handleInsertEmoji = (emoji: string) => {
     if (!canEdit) return;
     const textarea = captionTextareaRef.current;
-    if (textarea) {
-      const start = textarea.selectionStart || caption.length;
-      const end = textarea.selectionEnd || caption.length;
-      const updated = caption.slice(0, start) + emoji + caption.slice(end);
-      setCaption(updated);
-      setValidationError(null);
-      const nextPos = start + emoji.length;
-      requestAnimationFrame(() => {
-        textarea.focus();
-        textarea.setSelectionRange(nextPos, nextPos);
-      });
-    } else {
-      setCaption(prev => prev + emoji);
-    }
+    const start = savedSelectionRef.current.start ?? caption.length;
+    const end = savedSelectionRef.current.end ?? start;
+
+    const updated = caption.slice(0, start) + emoji + caption.slice(end);
+    setCaption(updated);
+    setValidationError(null);
+
+    const nextCursor = start + emoji.length;
+    savedSelectionRef.current = { start: nextCursor, end: nextCursor };
     setShowEmojiPicker(false);
+
+    requestAnimationFrame(() => {
+      if (textarea) {
+        textarea.focus();
+        textarea.setSelectionRange(nextCursor, nextCursor);
+      }
+    });
   };
 
   const handleInsertHashtag = () => {
@@ -568,12 +585,7 @@ export const PostViewModal: React.FC<PostViewModalProps> = ({
                     {post.author.name} ({post.author.role})
                   </span>
                 </div>
-                <div>
-                  <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block' }}>Campaign</span>
-                  <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                    {post.campaign || 'General'}
-                  </span>
-                </div>
+
                 <div>
                   <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block' }}>Created Date</span>
                   <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
@@ -683,7 +695,6 @@ export const PostViewModal: React.FC<PostViewModalProps> = ({
                 }}>
                   <div>&gt; Target: {post.platforms.join(', ')}</div>
                   <div>&gt; Status: {post.status.toUpperCase()}</div>
-                  <div>&gt; Dispatched via Crinoid Graph Gateway v18.0</div>
                 </div>
               </div>
             </>
@@ -842,7 +853,7 @@ export const PostViewModal: React.FC<PostViewModalProps> = ({
                         <div style={{ position: 'relative' }}>
                           <button
                             type="button"
-                            onClick={() => setShowEmojiPicker(prev => !prev)}
+                            onClick={handleToggleEmojiPicker}
                             style={{
                               display: 'flex',
                               alignItems: 'center',
@@ -851,72 +862,27 @@ export const PostViewModal: React.FC<PostViewModalProps> = ({
                               fontSize: '11.5px',
                               borderRadius: '4px',
                               border: '1px solid var(--border-subtle)',
-                              backgroundColor: 'var(--bg-subtle)',
-                              color: 'var(--text-secondary)',
+                              background: showEmojiPicker ? 'var(--color-primary-light, #eef2ff)' : 'var(--bg-subtle)',
+                              color: showEmojiPicker ? 'var(--color-primary)' : 'var(--text-secondary)',
                               cursor: 'pointer'
                             }}
+                            title="Insert emoji"
+                            aria-label="Insert emoji"
+                            aria-expanded={showEmojiPicker}
                           >
                             <Smile size={12} />
                             <span>Emoji</span>
                           </button>
 
                           {showEmojiPicker && (
-                            <div style={{
-                              position: 'absolute',
-                              left: 0,
-                              top: '100%',
-                              marginTop: '4px',
-                              padding: '8px',
-                              backgroundColor: '#ffffff',
-                              border: '1px solid var(--border-subtle)',
-                              borderRadius: '8px',
-                              boxShadow: '0 4px 14px rgba(0,0,0,0.1)',
-                              display: 'grid',
-                              gridTemplateColumns: 'repeat(5, 1fr)',
-                              gap: '6px',
-                              zIndex: 10
-                            }}>
-                              {['🚀', '💡', '✨', '🔥', '🎉', '👍', '❤️', '👏', '📈', '🤝'].map(em => (
-                                <button
-                                  key={em}
-                                  type="button"
-                                  onClick={() => handleInsertEmoji(em)}
-                                  style={{
-                                    fontSize: '18px',
-                                    padding: '4px',
-                                    border: 'none',
-                                    background: 'none',
-                                    cursor: 'pointer',
-                                    borderRadius: '4px'
-                                  }}
-                                >
-                                  {em}
-                                </button>
-                              ))}
-                            </div>
+                            <EmojiPicker
+                              onSelect={handleInsertEmoji}
+                              onClose={() => setShowEmojiPicker(false)}
+                            />
                           )}
                         </div>
                       </div>
 
-                      <div style={{ display: 'flex', gap: '4px' }}>
-                        {['🚀', '💡', '✨'].map(em => (
-                          <button
-                            key={em}
-                            type="button"
-                            onClick={() => handleInsertEmoji(em)}
-                            style={{
-                              fontSize: '13px',
-                              padding: '3px 6px',
-                              border: '1px solid var(--border-subtle)',
-                              backgroundColor: 'var(--bg-subtle)',
-                              borderRadius: '4px',
-                              cursor: 'pointer'
-                            }}
-                          >
-                            {em}
-                          </button>
-                        ))}
-                      </div>
                     </div>
                   )}
                 </div>
@@ -1159,35 +1125,239 @@ export const PostViewModal: React.FC<PostViewModalProps> = ({
                 </div>
               )}
 
-              {/* Read-Only Context Information */}
-              <div style={{
-                padding: '12px 14px',
-                borderRadius: '8px',
-                backgroundColor: 'var(--bg-subtle)',
-                border: '1px solid var(--border-subtle)',
-                fontSize: '11.5px',
-                color: 'var(--text-secondary)',
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: '8px'
-              }}>
-                <div>
-                  <span style={{ color: 'var(--text-muted)', display: 'block' }}>Author</span>
-                  <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{post.author.name}</span>
+              {/* ── Section: Post Information (read-only) ── */}
+              <div>
+                <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <FileText size={12} />
+                  Post Information
                 </div>
-                <div>
-                  <span style={{ color: 'var(--text-muted)', display: 'block' }}>Status</span>
-                  <span style={{ fontWeight: 600, color: 'var(--text-primary)', textTransform: 'capitalize' }}>
-                    {post.status.replace('_', ' ')}
-                  </span>
+                <div style={{
+                  padding: '12px 14px',
+                  borderRadius: '8px',
+                  backgroundColor: 'var(--bg-subtle)',
+                  border: '1px solid var(--border-subtle)',
+                  fontSize: '11.5px',
+                  color: 'var(--text-secondary)',
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: '10px'
+                }}>
+                  <div>
+                    <span style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '2px' }}>Post ID</span>
+                    <span style={{ fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'monospace', fontSize: '12px' }}>{post.id}</span>
+                  </div>
+                  <div>
+                    <span style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '2px' }}>Author</span>
+                    <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{post.author.name} ({post.author.role})</span>
+                  </div>
+                  <div>
+                    <span style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '2px' }}>Created Date</span>
+                    <span>{new Date(post.createdDate).toLocaleString()}</span>
+                  </div>
+                  <div>
+                    <span style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '2px' }}>Scheduled Date</span>
+                    <span>{post.scheduledDate ? new Date(post.scheduledDate).toLocaleString() : 'Not scheduled'}</span>
+                  </div>
+                  <div>
+                    <span style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '2px' }}>Published Date</span>
+                    <span>{post.publishedDate ? new Date(post.publishedDate).toLocaleString() : 'Not published'}</span>
+                  </div>
+                  <div>
+                    <span style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '2px' }}>Status</span>
+                    <span style={{ fontWeight: 600, color: 'var(--text-primary)', textTransform: 'capitalize' }}>
+                      {post.status.replace('_', ' ')}
+                    </span>
+                  </div>
                 </div>
-                <div>
-                  <span style={{ color: 'var(--text-muted)', display: 'block' }}>Created Date</span>
-                  <span>{new Date(post.createdDate).toLocaleDateString()}</span>
+              </div>
+
+              {/* ── Section: History & Publishing Information (read-only) ── */}
+              <div>
+                <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Activity size={12} />
+                  History & Publishing Information
                 </div>
+
+                {/* Approval History */}
+                <div style={{ marginBottom: '12px' }}>
+                  <div style={{ fontSize: '11.5px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '6px' }}>
+                    Approval History
+                  </div>
+                  <div style={{
+                    borderRadius: '8px',
+                    border: '1px solid var(--border-subtle)',
+                    backgroundColor: '#ffffff',
+                    padding: '10px 12px'
+                  }}>
+                    {post.approvalHistory && post.approvalHistory.length > 0 ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {post.approvalHistory.map((item, idx) => (
+                          <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12px' }}>
+                            <CheckCircle2 size={14} style={{ color: item.status === 'approved' ? '#16a34a' : '#d97706', marginTop: '2px' }} />
+                            <div style={{ flex: 1 }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
+                                  {item.approverName} ({item.status})
+                                </span>
+                                <span style={{ color: 'var(--text-light)', fontSize: '11px' }}>
+                                  {new Date(item.timestamp).toLocaleDateString()}
+                                </span>
+                              </div>
+                              {item.note && (
+                                <div style={{ color: 'var(--text-secondary)', marginTop: '2px', fontSize: '11.5px' }}>
+                                  "{item.note}"
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                        No approval history available.
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Publishing Logs */}
+                <div style={{ marginBottom: '12px' }}>
+                  <div style={{ fontSize: '11.5px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <Terminal size={12} />
+                    Publishing Logs
+                  </div>
+                  <div style={{
+                    borderRadius: '8px',
+                    border: '1px solid var(--border-subtle)',
+                    backgroundColor: '#0f172a',
+                    color: '#38bdf8',
+                    fontFamily: 'monospace',
+                    fontSize: '11.5px',
+                    padding: '10px 12px',
+                    lineHeight: '1.4'
+                  }}>
+                    {post.publishingLogs && post.publishingLogs.length > 0 ? (
+                      post.publishingLogs.map((log, idx) => (
+                        <div key={idx} style={{ marginBottom: idx < post.publishingLogs.length - 1 ? '4px' : 0 }}>
+                          <div>&gt; [{new Date(log.timestamp).toLocaleString()}] {log.platform.toUpperCase()} — {log.status.toUpperCase()}</div>
+                          <div style={{ color: '#94a3b8', paddingLeft: '14px' }}>{log.message}</div>
+                        </div>
+                      ))
+                    ) : (
+                      <>
+                        <div>&gt; Target: {post.platforms.join(', ')}</div>
+                        <div>&gt; Status: {post.status.toUpperCase()}</div>
+                        <div style={{ color: '#94a3b8' }}>&gt; No publishing attempts recorded.</div>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* Published URL */}
+                <div style={{ marginBottom: '12px' }}>
+                  <div style={{ fontSize: '11.5px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <LinkIcon size={12} />
+                    Published URL
+                  </div>
+                  {post.publishedUrl ? (
+                    <div style={{
+                      padding: '8px 12px',
+                      borderRadius: '6px',
+                      backgroundColor: '#ecfdf5',
+                      border: '1px solid #a7f3d0',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '8px'
+                    }}>
+                      <span style={{ fontSize: '12px', color: '#065f46', wordBreak: 'break-all' }}>{post.publishedUrl}</span>
+                      <a
+                        href={post.publishedUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '3px',
+                          fontSize: '11px',
+                          fontWeight: 600,
+                          color: '#047857',
+                          textDecoration: 'none',
+                          flexShrink: 0
+                        }}
+                      >
+                        <ExternalLink size={11} />
+                        Open
+                      </a>
+                    </div>
+                  ) : (
+                    <div style={{
+                      padding: '8px 12px',
+                      borderRadius: '6px',
+                      backgroundColor: 'var(--bg-subtle)',
+                      border: '1px solid var(--border-subtle)',
+                      fontSize: '12px',
+                      color: 'var(--text-muted)'
+                    }}>
+                      No published URL available.
+                    </div>
+                  )}
+                </div>
+
+                {/* Performance Data */}
                 <div>
-                  <span style={{ color: 'var(--text-muted)', display: 'block' }}>Post ID</span>
-                  <span>{post.id}</span>
+                  <div style={{ fontSize: '11.5px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <BarChart3 size={12} />
+                    Performance Data
+                  </div>
+                  {post.performanceData ? (
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                        <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Engagement Rate</span>
+                        <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-primary)' }}>
+                          {post.performanceData.engagementRate}
+                        </span>
+                      </div>
+                      <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(3, 1fr)',
+                        gap: '6px'
+                      }}>
+                        {[
+                          { label: 'Likes', value: post.performanceData.likes },
+                          { label: 'Comments', value: post.performanceData.comments },
+                          { label: 'Shares', value: post.performanceData.shares },
+                          { label: 'Reach', value: post.performanceData.reach },
+                          { label: 'Impressions', value: post.performanceData.impressions },
+                          ...(post.performanceData.clicks !== undefined ? [{ label: 'Clicks', value: post.performanceData.clicks }] : [])
+                        ].map(metric => (
+                          <div key={metric.label} style={{
+                            padding: '6px 8px',
+                            backgroundColor: 'var(--bg-subtle)',
+                            borderRadius: '6px',
+                            textAlign: 'center',
+                            border: '1px solid var(--border-subtle)'
+                          }}>
+                            <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{metric.label}</div>
+                            <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)' }}>
+                              {metric.value.toLocaleString()}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{
+                      padding: '8px 12px',
+                      borderRadius: '6px',
+                      backgroundColor: 'var(--bg-subtle)',
+                      border: '1px solid var(--border-subtle)',
+                      fontSize: '12px',
+                      color: 'var(--text-muted)'
+                    }}>
+                      No performance data available.
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
