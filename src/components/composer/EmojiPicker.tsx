@@ -5,9 +5,14 @@ import emojiData from '@emoji-mart/data';
 export interface EmojiPickerProps {
   onSelect: (emoji: string) => void;
   onClose?: () => void;
+  placement?: 'bottom' | 'top';
 }
 
-export const EmojiPicker: React.FC<EmojiPickerProps> = ({ onSelect, onClose }) => {
+export const EmojiPicker: React.FC<EmojiPickerProps> = ({ 
+  onSelect, 
+  onClose,
+  placement = 'bottom' 
+}) => {
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -18,9 +23,17 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({ onSelect, onClose }) =
     };
 
     const handleClickOutside = (e: MouseEvent) => {
-      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
-        onClose?.();
+      if (!panelRef.current) return;
+      const path = e.composedPath ? e.composedPath() : [];
+      if (panelRef.current.contains(e.target as Node) || path.includes(panelRef.current)) {
+        return;
       }
+      // If clicking on the trigger button itself, let the button's toggle handle it
+      const target = e.target as HTMLElement | null;
+      if (target && target.closest && target.closest('button[aria-label="Insert emoji"]')) {
+        return;
+      }
+      onClose?.();
     };
 
     document.addEventListener('keydown', handleKeyDown);
@@ -37,9 +50,10 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({ onSelect, onClose }) =
       className="emoji-picker-panel"
       style={{
         position: 'absolute',
-        top: 'calc(100% + 6px)',
+        top: placement === 'bottom' ? 'calc(100% + 6px)' : undefined,
+        bottom: placement === 'top' ? 'calc(100% + 6px)' : undefined,
         left: 0,
-        zIndex: 1000,
+        zIndex: 9999,
         boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
         borderRadius: '12px',
         backgroundColor: '#ffffff',

@@ -78,17 +78,17 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleMobileMenu }) => {
               width: '32px',
               height: '32px',
               borderRadius: '8px',
-              background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%)',
+              backgroundColor: 'var(--color-primary)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               color: '#ffffff',
-              boxShadow: '0 2px 8px rgba(99, 102, 241, 0.35)'
+              boxShadow: 'var(--shadow-xs)'
             }}
           >
             <Sparkles size={18} />
           </div>
-          <span style={{ fontSize: '17px', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em' }}>
+          <span style={{ fontSize: '16px', fontWeight: 700, color: '#0f172a', letterSpacing: '-0.02em' }}>
             {APP_NAME}
           </span>
         </div>

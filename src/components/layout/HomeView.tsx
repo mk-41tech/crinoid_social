@@ -440,7 +440,7 @@ export const HomeView: React.FC = () => {
           borderRadius: '16px',
           border: '1px solid var(--border-subtle)',
           padding: '48px 32px',
-          boxShadow: '0 4px 16px rgba(15, 23, 42, 0.05)',
+          boxShadow: 'var(--shadow-card)',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center'
@@ -483,7 +483,7 @@ export const HomeView: React.FC = () => {
                 fontSize: '13.5px',
                 fontWeight: 600,
                 cursor: 'pointer',
-                boxShadow: '0 2px 8px rgba(79, 70, 229, 0.25)'
+                boxShadow: 'var(--shadow-xs)'
               }}
             >
               <Plus size={16} />
@@ -683,7 +683,7 @@ export const HomeView: React.FC = () => {
             backgroundColor: '#ffffff',
             borderRadius: '12px',
             border: '1px solid var(--border-subtle)',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+            boxShadow: 'var(--shadow-card)',
             cursor: 'pointer',
             transition: 'transform 120ms ease, box-shadow 120ms ease',
             display: 'flex',
@@ -716,7 +716,7 @@ export const HomeView: React.FC = () => {
             backgroundColor: '#ffffff',
             borderRadius: '12px',
             border: '1px solid var(--border-subtle)',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+            boxShadow: 'var(--shadow-card)',
             cursor: 'pointer',
             transition: 'transform 120ms ease, box-shadow 120ms ease',
             display: 'flex',
@@ -749,7 +749,7 @@ export const HomeView: React.FC = () => {
             backgroundColor: '#ffffff',
             borderRadius: '12px',
             border: '1px solid var(--border-subtle)',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+            boxShadow: 'var(--shadow-card)',
             cursor: 'pointer',
             transition: 'transform 120ms ease, box-shadow 120ms ease',
             display: 'flex',
@@ -782,7 +782,7 @@ export const HomeView: React.FC = () => {
             backgroundColor: '#ffffff',
             borderRadius: '12px',
             border: '1px solid var(--border-subtle)',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+            boxShadow: 'var(--shadow-card)',
             cursor: 'pointer',
             transition: 'transform 120ms ease, box-shadow 120ms ease',
             display: 'flex',
@@ -815,7 +815,7 @@ export const HomeView: React.FC = () => {
             backgroundColor: '#ffffff',
             borderRadius: '12px',
             border: '1px solid var(--border-subtle)',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+            boxShadow: 'var(--shadow-card)',
             cursor: 'pointer',
             transition: 'transform 120ms ease, box-shadow 120ms ease',
             display: 'flex',
@@ -848,7 +848,7 @@ export const HomeView: React.FC = () => {
             backgroundColor: '#ffffff',
             borderRadius: '12px',
             border: '1px solid var(--border-subtle)',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+            boxShadow: 'var(--shadow-card)',
             cursor: 'pointer',
             transition: 'transform 120ms ease, box-shadow 120ms ease',
             display: 'flex',
@@ -881,7 +881,7 @@ export const HomeView: React.FC = () => {
             backgroundColor: '#ffffff',
             borderRadius: '12px',
             border: '1px solid var(--border-subtle)',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+            boxShadow: 'var(--shadow-card)',
             cursor: 'pointer',
             transition: 'transform 120ms ease, box-shadow 120ms ease',
             display: 'flex',
@@ -1057,7 +1057,7 @@ export const HomeView: React.FC = () => {
         backgroundColor: '#ffffff',
         borderRadius: '12px',
         border: '1px solid var(--border-subtle)',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.03)'
+        boxShadow: 'var(--shadow-card)'
       }}>
         {/* Chart Header & Metric Tabs */}
         <div style={{
@@ -1439,7 +1439,7 @@ export const HomeView: React.FC = () => {
           borderRadius: '12px',
           border: '1px solid var(--border-subtle)',
           padding: '20px',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+          boxShadow: 'var(--shadow-card)',
           display: 'flex',
           flexDirection: 'column'
         }}>
@@ -1689,7 +1689,7 @@ export const HomeView: React.FC = () => {
           borderRadius: '12px',
           border: '1px solid var(--border-subtle)',
           padding: '20px',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+          boxShadow: 'var(--shadow-card)',
           display: 'flex',
           flexDirection: 'column'
         }}>

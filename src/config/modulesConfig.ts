@@ -67,8 +67,8 @@ export const SIDEBAR_SECTIONS: ModuleSection[] = [
       {
         id: 'content-library',
         label: 'Content Library',
-        status: 'coming-soon',
-        badge: 'Soon'
+        status: 'available',
+        view: 'content-library'
       },
       {
         id: 'approval',

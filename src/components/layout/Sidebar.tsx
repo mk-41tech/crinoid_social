@@ -31,7 +31,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
 
   // Automatically keep parent section pinned when active page changes
   useEffect(() => {
-    if (currentView === 'composer' || currentView === 'create-post' || currentView === 'calendar' || currentView === 'posts' || currentView === 'approval') {
+    if (currentView === 'composer' || currentView === 'create-post' || currentView === 'calendar' || currentView === 'posts' || currentView === 'approval' || currentView === 'content-library') {
       setPinnedModules(prev => ({ ...prev, publish: true }));
     } else if (currentView === 'channels') {
       setPinnedModules(prev => ({ ...prev, workspace: true }));
@@ -52,7 +52,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
 
   // Determine if a section is required by the active page (cannot be closed while active)
   const isRequiredByActivePage = (sectionId: string): boolean => {
-    if (sectionId === 'publish' && (currentView === 'composer' || currentView === 'create-post' || currentView === 'calendar' || currentView === 'posts' || currentView === 'approval')) return true;
+    if (sectionId === 'publish' && (currentView === 'composer' || currentView === 'create-post' || currentView === 'calendar' || currentView === 'posts' || currentView === 'approval' || currentView === 'content-library')) return true;
     if (sectionId === 'workspace' && currentView === 'channels') return true;
     return false;
   };

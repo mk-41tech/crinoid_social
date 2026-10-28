@@ -10,6 +10,7 @@ import { CreatePostView } from './components/composer/CreatePostView';
 import { CalendarView } from './components/calendar/CalendarView';
 import { PostsView } from './components/posts/PostsView';
 import { ApprovalView } from './components/approval/ApprovalView';
+import { ContentLibraryView } from './components/content-library/ContentLibraryView';
 import { ConnectedChannelsView } from './components/channels/ConnectedChannelsView';
 import { SimulatedAuthView } from './components/channels/SimulatedAuthView';
 import { ConnectChannelsModal } from './components/channels/ConnectChannelsModal';
@@ -109,6 +110,7 @@ const AppContent: React.FC = () => {
           {currentView === 'create-post' && <CreatePostView />}
           {currentView === 'calendar' && <CalendarView />}
           {currentView === 'posts' && <PostsView />}
+          {currentView === 'content-library' && <ContentLibraryView />}
           {currentView === 'approval' && <ApprovalView />}
           {currentView === 'channels' && <ConnectedChannelsView />}
           {(currentView === 'home' || currentView === 'app-home') && <HomeView />}

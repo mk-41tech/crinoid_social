@@ -120,51 +120,52 @@
 }
 
 .status-badge.published {
-  background-color: #d1fae5;
-  color: #047857;
+  background-color: #ecfdf5;
+  color: #027a48;
 }
 
 .status-badge.scheduled {
-  background-color: var(--color-primary-light);
-  color: var(--color-primary);
+  background-color: #eff8ff;
+  color: #175cd3;
 }
 
 .status-badge.draft {
-  background-color: #f1f5f9;
+  background-color: #f8fafc;
   color: #475569;
 }
 
 .status-badge.awaiting_approval {
-  background-color: #fef3c7;
-  color: #b45309;
+  background-color: #fef0c7;
+  color: #b54708;
 }
 
 .status-badge.failed {
-  background-color: #fee2e2;
-  color: #dc2626;
+  background-color: #fef3f2;
+  color: #b42318;
 }
 
 .status-badge.archived {
-  background-color: #e2e8f0;
+  background-color: #f1f5f9;
   color: #64748b;
 }
 
 /* Grid Card */
 .post-grid-card {
   border: 1px solid var(--border-subtle);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   background-color: #ffffff;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  box-shadow: var(--shadow-card);
   transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
   position: relative;
 }
 
 .post-grid-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  border-color: var(--color-primary-border);
+  box-shadow: var(--shadow-card-hover);
+  border-color: var(--border-strong);
 }
 
 .post-grid-thumb {

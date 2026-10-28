@@ -8,7 +8,7 @@ interface ToastItem {
   message: string;
 }
 
-export type AppView = 'landing' | 'login' | 'composer' | 'create-post' | 'calendar' | 'posts' | 'approval' | 'home' | 'channels' | 'app-home' | 'simulated-auth' | 'auth-callback' | 'privacy' | 'terms';
+export type AppView = 'landing' | 'login' | 'composer' | 'create-post' | 'calendar' | 'posts' | 'approval' | 'content-library' | 'home' | 'channels' | 'app-home' | 'simulated-auth' | 'auth-callback' | 'privacy' | 'terms';
 
 interface AppContextType {
   isAuthenticated: boolean;

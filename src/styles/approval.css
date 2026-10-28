@@ -75,19 +75,20 @@
 /* Approval Card */
 .approval-card {
   border: 1px solid var(--border-subtle);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   background-color: #ffffff;
-  padding: 16px;
+  padding: 18px;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  box-shadow: var(--shadow-card);
   transition: box-shadow 0.15s ease, border-color 0.15s ease;
   position: relative;
 }
 
 .approval-card:hover {
-  border-color: var(--color-primary-border);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-card-hover);
 }
 
 /* Multi-step pipeline tracker */

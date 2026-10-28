@@ -14,7 +14,7 @@
   grid-template-columns: 1.15fr 0.85fr;
   flex: 1;
   min-height: 0;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .composer-editor-panel {
@@ -85,7 +85,7 @@
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   background-color: #ffffff;
-  overflow: hidden;
+  overflow: visible;
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
@@ -262,7 +262,7 @@
   width: 88px;
   height: 88px;
   border-radius: var(--radius-md);
-  overflow: hidden;
+  overflow: visible;
   border: 1px solid var(--border-subtle);
 }
 
@@ -323,7 +323,7 @@
   border-radius: var(--radius-xl);
   border: 1px solid var(--border-subtle);
   box-shadow: var(--shadow-md);
-  overflow: hidden;
+  overflow: visible;
   display: flex;
   flex-direction: column;
 }
@@ -367,7 +367,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .ig-media-wrap img, .ig-media-wrap video {
@@ -458,7 +458,7 @@
 .yt-preview-box {
   width: 100%;
   border-radius: var(--radius-lg);
-  overflow: hidden;
+  overflow: visible;
 }
 
 .yt-player-mockup {
@@ -513,7 +513,7 @@
   z-index: 500;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: visible;
   animation: fadeIn 0.15s ease-out;
 }
 
@@ -740,7 +740,7 @@
   width: 96px;
   height: 96px;
   border-radius: var(--radius-md);
-  overflow: hidden;
+  overflow: visible;
   border: 1px solid var(--border-subtle);
   background-color: var(--bg-muted);
 }
@@ -799,7 +799,7 @@
   width: 140px;
   height: 140px;
   border-radius: var(--radius-md);
-  overflow: hidden;
+  overflow: visible;
   border: 1px solid var(--border-subtle);
   position: relative;
 }
@@ -842,7 +842,7 @@
   position: relative;
   aspect-ratio: 16/9;
   border-radius: var(--radius-sm);
-  overflow: hidden;
+  overflow: visible;
   border: 2px solid var(--border-subtle);
   cursor: pointer;
   background-color: #000000;
@@ -941,7 +941,7 @@
   border: 1px solid var(--border-subtle);
   background-color: #ffffff;
   border-radius: var(--radius-md);
-  overflow: hidden;
+  overflow: visible;
   gap: 12px;
 }
 
@@ -989,7 +989,7 @@
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .link-preview-box-fb {
@@ -1127,7 +1127,7 @@
   background-color: #ffffff;
   color: #0f172a;
   font-family: inherit;
-  overflow: hidden;
+  overflow: visible;
 }
 
 /* --- Top Toolbar --- */
@@ -1279,7 +1279,7 @@
   grid-template-columns: minmax(0, 1.16fr) minmax(0, 0.84fr);
   flex: 1;
   min-height: 0;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .composer-editor-pane {
@@ -1442,7 +1442,7 @@
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
   transition: border-color 150ms ease, box-shadow 150ms ease;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .composer-editor-box:focus-within {
@@ -1470,6 +1470,8 @@
   line-height: 1.6;
   background-color: transparent;
   min-height: 130px;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
 }
 
 .composer-editor-actions-bar {
@@ -1480,6 +1482,9 @@
   border-top: 1px solid #f1f5f9;
   background-color: #f8fafc;
   position: relative;
+  z-index: 40;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
   gap: 8px;
   flex-wrap: wrap;
 }
@@ -1578,7 +1583,7 @@
   width: 120px;
   flex-shrink: 0;
   border-radius: 8px;
-  overflow: hidden;
+  overflow: visible;
   border: 1px solid #e2e8f0;
   background-color: #f1f5f9;
   display: flex;
