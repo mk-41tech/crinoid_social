@@ -19,9 +19,11 @@ import {
   Check, 
   X, 
   Info,
+  ArrowRight,
   ShieldCheck,
   CheckCircle2
 } from 'lucide-react';
+import '../../styles/landing.css';
 
 export const LandingPage: React.FC = () => {
   const { setCurrentView, enterDemoWorkspace, isAuthenticated } = useApp();
@@ -43,7 +45,7 @@ export const LandingPage: React.FC = () => {
   };
 
   return (
-    <div style={{ backgroundColor: '#ffffff', minHeight: '100vh', width: '100%', overflowX: 'hidden' }}>
+    <div className="landing-root">
       {/* Public Marketing Header */}
       <PublicHeader />
 
@@ -51,106 +53,91 @@ export const LandingPage: React.FC = () => {
           SECTION 1: HERO SECTION (Full width, Centered, Public)
           ========================================================================= */}
       <section
+        className="hero-radial-bg"
         style={{
-          padding: '80px 24px 88px',
+          padding: '100px 24px 110px',
           textAlign: 'center',
-          background: 'radial-gradient(ellipse at 50% 20%, rgba(238, 242, 255, 0.8) 0%, rgba(255, 255, 255, 1) 75%)',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          borderBottom: '1px solid #f1f5f9'
+          borderBottom: '1px solid #e2e8f0'
         }}
       >
-        {/* Top Feature Pill */}
-        <div
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '6px 18px',
-            borderRadius: '999px',
-            backgroundColor: '#f5f3ff',
-            border: '1px solid #ddd6fe',
-            color: '#6366f1',
-            fontSize: '12.5px',
-            fontWeight: 600,
-            marginBottom: '26px',
-            boxShadow: '0 1px 3px rgba(99, 102, 241, 0.08)'
-          }}
-        >
-          <Sparkles size={14} color="#6366f1" />
-          <span>SOCIAL MEDIA MANAGEMENT PLATFORM</span>
-        </div>
-
-        {/* Main Heading with Purple Gradient Accent */}
-        <h1
-          style={{
-            fontSize: 'clamp(34px, 5.5vw, 60px)',
-            fontWeight: 800,
-            letterSpacing: '-0.035em',
-            lineHeight: 1.15,
-            color: '#0f172a',
-            margin: '0 auto 20px',
-            maxWidth: '860px'
-          }}
-        >
-          Manage Your Social Media{' '}
-          <span
+        <div style={{ maxWidth: '960px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
+          {/* Top Feature Pill */}
+          <div
             style={{
-              background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              display: 'inline-block'
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '6px 18px',
+              borderRadius: '9999px',
+              backgroundColor: '#eef2ff',
+              border: '1px solid #c7d2fe',
+              color: '#4338ca',
+              fontSize: '12px',
+              fontWeight: 600,
+              letterSpacing: '0.04em',
+              marginBottom: '28px',
+              boxShadow: '0 1px 3px rgba(79, 70, 229, 0.08)'
             }}
           >
-            From One Simple Platform
-          </span>
-        </h1>
+            <Sparkles size={14} color="#4f46e5" />
+            <span>SOCIAL MEDIA MANAGEMENT PLATFORM</span>
+          </div>
 
-        {/* Subtitle */}
-        <p
-          style={{
-            fontSize: 'clamp(15px, 2vw, 17.5px)',
-            color: '#475569',
-            lineHeight: 1.65,
-            maxWidth: '700px',
-            margin: '0 auto'
-          }}
-        >
-          {APP_DESCRIPTION}
-        </p>
+          {/* Main Heading with Purple Gradient Accent */}
+          <h1
+            style={{
+              fontSize: 'clamp(36px, 5.5vw, 64px)',
+              fontWeight: 800,
+              letterSpacing: '-0.035em',
+              lineHeight: 1.12,
+              color: '#0f172a',
+              margin: '0 auto 24px',
+              maxWidth: '880px'
+            }}
+          >
+            Manage Your Social Media{' '}
+            <span
+              style={{
+                background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #ec4899 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                display: 'inline-block'
+              }}
+            >
+              From One Simple Platform
+            </span>
+          </h1>
+
+          {/* Subtitle */}
+          <p
+            style={{
+              fontSize: 'clamp(16px, 2vw, 18px)',
+              color: '#475569',
+              lineHeight: 1.65,
+              maxWidth: '720px',
+              margin: '0 auto'
+            }}
+          >
+            {APP_DESCRIPTION}
+          </p>
+        </div>
       </section>
-
 
       {/* =========================================================================
           SECTION 2: 4-STEP WORKFLOW (#solutions)
           ========================================================================= */}
-      <section id="solutions" style={{ padding: '80px 24px', maxWidth: '1200px', margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-          <div
-            style={{
-              fontSize: '11.5px',
-              fontWeight: 700,
-              color: '#6366f1',
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
-              marginBottom: '8px'
-            }}
-          >
+      <section id="solutions" style={{ padding: '96px 24px', maxWidth: '1240px', margin: '0 auto' }}>
+        <div style={{ textAlign: 'center', marginBottom: '56px' }}>
+          <div className="landing-section-eyebrow">
             SIMPLE 4-STEP WORKFLOW
           </div>
-          <h2
-            style={{
-              fontSize: 'clamp(26px, 3.5vw, 38px)',
-              fontWeight: 800,
-              letterSpacing: '-0.025em',
-              color: '#0f172a',
-              margin: '0 0 12px'
-            }}
-          >
+          <h2 className="landing-section-title">
             From Content to Results — All in One Place
           </h2>
-          <p style={{ fontSize: '15.5px', color: '#64748b', maxWidth: '640px', margin: '0 auto' }}>
+          <p className="landing-section-subtitle">
             Connect your channels, create content, plan your publishing, and track your results from one organized workspace.
           </p>
         </div>
@@ -159,43 +146,29 @@ export const LandingPage: React.FC = () => {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
             gap: '24px'
           }}
         >
           {/* Card 01: Connect Channels */}
-          <div
-            style={{
-              backgroundColor: '#ffffff',
-              borderRadius: '16px',
-              border: '1px solid #e2e8f0',
-              padding: '28px 24px',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              boxShadow: '0 2px 8px rgba(15, 23, 42, 0.04)'
-            }}
-          >
+          <div className="shadcn-card" style={{ justifyContent: 'space-between' }}>
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '22px' }}>
                 <span
+                  className="shadcn-pill-badge"
                   style={{
-                    fontSize: '11px',
-                    fontWeight: 700,
-                    letterSpacing: '0.06em',
-                    padding: '3px 8px',
-                    borderRadius: '999px',
                     backgroundColor: '#eff6ff',
-                    color: '#2563eb'
+                    color: '#2563eb',
+                    border: '1px solid #dbeafe'
                   }}
                 >
-                  01 &bull; CONNECT
+                  01 • CONNECT
                 </span>
                 <div
                   style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '8px',
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '10px',
                     backgroundColor: '#eff6ff',
                     color: '#2563eb',
                     display: 'flex',
@@ -203,37 +176,37 @@ export const LandingPage: React.FC = () => {
                     justifyContent: 'center'
                   }}
                 >
-                  <Link2 size={16} />
+                  <Link2 size={18} />
                 </div>
               </div>
 
-              <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#0f172a', margin: '0 0 8px' }}>
+              <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#0f172a', margin: '0 0 10px', letterSpacing: '-0.02em' }}>
                 Connect Channels
               </h3>
-              <p style={{ fontSize: '13.5px', color: '#64748b', lineHeight: 1.5, margin: 0 }}>
+              <p style={{ fontSize: '13.5px', color: '#64748b', lineHeight: 1.55, margin: 0 }}>
                 Link Instagram, Facebook, LinkedIn, TikTok, and YouTube. Zero password sharing.
               </p>
             </div>
 
             {/* Platform Badges */}
-            <div style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid #f1f5f9' }}>
+            <div style={{ marginTop: '28px', paddingTop: '16px', borderTop: '1px solid #f1f5f9' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                <span style={{ padding: '5px', borderRadius: '6px', backgroundColor: '#fdf2f8', display: 'flex' }}>
-                  <InstagramIcon size={15} color="#e1306c" />
+                <span style={{ padding: '6px', borderRadius: '8px', backgroundColor: '#fdf2f8', border: '1px solid #fce7f3', display: 'flex' }}>
+                  <InstagramIcon size={16} color="#e1306c" />
                 </span>
-                <span style={{ padding: '5px', borderRadius: '6px', backgroundColor: '#eff6ff', display: 'flex' }}>
-                  <FacebookIcon size={15} color="#1877f2" />
+                <span style={{ padding: '6px', borderRadius: '8px', backgroundColor: '#eff6ff', border: '1px solid #dbeafe', display: 'flex' }}>
+                  <FacebookIcon size={16} color="#1877f2" />
                 </span>
-                <span style={{ padding: '5px', borderRadius: '6px', backgroundColor: '#f0f7ff', display: 'flex' }}>
-                  <LinkedinIcon size={15} color="#0a66c2" />
+                <span style={{ padding: '6px', borderRadius: '8px', backgroundColor: '#f0f7ff', border: '1px solid #e0f2fe', display: 'flex' }}>
+                  <LinkedinIcon size={16} color="#0a66c2" />
                 </span>
-                <span style={{ padding: '5px', borderRadius: '6px', backgroundColor: '#f4f4f5', display: 'flex' }}>
-                  <TiktokIcon size={15} color="#000000" />
+                <span style={{ padding: '6px', borderRadius: '8px', backgroundColor: '#f4f4f5', border: '1px solid #e4e4e7', display: 'flex' }}>
+                  <TiktokIcon size={16} color="#000000" />
                 </span>
-                <span style={{ padding: '5px', borderRadius: '6px', backgroundColor: '#fef2f2', display: 'flex' }}>
-                  <YoutubeIcon size={15} color="#ff0000" />
+                <span style={{ padding: '6px', borderRadius: '8px', backgroundColor: '#fef2f2', border: '1px solid #fee2e2', display: 'flex' }}>
+                  <YoutubeIcon size={16} color="#ff0000" />
                 </span>
-                <span style={{ marginLeft: 'auto', fontSize: '11px', fontWeight: 600, color: '#6366f1' }}>
+                <span style={{ marginLeft: 'auto', fontSize: '11px', fontWeight: 600, color: '#4f46e5' }}>
                   OAuth Simulated
                 </span>
               </div>
@@ -242,38 +215,29 @@ export const LandingPage: React.FC = () => {
 
           {/* Card 02: Create & Preview */}
           <div
+            className="shadcn-card-highlighted"
             style={{
-              backgroundColor: '#ffffff',
-              borderRadius: '16px',
-              border: '2px solid #818cf8',
-              padding: '28px 24px',
-              display: 'flex',
-              flexDirection: 'column',
               justifyContent: 'space-between',
-              boxShadow: '0 6px 20px rgba(99, 102, 241, 0.12)',
-              position: 'relative'
+              borderColor: '#6366f1'
             }}
           >
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '22px' }}>
                 <span
+                  className="shadcn-pill-badge"
                   style={{
-                    fontSize: '11px',
-                    fontWeight: 700,
-                    letterSpacing: '0.06em',
-                    padding: '3px 8px',
-                    borderRadius: '999px',
                     backgroundColor: '#eef2ff',
-                    color: '#4f46e5'
+                    color: '#4338ca',
+                    border: '1px solid #c7d2fe'
                   }}
                 >
-                  02 &bull; CREATE
+                  02 • CREATE
                 </span>
                 <div
                   style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '8px',
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '10px',
                     backgroundColor: '#eef2ff',
                     color: '#4f46e5',
                     display: 'flex',
@@ -281,28 +245,28 @@ export const LandingPage: React.FC = () => {
                     justifyContent: 'center'
                   }}
                 >
-                  <PenSquare size={16} />
+                  <PenSquare size={18} />
                 </div>
               </div>
 
-              <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#0f172a', margin: '0 0 8px' }}>
+              <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#0f172a', margin: '0 0 10px', letterSpacing: '-0.02em' }}>
                 Create & Preview
               </h3>
-              <p style={{ fontSize: '13.5px', color: '#64748b', lineHeight: 1.5, margin: 0 }}>
+              <p style={{ fontSize: '13.5px', color: '#64748b', lineHeight: 1.55, margin: 0 }}>
                 Draft rich posts, attach media, select accounts, and preview authentic layouts across all platforms.
               </p>
             </div>
 
             {/* Feature Pills */}
-            <div style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid #f1f5f9' }}>
+            <div style={{ marginTop: '28px', paddingTop: '16px', borderTop: '1px solid #f1f5f9' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: '11px', fontWeight: 600, padding: '2px 8px', borderRadius: '4px', backgroundColor: '#f1f5f9', color: '#334155' }}>
+                <span style={{ fontSize: '11.5px', fontWeight: 600, padding: '3px 8px', borderRadius: '6px', backgroundColor: '#f1f5f9', color: '#334155' }}>
                   Rich Composer
                 </span>
-                <span style={{ fontSize: '11px', fontWeight: 600, padding: '2px 8px', borderRadius: '4px', backgroundColor: '#f1f5f9', color: '#334155' }}>
+                <span style={{ fontSize: '11.5px', fontWeight: 600, padding: '3px 8px', borderRadius: '6px', backgroundColor: '#f1f5f9', color: '#334155' }}>
                   Media Upload
                 </span>
-                <span style={{ fontSize: '11px', fontWeight: 600, padding: '2px 8px', borderRadius: '4px', backgroundColor: '#f1f5f9', color: '#334155' }}>
+                <span style={{ fontSize: '11.5px', fontWeight: 600, padding: '3px 8px', borderRadius: '6px', backgroundColor: '#f1f5f9', color: '#334155' }}>
                   Live Previews
                 </span>
               </div>
@@ -310,38 +274,24 @@ export const LandingPage: React.FC = () => {
           </div>
 
           {/* Card 03: Schedule & Plan */}
-          <div
-            style={{
-              backgroundColor: '#ffffff',
-              borderRadius: '16px',
-              border: '1px solid #e2e8f0',
-              padding: '28px 24px',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              boxShadow: '0 2px 8px rgba(15, 23, 42, 0.04)'
-            }}
-          >
+          <div className="shadcn-card" style={{ justifyContent: 'space-between' }}>
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '22px' }}>
                 <span
+                  className="shadcn-pill-badge"
                   style={{
-                    fontSize: '11px',
-                    fontWeight: 700,
-                    letterSpacing: '0.06em',
-                    padding: '3px 8px',
-                    borderRadius: '999px',
                     backgroundColor: '#ecfeff',
-                    color: '#0891b2'
+                    color: '#0891b2',
+                    border: '1px solid #cffafe'
                   }}
                 >
-                  03 &bull; SCHEDULE
+                  03 • SCHEDULE
                 </span>
                 <div
                   style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '8px',
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '10px',
                     backgroundColor: '#ecfeff',
                     color: '#0891b2',
                     display: 'flex',
@@ -349,28 +299,28 @@ export const LandingPage: React.FC = () => {
                     justifyContent: 'center'
                   }}
                 >
-                  <Calendar size={16} />
+                  <Calendar size={18} />
                 </div>
               </div>
 
-              <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#0f172a', margin: '0 0 8px' }}>
+              <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#0f172a', margin: '0 0 10px', letterSpacing: '-0.02em' }}>
                 Schedule & Plan
               </h3>
-              <p style={{ fontSize: '13.5px', color: '#64748b', lineHeight: 1.5, margin: 0 }}>
+              <p style={{ fontSize: '13.5px', color: '#64748b', lineHeight: 1.55, margin: 0 }}>
                 Pick publishing dates, view your cross-channel calendar, and auto-publish automatically.
               </p>
             </div>
 
             {/* Feature Pills */}
-            <div style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid #f1f5f9' }}>
+            <div style={{ marginTop: '28px', paddingTop: '16px', borderTop: '1px solid #f1f5f9' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: '11px', fontWeight: 600, padding: '2px 8px', borderRadius: '4px', backgroundColor: '#f8fafc', color: '#94a3b8' }}>
+                <span style={{ fontSize: '11.5px', fontWeight: 600, padding: '3px 8px', borderRadius: '6px', backgroundColor: '#f8fafc', color: '#64748b', border: '1px solid #e2e8f0' }}>
                   Visual Calendar
                 </span>
-                <span style={{ fontSize: '11px', fontWeight: 600, padding: '2px 8px', borderRadius: '4px', backgroundColor: '#f8fafc', color: '#94a3b8' }}>
+                <span style={{ fontSize: '11.5px', fontWeight: 600, padding: '3px 8px', borderRadius: '6px', backgroundColor: '#f8fafc', color: '#64748b', border: '1px solid #e2e8f0' }}>
                   Auto-Publish
                 </span>
-                <span style={{ fontSize: '11px', fontWeight: 600, padding: '2px 8px', borderRadius: '4px', backgroundColor: '#f8fafc', color: '#94a3b8' }}>
+                <span style={{ fontSize: '11.5px', fontWeight: 600, padding: '3px 8px', borderRadius: '6px', backgroundColor: '#f8fafc', color: '#64748b', border: '1px solid #e2e8f0' }}>
                   Time Slots
                 </span>
               </div>
@@ -378,38 +328,24 @@ export const LandingPage: React.FC = () => {
           </div>
 
           {/* Card 04: Collaborate & Track */}
-          <div
-            style={{
-              backgroundColor: '#ffffff',
-              borderRadius: '16px',
-              border: '1px solid #e2e8f0',
-              padding: '28px 24px',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              boxShadow: '0 2px 8px rgba(15, 23, 42, 0.04)'
-            }}
-          >
+          <div className="shadcn-card" style={{ justifyContent: 'space-between' }}>
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '22px' }}>
                 <span
+                  className="shadcn-pill-badge"
                   style={{
-                    fontSize: '11px',
-                    fontWeight: 700,
-                    letterSpacing: '0.06em',
-                    padding: '3px 8px',
-                    borderRadius: '999px',
                     backgroundColor: '#ecfdf5',
-                    color: '#059669'
+                    color: '#059669',
+                    border: '1px solid #a7f3d0'
                   }}
                 >
-                  04 &bull; MANAGE &amp; GROW
+                  04 • MANAGE &amp; GROW
                 </span>
                 <div
                   style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '8px',
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '10px',
                     backgroundColor: '#ecfdf5',
                     color: '#059669',
                     display: 'flex',
@@ -417,28 +353,28 @@ export const LandingPage: React.FC = () => {
                     justifyContent: 'center'
                   }}
                 >
-                  <TrendingUp size={16} />
+                  <TrendingUp size={18} />
                 </div>
               </div>
 
-              <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#0f172a', margin: '0 0 8px' }}>
+              <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#0f172a', margin: '0 0 10px', letterSpacing: '-0.02em' }}>
                 Collaborate & Track
               </h3>
-              <p style={{ fontSize: '13.5px', color: '#64748b', lineHeight: 1.5, margin: 0 }}>
+              <p style={{ fontSize: '13.5px', color: '#64748b', lineHeight: 1.55, margin: 0 }}>
                 Team reviews, client approvals, live publishing, and unified performance analytics.
               </p>
             </div>
 
             {/* Feature Pills */}
-            <div style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid #f1f5f9' }}>
+            <div style={{ marginTop: '28px', paddingTop: '16px', borderTop: '1px solid #f1f5f9' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: '11px', fontWeight: 600, padding: '2px 8px', borderRadius: '4px', backgroundColor: '#f8fafc', color: '#94a3b8' }}>
+                <span style={{ fontSize: '11.5px', fontWeight: 600, padding: '3px 8px', borderRadius: '6px', backgroundColor: '#f8fafc', color: '#64748b', border: '1px solid #e2e8f0' }}>
                   Team Approvals
                 </span>
-                <span style={{ fontSize: '11px', fontWeight: 600, padding: '2px 8px', borderRadius: '4px', backgroundColor: '#f8fafc', color: '#94a3b8' }}>
+                <span style={{ fontSize: '11.5px', fontWeight: 600, padding: '3px 8px', borderRadius: '6px', backgroundColor: '#f8fafc', color: '#64748b', border: '1px solid #e2e8f0' }}>
                   Multi-Brand
                 </span>
-                <span style={{ fontSize: '11px', fontWeight: 600, padding: '2px 8px', borderRadius: '4px', backgroundColor: '#f8fafc', color: '#94a3b8' }}>
+                <span style={{ fontSize: '11.5px', fontWeight: 600, padding: '3px 8px', borderRadius: '6px', backgroundColor: '#f8fafc', color: '#64748b', border: '1px solid #e2e8f0' }}>
                   Analytics
                 </span>
               </div>
@@ -447,36 +383,26 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-
       {/* =========================================================================
           SECTION 3: SUPPORTED SOCIAL CHANNELS (#channels)
           ========================================================================= */}
-      <section id="channels" style={{ padding: '80px 24px', backgroundColor: '#fbfbfe', borderTop: '1px solid #f1f5f9', borderBottom: '1px solid #f1f5f9' }}>
-        <div style={{ maxWidth: '1100px', margin: '0 auto', textAlign: 'center' }}>
-          <div
-            style={{
-              fontSize: '11.5px',
-              fontWeight: 700,
-              color: '#6366f1',
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
-              marginBottom: '8px'
-            }}
-          >
+      <section
+        id="channels"
+        style={{
+          padding: '96px 24px',
+          backgroundColor: '#f8fafc',
+          borderTop: '1px solid #e2e8f0',
+          borderBottom: '1px solid #e2e8f0'
+        }}
+      >
+        <div style={{ maxWidth: '1140px', margin: '0 auto', textAlign: 'center' }}>
+          <div className="landing-section-eyebrow">
             OUR CHANNELS
           </div>
-          <h2
-            style={{
-              fontSize: 'clamp(26px, 3.5vw, 38px)',
-              fontWeight: 800,
-              letterSpacing: '-0.025em',
-              color: '#0f172a',
-              margin: '0 0 12px'
-            }}
-          >
+          <h2 className="landing-section-title">
             All Your Social Channels, One Simple Workflow
           </h2>
-          <p style={{ fontSize: '15.5px', color: '#64748b', maxWidth: '640px', margin: '0 auto 44px' }}>
+          <p className="landing-section-subtitle" style={{ marginBottom: '48px' }}>
             Connect the platforms that matter most and manage them all from a single unified dashboard.
           </p>
 
@@ -491,31 +417,18 @@ export const LandingPage: React.FC = () => {
             }}
           >
             {/* Instagram */}
-            <div
-              style={{
-                width: '160px',
-                padding: '28px 18px',
-                borderRadius: '16px',
-                backgroundColor: '#fdf2f8',
-                border: '1px solid #fce7f3',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '14px',
-                boxShadow: '0 2px 6px rgba(225, 48, 108, 0.05)'
-              }}
-            >
+            <div className="channel-pill-card">
               <div
                 style={{
-                  width: '52px',
-                  height: '52px',
+                  width: '56px',
+                  height: '56px',
                   borderRadius: '14px',
                   background: 'linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   color: '#ffffff',
-                  boxShadow: '0 4px 12px rgba(225, 48, 108, 0.3)'
+                  boxShadow: '0 4px 14px rgba(225, 48, 108, 0.28)'
                 }}
               >
                 <InstagramIcon size={26} color="#ffffff" />
@@ -524,31 +437,18 @@ export const LandingPage: React.FC = () => {
             </div>
 
             {/* Facebook */}
-            <div
-              style={{
-                width: '160px',
-                padding: '28px 18px',
-                borderRadius: '16px',
-                backgroundColor: '#eff6ff',
-                border: '1px solid #dbeafe',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '14px',
-                boxShadow: '0 2px 6px rgba(24, 119, 242, 0.05)'
-              }}
-            >
+            <div className="channel-pill-card">
               <div
                 style={{
-                  width: '52px',
-                  height: '52px',
+                  width: '56px',
+                  height: '56px',
                   borderRadius: '14px',
                   backgroundColor: '#1877f2',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   color: '#ffffff',
-                  boxShadow: '0 4px 12px rgba(24, 119, 242, 0.3)'
+                  boxShadow: '0 4px 14px rgba(24, 119, 242, 0.28)'
                 }}
               >
                 <FacebookIcon size={26} color="#ffffff" />
@@ -557,31 +457,18 @@ export const LandingPage: React.FC = () => {
             </div>
 
             {/* LinkedIn */}
-            <div
-              style={{
-                width: '160px',
-                padding: '28px 18px',
-                borderRadius: '16px',
-                backgroundColor: '#f0f7ff',
-                border: '1px solid #e0f2fe',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '14px',
-                boxShadow: '0 2px 6px rgba(10, 102, 194, 0.05)'
-              }}
-            >
+            <div className="channel-pill-card">
               <div
                 style={{
-                  width: '52px',
-                  height: '52px',
+                  width: '56px',
+                  height: '56px',
                   borderRadius: '14px',
                   backgroundColor: '#0a66c2',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   color: '#ffffff',
-                  boxShadow: '0 4px 12px rgba(10, 102, 194, 0.3)'
+                  boxShadow: '0 4px 14px rgba(10, 102, 194, 0.28)'
                 }}
               >
                 <LinkedinIcon size={26} color="#ffffff" />
@@ -590,31 +477,18 @@ export const LandingPage: React.FC = () => {
             </div>
 
             {/* TikTok */}
-            <div
-              style={{
-                width: '160px',
-                padding: '28px 18px',
-                borderRadius: '16px',
-                backgroundColor: '#f8fafc',
-                border: '1px solid #e2e8f0',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '14px',
-                boxShadow: '0 2px 6px rgba(0, 0, 0, 0.04)'
-              }}
-            >
+            <div className="channel-pill-card">
               <div
                 style={{
-                  width: '52px',
-                  height: '52px',
+                  width: '56px',
+                  height: '56px',
                   borderRadius: '14px',
                   backgroundColor: '#000000',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   color: '#ffffff',
-                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.25)'
+                  boxShadow: '0 4px 14px rgba(0, 0, 0, 0.22)'
                 }}
               >
                 <TiktokIcon size={26} color="#ffffff" />
@@ -623,31 +497,18 @@ export const LandingPage: React.FC = () => {
             </div>
 
             {/* YouTube */}
-            <div
-              style={{
-                width: '160px',
-                padding: '28px 18px',
-                borderRadius: '16px',
-                backgroundColor: '#fef2f2',
-                border: '1px solid #fee2e2',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '14px',
-                boxShadow: '0 2px 6px rgba(255, 0, 0, 0.05)'
-              }}
-            >
+            <div className="channel-pill-card">
               <div
                 style={{
-                  width: '52px',
-                  height: '52px',
+                  width: '56px',
+                  height: '56px',
                   borderRadius: '14px',
                   backgroundColor: '#ff0000',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   color: '#ffffff',
-                  boxShadow: '0 4px 12px rgba(255, 0, 0, 0.3)'
+                  boxShadow: '0 4px 14px rgba(255, 0, 0, 0.28)'
                 }}
               >
                 <YoutubeIcon size={26} color="#ffffff" />
@@ -658,36 +519,18 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-
       {/* =========================================================================
           SECTION 4: THE DIFFERENCE / BENEFITS (#features)
           ========================================================================= */}
-      <section id="features" style={{ padding: '80px 24px', maxWidth: '1100px', margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-          <div
-            style={{
-              fontSize: '11.5px',
-              fontWeight: 700,
-              color: '#6366f1',
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
-              marginBottom: '8px'
-            }}
-          >
+      <section id="features" style={{ padding: '96px 24px', maxWidth: '1140px', margin: '0 auto' }}>
+        <div style={{ textAlign: 'center', marginBottom: '56px' }}>
+          <div className="landing-section-eyebrow">
             THE DIFFERENCE
           </div>
-          <h2
-            style={{
-              fontSize: 'clamp(26px, 3.5vw, 38px)',
-              fontWeight: 800,
-              letterSpacing: '-0.025em',
-              color: '#0f172a',
-              margin: '0 0 12px'
-            }}
-          >
+          <h2 className="landing-section-title">
             Turn Social Media Chaos Into Organized Growth
           </h2>
-          <p style={{ fontSize: '15.5px', color: '#64748b', maxWidth: '640px', margin: '0 auto' }}>
+          <p className="landing-section-subtitle">
             See how Crinoid Social replaces fragmented tools with one structured, reliable command center.
           </p>
         </div>
@@ -701,50 +544,46 @@ export const LandingPage: React.FC = () => {
           }}
         >
           {/* Left Column: Without Crinoid Social */}
-          <div
-            style={{
-              backgroundColor: '#ffffff',
-              borderRadius: '16px',
-              border: '1px solid #e2e8f0',
-              padding: '32px 28px',
-              boxShadow: '0 2px 8px rgba(15, 23, 42, 0.04)'
-            }}
-          >
+          <div className="shadcn-card" style={{ padding: '36px 32px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-              <span style={{ fontSize: '11px', fontWeight: 700, padding: '3px 8px', borderRadius: '999px', backgroundColor: '#f1f5f9', color: '#64748b' }}>
+              <span
+                className="shadcn-pill-badge"
+                style={{ backgroundColor: '#f1f5f9', color: '#64748b' }}
+              >
                 WITHOUT CRINOID SOCIAL
               </span>
             </div>
 
-            <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#0f172a', marginBottom: '18px' }}>
+            <h3 style={{ fontSize: '19px', fontWeight: 700, color: '#0f172a', marginBottom: '22px', letterSpacing: '-0.02em' }}>
               Managing social media separately
             </h3>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {[
                 'Switching between multiple platforms and tabs constantly',
                 'Manually tracking content plans in scattered spreadsheets',
                 'Keeping drafts and assets stored in different unorganized places',
                 'Limited visibility across client accounts and brand users'
               ].map((item, idx) => (
-                <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
                   <div
                     style={{
-                      width: '20px',
-                      height: '20px',
+                      width: '22px',
+                      height: '22px',
                       borderRadius: '50%',
                       backgroundColor: '#fef2f2',
+                      border: '1px solid #fee2e2',
                       color: '#ef4444',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       flexShrink: 0,
-                      marginTop: '2px'
+                      marginTop: '1px'
                     }}
                   >
-                    <X size={12} strokeWidth={2.5} />
+                    <X size={13} strokeWidth={2.5} />
                   </div>
-                  <span style={{ fontSize: '14px', color: '#475569', lineHeight: 1.45 }}>
+                  <span style={{ fontSize: '14px', color: '#475569', lineHeight: 1.5 }}>
                     {item}
                   </span>
                 </div>
@@ -753,50 +592,46 @@ export const LandingPage: React.FC = () => {
           </div>
 
           {/* Right Column: With Crinoid Social */}
-          <div
-            style={{
-              backgroundColor: '#ffffff',
-              borderRadius: '16px',
-              border: '2px solid #818cf8',
-              padding: '32px 28px',
-              boxShadow: '0 6px 20px rgba(99, 102, 241, 0.12)'
-            }}
-          >
+          <div className="shadcn-card-highlighted" style={{ padding: '36px 32px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-              <span style={{ fontSize: '11px', fontWeight: 700, padding: '3px 8px', borderRadius: '999px', backgroundColor: '#eef2ff', color: '#4f46e5' }}>
+              <span
+                className="shadcn-pill-badge"
+                style={{ backgroundColor: '#eef2ff', color: '#4338ca', border: '1px solid #c7d2fe' }}
+              >
                 WITH CRINOID SOCIAL
               </span>
             </div>
 
-            <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#0f172a', marginBottom: '18px' }}>
+            <h3 style={{ fontSize: '19px', fontWeight: 700, color: '#0f172a', marginBottom: '22px', letterSpacing: '-0.02em' }}>
               Managing with Crinoid Social
             </h3>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {[
                 'One rich Composer with live authentic previews for all channels',
                 'One single place to manage and simulate connected accounts',
                 'Organized brand-based workflows with team role hierarchy',
                 'A clean, robust foundation for future scheduling and analytics'
               ].map((item, idx) => (
-                <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
                   <div
                     style={{
-                      width: '20px',
-                      height: '20px',
+                      width: '22px',
+                      height: '22px',
                       borderRadius: '50%',
                       backgroundColor: '#ecfdf5',
+                      border: '1px solid #a7f3d0',
                       color: '#059669',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       flexShrink: 0,
-                      marginTop: '2px'
+                      marginTop: '1px'
                     }}
                   >
-                    <Check size={12} strokeWidth={2.5} />
+                    <Check size={13} strokeWidth={2.5} />
                   </div>
-                  <span style={{ fontSize: '14px', color: '#0f172a', fontWeight: 500, lineHeight: 1.45 }}>
+                  <span style={{ fontSize: '14px', color: '#0f172a', fontWeight: 600, lineHeight: 1.5 }}>
                     {item}
                   </span>
                 </div>
@@ -806,41 +641,31 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-
       {/* =========================================================================
           SECTION 5: PRICING PLANS (#pricing)
           ========================================================================= */}
-      <section id="pricing" style={{ padding: '80px 24px', backgroundColor: '#f8fafc', borderTop: '1px solid #f1f5f9', borderBottom: '1px solid #f1f5f9' }}>
-        <div style={{ maxWidth: '1180px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-            <div
-              style={{
-                fontSize: '11.5px',
-                fontWeight: 700,
-                color: '#6366f1',
-                letterSpacing: '0.08em',
-                textTransform: 'uppercase',
-                marginBottom: '8px'
-              }}
-            >
+      <section
+        id="pricing"
+        style={{
+          padding: '96px 24px',
+          backgroundColor: '#f8fafc',
+          borderTop: '1px solid #e2e8f0',
+          borderBottom: '1px solid #e2e8f0'
+        }}
+      >
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: '56px' }}>
+            <div className="landing-section-eyebrow">
               PRICING PLANS
             </div>
-            <h2
-              style={{
-                fontSize: 'clamp(26px, 3.5vw, 38px)',
-                fontWeight: 800,
-                letterSpacing: '-0.025em',
-                color: '#0f172a',
-                margin: '0 0 12px'
-              }}
-            >
+            <h2 className="landing-section-title">
               Simple, Transparent Pricing
             </h2>
-            <p style={{ fontSize: '15.5px', color: '#64748b', maxWidth: '640px', margin: '0 auto 12px' }}>
+            <p className="landing-section-subtitle" style={{ marginBottom: '12px' }}>
               Scale your social media operations with predictable pricing. Start free with a 14-day trial.
             </p>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#94a3b8' }}>
-              <Info size={13} />
+              <Info size={14} />
               <span>Sample pricing — demo only. Fully configurable plans.</span>
             </div>
           </div>
@@ -860,35 +685,25 @@ export const LandingPage: React.FC = () => {
               return (
                 <div
                   key={plan.id}
+                  className={isRecommended ? 'shadcn-card-highlighted' : 'shadcn-card'}
                   style={{
-                    backgroundColor: '#ffffff',
-                    borderRadius: '16px',
-                    border: isRecommended ? '2px solid #818cf8' : '1px solid #e2e8f0',
-                    padding: '32px 28px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    boxShadow: isRecommended 
-                      ? '0 10px 25px -5px rgba(99, 102, 241, 0.15)' 
-                      : '0 2px 8px rgba(15, 23, 42, 0.04)',
-                    position: 'relative'
+                    padding: '36px 30px',
+                    justifyContent: 'space-between'
                   }}
                 >
                   <div>
                     {/* Top Recommended Tag */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '26px', marginBottom: '12px' }}>
-                      <span style={{ fontSize: '14px', fontWeight: 700, color: '#0f172a' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '26px', marginBottom: '16px' }}>
+                      <span style={{ fontSize: '16px', fontWeight: 700, color: '#0f172a' }}>
                         {plan.name}
                       </span>
                       {plan.badge && (
                         <span
+                          className="shadcn-pill-badge"
                           style={{
-                            fontSize: '11px',
-                            fontWeight: 700,
-                            padding: '3px 8px',
-                            borderRadius: '999px',
                             backgroundColor: '#ecfdf5',
-                            color: '#059669'
+                            color: '#059669',
+                            border: '1px solid #a7f3d0'
                           }}
                         >
                           {plan.badge}
@@ -898,7 +713,7 @@ export const LandingPage: React.FC = () => {
 
                     {/* Price display */}
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginBottom: '6px' }}>
-                      <span style={{ fontSize: '38px', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.03em' }}>
+                      <span style={{ fontSize: '40px', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.03em' }}>
                         {plan.price}
                       </span>
                       <span style={{ fontSize: '14px', color: '#64748b', fontWeight: 500 }}>
@@ -906,7 +721,7 @@ export const LandingPage: React.FC = () => {
                       </span>
                     </div>
 
-                    <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '24px' }}>
+                    <div style={{ fontSize: '12.5px', color: '#64748b', marginBottom: '28px' }}>
                       {plan.billingDetail}
                     </div>
 
@@ -914,34 +729,28 @@ export const LandingPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={handleGetStarted}
+                      className={isRecommended ? 'shadcn-btn-gradient' : 'shadcn-btn-primary'}
                       style={{
                         width: '100%',
-                        padding: '11px',
-                        borderRadius: '999px',
-                        border: 'none',
-                        backgroundColor: '#0f172a',
-                        color: '#ffffff',
+                        padding: '11px 0',
                         fontSize: '13.5px',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                        marginBottom: '28px',
-                        transition: 'all 120ms ease'
+                        marginBottom: '32px'
                       }}
                     >
                       {plan.ctaText}
                     </button>
 
                     {/* Feature header */}
-                    <div style={{ fontSize: '12px', fontWeight: 700, color: '#0f172a', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '14px' }}>
+                    <div style={{ fontSize: '12px', fontWeight: 700, color: '#0f172a', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '16px' }}>
                       What's included
                     </div>
 
                     {/* Features list */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                       {plan.features.map((feat, fidx) => (
-                        <div key={fidx} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{ width: '4px', height: '4px', borderRadius: '50%', backgroundColor: '#6366f1', flexShrink: 0 }} />
-                          <span style={{ fontSize: '12.5px', color: '#475569', lineHeight: 1.4 }}>
+                        <div key={fidx} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                          <CheckCircle2 size={15} color="#4f46e5" style={{ flexShrink: 0, marginTop: '2px' }} />
+                          <span style={{ fontSize: '13px', color: '#475569', lineHeight: 1.45 }}>
                             {feat}
                           </span>
                         </div>
@@ -962,13 +771,13 @@ export const LandingPage: React.FC = () => {
         style={{
           borderTop: '1px solid #e2e8f0',
           backgroundColor: '#ffffff',
-          padding: '48px 24px',
+          padding: '56px 24px',
           color: '#64748b'
         }}
       >
         <div
           style={{
-            maxWidth: '1100px',
+            maxWidth: '1140px',
             margin: '0 auto',
             display: 'flex',
             alignItems: 'center',
@@ -981,14 +790,15 @@ export const LandingPage: React.FC = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div
               style={{
-                width: '30px',
-                height: '30px',
+                width: '32px',
+                height: '32px',
                 borderRadius: '8px',
-                background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#ffffff'
+                color: '#ffffff',
+                boxShadow: '0 2px 8px rgba(79, 70, 229, 0.25)'
               }}
             >
               <Sparkles size={16} />
@@ -998,28 +808,34 @@ export const LandingPage: React.FC = () => {
                 {APP_NAME}
               </span>
               <span style={{ fontSize: '12.5px', color: '#94a3b8', marginLeft: '10px' }}>
-                &bull; Social Media Management Platform
+                • Social Media Management Platform
               </span>
             </div>
           </div>
 
           {/* Marketing Navigation Links */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '22px', fontSize: '13.5px', fontWeight: 500 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '24px', fontSize: '13.5px', fontWeight: 500 }}>
             <a
               href="#features"
-              style={{ color: '#475569', textDecoration: 'none' }}
+              style={{ color: '#475569', textDecoration: 'none', transition: 'color 0.15s ease' }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = '#0f172a')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = '#475569')}
             >
               Features
             </a>
             <a
               href="#solutions"
-              style={{ color: '#475569', textDecoration: 'none' }}
+              style={{ color: '#475569', textDecoration: 'none', transition: 'color 0.15s ease' }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = '#0f172a')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = '#475569')}
             >
               Solutions
             </a>
             <a
               href="#pricing"
-              style={{ color: '#475569', textDecoration: 'none' }}
+              style={{ color: '#475569', textDecoration: 'none', transition: 'color 0.15s ease' }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = '#0f172a')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = '#475569')}
             >
               Pricing
             </a>
@@ -1029,7 +845,9 @@ export const LandingPage: React.FC = () => {
                 window.history.pushState({}, '', '/privacy');
                 setCurrentView('privacy');
               }}
-              style={{ background: 'none', border: 'none', color: '#475569', fontWeight: 500, cursor: 'pointer', padding: 0 }}
+              style={{ background: 'none', border: 'none', color: '#475569', fontWeight: 500, cursor: 'pointer', padding: 0, transition: 'color 0.15s ease' }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = '#0f172a')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = '#475569')}
             >
               Privacy Policy
             </button>
@@ -1039,7 +857,9 @@ export const LandingPage: React.FC = () => {
                 window.history.pushState({}, '', '/terms');
                 setCurrentView('terms');
               }}
-              style={{ background: 'none', border: 'none', color: '#475569', fontWeight: 500, cursor: 'pointer', padding: 0 }}
+              style={{ background: 'none', border: 'none', color: '#475569', fontWeight: 500, cursor: 'pointer', padding: 0, transition: 'color 0.15s ease' }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = '#0f172a')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = '#475569')}
             >
               Terms of Service
             </button>

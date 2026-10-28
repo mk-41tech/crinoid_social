@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link2, X, ExternalLink, Globe } from 'lucide-react';
+import { Link2, X, ExternalLink, Globe, Edit3 } from 'lucide-react';
 
 interface LinkAttachmentCardProps {
   url?: string;
@@ -49,59 +49,73 @@ export const LinkAttachmentCard: React.FC<LinkAttachmentCardProps> = ({
     return (
       <div
         style={{
-          padding: '14px',
-          borderRadius: 'var(--radius-md)',
-          backgroundColor: 'var(--bg-subtle)',
-          border: '1px solid var(--border-subtle)',
+          padding: '16px',
+          borderRadius: '10px',
+          backgroundColor: '#f8fafc',
+          border: '1px solid #e2e8f0',
           display: 'flex',
           flexDirection: 'column',
-          gap: '10px'
+          gap: '12px'
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>
-            <Link2 size={14} color="var(--color-primary)" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12.5px', fontWeight: 600, color: '#0f172a' }}>
+            <Link2 size={14} color="#4f46e5" />
             <span>Attach Link</span>
           </div>
           <button
             type="button"
             onClick={onRemove}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', padding: '2px', display: 'flex' }}
+            title="Cancel"
           >
             <X size={14} />
           </button>
         </div>
 
-        <form onSubmit={handleApply} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <form onSubmit={handleApply} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           <div>
-            <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)' }}>Destination URL</label>
+            <label style={{ fontSize: '11.5px', fontWeight: 600, color: '#475569', display: 'block', marginBottom: '4px' }}>
+              Destination URL
+            </label>
             <input
               type="url"
               value={inputUrl}
               onChange={(e) => setInputUrl(e.target.value)}
               placeholder="https://example.com/article"
               required
-              style={{ width: '100%', padding: '6px 10px', fontSize: '13px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)' }}
+              className="composer-form-input"
+              style={{ fontSize: '13px', padding: '7px 10px' }}
             />
           </div>
 
           <div>
-            <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)' }}>Card Title</label>
+            <label style={{ fontSize: '11.5px', fontWeight: 600, color: '#475569', display: 'block', marginBottom: '4px' }}>
+              Card Title
+            </label>
             <input
               type="text"
               value={inputTitle}
               onChange={(e) => setInputTitle(e.target.value)}
               placeholder="Article or page title"
               required
-              style={{ width: '100%', padding: '6px 10px', fontSize: '13px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)' }}
+              className="composer-form-input"
+              style={{ fontSize: '13px', padding: '7px 10px' }}
             />
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '4px' }}>
-            <button type="button" onClick={onRemove} className="btn btn-secondary btn-sm" style={{ cursor: 'pointer' }}>
+            <button
+              type="button"
+              onClick={onRemove}
+              className="c-btn c-btn-outline c-btn-sm"
+            >
               Cancel
             </button>
-            <button type="submit" className="btn btn-primary btn-sm" style={{ cursor: 'pointer' }}>
+            <button
+              type="submit"
+              className="c-btn c-btn-primary c-btn-sm"
+            >
               Attach Link
             </button>
           </div>
@@ -113,14 +127,14 @@ export const LinkAttachmentCard: React.FC<LinkAttachmentCardProps> = ({
   return (
     <div
       style={{
-        borderRadius: 'var(--radius-md)',
+        borderRadius: '10px',
         overflow: 'hidden',
-        border: '1px solid var(--border-subtle)',
+        border: '1px solid #e2e8f0',
         backgroundColor: '#ffffff',
-        boxShadow: 'var(--shadow-xs)'
+        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)'
       }}
     >
-      <div style={{ position: 'relative', height: '140px', backgroundColor: 'var(--bg-muted)' }}>
+      <div style={{ position: 'relative', height: '140px', backgroundColor: '#f1f5f9' }}>
         {image && (
           <img src={image} alt={title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         )}
@@ -131,51 +145,60 @@ export const LinkAttachmentCard: React.FC<LinkAttachmentCardProps> = ({
             position: 'absolute',
             top: '8px',
             right: '8px',
-            width: '26px',
-            height: '26px',
+            width: '24px',
+            height: '24px',
             borderRadius: '50%',
-            backgroundColor: 'rgba(0,0,0,0.6)',
+            backgroundColor: 'rgba(15, 23, 42, 0.75)',
             color: '#fff',
             border: 'none',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            cursor: 'pointer'
+            cursor: 'pointer',
+            transition: 'background 150ms ease'
           }}
           title="Remove attached link"
         >
-          <X size={14} />
+          <X size={13} />
         </button>
       </div>
 
-      <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-          <Globe size={12} />
-          <span>{domain || 'crinoid.social'}</span>
+      <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 600 }}>
+            <Globe size={11} />
+            <span>{domain || 'crinoid.social'}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsEditing(true)}
+            style={{
+              background: 'none',
+              border: 'none',
+              fontSize: '11.5px',
+              color: '#4f46e5',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '3px',
+              fontWeight: 500,
+              padding: 0
+            }}
+          >
+            <Edit3 size={11} />
+            <span>Edit</span>
+          </button>
         </div>
-        <div style={{ fontSize: '13.5px', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.3 }}>
+
+        <div style={{ fontSize: '13.5px', fontWeight: 600, color: '#0f172a', lineHeight: 1.35 }}>
           {title}
         </div>
-        <div style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
-          {description}
-        </div>
-        <button
-          type="button"
-          onClick={() => setIsEditing(true)}
-          style={{
-            alignSelf: 'flex-start',
-            fontSize: '11px',
-            color: 'var(--color-primary)',
-            background: 'none',
-            border: 'none',
-            padding: 0,
-            cursor: 'pointer',
-            fontWeight: 600,
-            marginTop: '4px'
-          }}
-        >
-          Edit Link Metadata
-        </button>
+
+        {description && (
+          <div style={{ fontSize: '12px', color: '#64748b', lineHeight: 1.4, marginTop: '2px' }}>
+            {description}
+          </div>
+        )}
       </div>
     </div>
   );

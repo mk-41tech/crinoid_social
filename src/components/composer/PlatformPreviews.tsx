@@ -19,16 +19,13 @@ import {
   ThumbsUp, 
   Share2, 
   Repeat, 
-  Play,
-  Globe,
-  ChevronLeft,
-  ChevronRight,
-  ExternalLink,
-  Layers,
-  ThumbsDown,
-  Info,
-  AlertTriangle,
-  Music2
+  Play, 
+  Globe, 
+  ChevronLeft, 
+  ChevronRight, 
+  ExternalLink, 
+  ThumbsDown, 
+  Info 
 } from 'lucide-react';
 
 interface PlatformPreviewsProps {
@@ -98,23 +95,23 @@ export const PlatformPreviews: React.FC<PlatformPreviewsProps> = ({
     const tokens = text.split(/(\s+)/);
     return tokens.map((part, index) => {
       if (part.startsWith('#') && part.length > 1) {
-        return <span key={index} style={{ color: 'var(--color-primary)', fontWeight: 600 }}>{part}</span>;
+        return <span key={index} style={{ color: 'var(--color-primary, #4f46e5)', fontWeight: 600 }}>{part}</span>;
       }
       if (part.startsWith('@') && part.length > 1) {
-        return <span key={index} style={{ color: 'var(--color-primary)', fontWeight: 600 }}>{part}</span>;
+        return <span key={index} style={{ color: 'var(--color-primary, #4f46e5)', fontWeight: 600 }}>{part}</span>;
       }
       if (part.startsWith('http://') || part.startsWith('https://')) {
-        return <span key={index} style={{ color: 'var(--color-primary)', textDecoration: 'underline' }}>{part}</span>;
+        return <span key={index} style={{ color: 'var(--color-primary, #4f46e5)', textDecoration: 'underline' }}>{part}</span>;
       }
       return part;
     });
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '100%' }}>
+    <div className="composer-preview-card-wrap">
       {/* Platform Switcher Tabs for Previews */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px' }}>
+      <div className="composer-preview-header-bar">
+        <div className="composer-preview-tabs">
           {selectedPlatforms.map(p => {
             const pConfig = PLATFORM_CONFIG[p];
             const isTabActive = p === currentPlatform;
@@ -127,19 +124,11 @@ export const PlatformPreviews: React.FC<PlatformPreviewsProps> = ({
                   setActiveTab(p);
                   setActiveSlideIndex(0);
                 }}
+                className={`composer-preview-tab-btn ${isTabActive ? 'is-active' : ''}`}
                 style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '6px 12px',
-                  borderRadius: 'var(--radius-full)',
-                  border: isTabActive ? `1px solid ${pConfig.brandColor}` : '1px solid var(--border-subtle)',
-                  backgroundColor: isTabActive ? pConfig.bgColor : '#ffffff',
-                  color: isTabActive ? pConfig.brandColor : 'var(--text-secondary)',
-                  fontSize: '12.5px',
-                  fontWeight: isTabActive ? 700 : 500,
-                  cursor: 'pointer',
-                  transition: 'all var(--transition-fast)'
+                  borderColor: isTabActive ? pConfig.brandColor : undefined,
+                  backgroundColor: isTabActive ? pConfig.bgColor : undefined,
+                  color: isTabActive ? pConfig.brandColor : undefined
                 }}
               >
                 {p === 'instagram' && <InstagramIcon size={14} color={pConfig.brandColor} />}
@@ -153,25 +142,14 @@ export const PlatformPreviews: React.FC<PlatformPreviewsProps> = ({
           })}
         </div>
 
-        <div style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <Info size={13} />
+        <div style={{ fontSize: '11px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 500 }}>
+          <Info size={13} color="#94a3b8" />
           <span>Approximate live preview</span>
         </div>
       </div>
 
-      {/* Main Preview Container */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'flex-start',
-          backgroundColor: 'var(--bg-subtle)',
-          borderRadius: 'var(--radius-xl)',
-          padding: '24px 16px',
-          border: '1px solid var(--border-subtle)',
-          minHeight: '440px'
-        }}
-      >
+      {/* Main Preview Device Canvas */}
+      <div className="composer-preview-device-box">
         {/* INSTAGRAM PREVIEW */}
         {currentPlatform === 'instagram' && (
           <div
@@ -179,9 +157,9 @@ export const PlatformPreviews: React.FC<PlatformPreviewsProps> = ({
               width: '100%',
               maxWidth: '380px',
               backgroundColor: '#ffffff',
-              borderRadius: '12px',
-              border: '1px solid #dbdbdb',
-              boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
+              borderRadius: '14px',
+              border: '1px solid #e2e8f0',
+              boxShadow: '0 4px 20px -2px rgba(0, 0, 0, 0.08)',
               overflow: 'hidden',
               display: 'flex',
               flexDirection: 'column'
@@ -281,7 +259,7 @@ export const PlatformPreviews: React.FC<PlatformPreviewsProps> = ({
 
               {/* First comment if provided */}
               {variant?.firstComment && (
-                <div style={{ fontSize: '12px', color: '#262626', backgroundColor: '#fafafa', padding: '6px 8px', borderRadius: '4px', borderLeft: '2px solid var(--color-primary)' }}>
+                <div style={{ fontSize: '12px', color: '#262626', backgroundColor: '#fafafa', padding: '6px 8px', borderRadius: '4px', borderLeft: '2px solid var(--color-primary, #4f46e5)' }}>
                   <span style={{ fontWeight: 700, marginRight: '4px' }}>{account.username.replace('@', '')}:</span>
                   <span style={{ color: '#555' }}>{variant.firstComment}</span>
                 </div>
@@ -301,9 +279,9 @@ export const PlatformPreviews: React.FC<PlatformPreviewsProps> = ({
               width: '100%',
               maxWidth: '430px',
               backgroundColor: '#ffffff',
-              borderRadius: '8px',
-              border: '1px solid #ced0d4',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+              borderRadius: '12px',
+              border: '1px solid #e2e8f0',
+              boxShadow: '0 4px 20px -2px rgba(0, 0, 0, 0.08)',
               overflow: 'hidden',
               display: 'flex',
               flexDirection: 'column'
@@ -378,9 +356,9 @@ export const PlatformPreviews: React.FC<PlatformPreviewsProps> = ({
               width: '100%',
               maxWidth: '440px',
               backgroundColor: '#ffffff',
-              borderRadius: '8px',
-              border: '1px solid #e0e0e0',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+              borderRadius: '12px',
+              border: '1px solid #e2e8f0',
+              boxShadow: '0 4px 20px -2px rgba(0, 0, 0, 0.08)',
               overflow: 'hidden',
               display: 'flex',
               flexDirection: 'column'
@@ -402,22 +380,22 @@ export const PlatformPreviews: React.FC<PlatformPreviewsProps> = ({
               <MoreHorizontal size={20} color="rgba(0,0,0,0.6)" />
             </div>
 
-            {/* LinkedIn Copy */}
-            <div style={{ padding: '0 16px 12px 16px', fontSize: '13.5px', color: 'rgba(0,0,0,0.9)', lineHeight: 1.5 }}>
+            {/* LinkedIn Caption */}
+            <div style={{ padding: '4px 16px 12px 16px', fontSize: '13.5px', color: 'rgba(0,0,0,0.9)', lineHeight: 1.45 }}>
               {renderFormattedText(captionText)}
             </div>
 
             {/* LinkedIn Media or Link */}
             {draft.linkUrl ? (
-              <div style={{ borderTop: '1px solid #e0e0e0', borderBottom: '1px solid #e0e0e0', backgroundColor: '#f3f2ef' }}>
+              <div style={{ borderTop: '1px solid #e0e0e0', borderBottom: '1px solid #e0e0e0', backgroundColor: '#f9fafb' }}>
                 {draft.linkImage && (
-                  <img src={draft.linkImage} alt="Link card" style={{ width: '100%', height: '180px', objectFit: 'cover' }} />
+                  <img src={draft.linkImage} alt="Link" style={{ width: '100%', height: '180px', objectFit: 'cover' }} />
                 )}
-                <div style={{ padding: '10px 14px' }}>
+                <div style={{ padding: '8px 14px' }}>
                   <div style={{ fontSize: '14px', fontWeight: 600, color: 'rgba(0,0,0,0.9)' }}>
-                    {draft.linkTitle || 'Strategic Social Distribution Playbook'}
+                    {draft.linkTitle || 'Crinoid Social Multi-Platform Growth'}
                   </div>
-                  <div style={{ fontSize: '12px', color: 'rgba(0,0,0,0.6)', marginTop: '2px' }}>
+                  <div style={{ fontSize: '11px', color: 'rgba(0,0,0,0.6)', marginTop: '2px' }}>
                     {draft.linkDomain || 'crinoid.social'}
                   </div>
                 </div>
@@ -454,8 +432,8 @@ export const PlatformPreviews: React.FC<PlatformPreviewsProps> = ({
               maxWidth: '440px',
               backgroundColor: '#ffffff',
               borderRadius: '16px',
-              border: '1px solid #e7e7e7',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+              border: '1px solid #e2e8f0',
+              boxShadow: '0 4px 20px -2px rgba(0, 0, 0, 0.08)',
               overflow: 'hidden',
               display: 'flex',
               flexDirection: 'column'
@@ -526,9 +504,9 @@ export const PlatformPreviews: React.FC<PlatformPreviewsProps> = ({
               width: '100%',
               maxWidth: '440px',
               backgroundColor: '#ffffff',
-              borderRadius: '12px',
-              border: '1px solid #e5e7eb',
-              boxShadow: '0 4px 14px rgba(0,0,0,0.06)',
+              borderRadius: '14px',
+              border: '1px solid #e2e8f0',
+              boxShadow: '0 4px 20px -2px rgba(0, 0, 0, 0.08)',
               overflow: 'hidden',
               display: 'flex',
               flexDirection: 'column'

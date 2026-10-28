@@ -14,7 +14,12 @@ import { PublishResultModal } from './PublishResultModal';
 import { uploadVideoToYoutube } from '../../services/youtube';
 import { publishToFacebookPage, publishToInstagram } from '../../services/meta';
 import { 
-  Upload, 
+  InstagramIcon, 
+  FacebookIcon, 
+  LinkedinIcon, 
+  YoutubeIcon 
+} from '../common/SocialIcons';
+import { 
   Image as ImageIcon, 
   Video, 
   Hash, 
@@ -28,12 +33,8 @@ import {
   RotateCcw, 
   Clock, 
   AlertCircle,
-  FileText,
   ChevronLeft,
   ChevronRight,
-  Eye,
-  CheckCircle2,
-  Sparkles,
   Radio,
   Plus,
   Loader2
@@ -328,12 +329,13 @@ export const ComposerView: React.FC<ComposerViewProps> = ({
   };
 
   const handlePublishNow = async () => {
-    const check = validateBeforePublish();
-    if (!check.valid) {
-      showToast('error', check.errors[0]);
+    const { valid, errors } = validateBeforePublish();
+    if (!valid) {
+      showToast('error', errors[0]);
       return;
     }
 
+    // Check if YouTube, Facebook, or Instagram are connected with real tokens
     const ytAccount = currentBrand.accounts.find(a => a.platform === 'youtube');
     const fbAccount = currentBrand.accounts.find(a => a.platform === 'facebook');
     const igAccount = currentBrand.accounts.find(a => a.platform === 'instagram');
@@ -342,42 +344,34 @@ export const ComposerView: React.FC<ComposerViewProps> = ({
     const isLiveFacebookPublish = selectedPlatforms.includes('facebook') && Boolean(fbAccount?.accessToken);
     const isLiveInstagramPublish = selectedPlatforms.includes('instagram') && Boolean(igAccount?.accessToken);
 
-    const isAnyLivePublish = isLiveYouTubePublish || isLiveFacebookPublish || isLiveInstagramPublish;
-
-    if (isAnyLivePublish) {
+    if (isLiveYouTubePublish || isLiveFacebookPublish || isLiveInstagramPublish) {
       setIsPublishingReal(true);
+      setUploadProgressPercent(0);
       const urls: Record<string, string> = {};
 
       try {
-        // 1. Live YouTube Upload
+        // 1. Live YouTube Video Upload
         if (isLiveYouTubePublish) {
-          let videoFile = uploadedVideoFile;
-          if (!videoFile && draft.mediaUrls.length > 0) {
-            try {
-              const res = await fetch(draft.mediaUrls[0]);
-              const blob = await res.blob();
-              videoFile = new File([blob], 'youtube_video.mp4', { type: blob.type || 'video/mp4' });
-            } catch {}
+          if (!uploadedVideoFile) {
+            showToast('error', 'Please attach a real MP4 or MOV video file to upload to YouTube.');
+            setIsPublishingReal(false);
+            return;
           }
 
-          if (!videoFile) {
-            showToast('error', 'Please attach an MP4/MOV video file to publish to YouTube.');
-          } else {
-            const ytTitle = draft.platformVariants?.youtube?.title || draft.commonCaption.slice(0, 100) || 'Untitled Video';
-            const ytDesc = draft.platformVariants?.youtube?.caption || draft.commonCaption || '';
+          const ytTitle = draft.platformVariants.youtube?.title || draft.commonCaption.slice(0, 70) || 'New YouTube Video';
+          const ytDescription = draft.platformVariants.youtube?.caption || draft.commonCaption;
 
-            showToast('info', 'Uploading video to YouTube Data API...');
-            const ytResult = await uploadVideoToYoutube({
-              accessToken: ytAccount!.accessToken!,
-              file: videoFile,
-              title: ytTitle,
-              description: ytDesc,
-              privacyStatus: 'public',
-              onProgress: (pct) => setUploadProgressPercent(pct)
-            });
-            urls.youtube = ytResult.url;
-            showToast('success', `Live on YouTube: ${ytResult.url}`);
-          }
+          showToast('info', 'Uploading directly to your YouTube channel...');
+          const ytResult = await uploadVideoToYoutube({
+            file: uploadedVideoFile,
+            accessToken: ytAccount!.accessToken!,
+            title: ytTitle,
+            description: ytDescription,
+            privacyStatus: 'public',
+            onProgress: (percent) => setUploadProgressPercent(percent)
+          });
+          urls.youtube = ytResult.url;
+          showToast('success', `Live on YouTube: ${ytResult.url}`);
         }
 
         // 2. Live Facebook Page Publish
@@ -581,27 +575,13 @@ export const ComposerView: React.FC<ComposerViewProps> = ({
   const isOverLimit = currentText.length > activeCharLimit;
 
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      height: isInPageTab ? '100%' : 'calc(100vh - var(--topbar-height))',
-      minHeight: isInPageTab ? 'calc(100vh - 120px)' : undefined,
-      backgroundColor: '#ffffff'
+    <div className="composer-view-root" style={{
+      height: isInPageTab ? '100%' : 'calc(100vh - var(--topbar-height, 56px))',
+      minHeight: isInPageTab ? 'calc(100vh - 120px)' : undefined
     }}>
       {/* Composer Top Toolbar */}
-      <div
-        style={{
-          height: '56px',
-          padding: '0 24px',
-          borderBottom: '1px solid var(--border-subtle)',
-          backgroundColor: '#ffffff',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexShrink: 0
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+      <div className="composer-topbar">
+        <div className="composer-topbar-left">
           <button
             type="button"
             onClick={() => {
@@ -611,19 +591,7 @@ export const ComposerView: React.FC<ComposerViewProps> = ({
                 draft.scheduledAt ? setCurrentView('calendar') : setCurrentView('home');
               }
             }}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '6px 10px',
-              borderRadius: 'var(--radius-sm)',
-              border: '1px solid var(--border-subtle)',
-              backgroundColor: 'var(--bg-subtle)',
-              color: 'var(--text-secondary)',
-              cursor: 'pointer',
-              fontSize: '12px',
-              fontWeight: 600
-            }}
+            className="c-btn c-btn-outline c-btn-sm"
           >
             {isInPageTab ? (
               <>
@@ -632,22 +600,21 @@ export const ComposerView: React.FC<ComposerViewProps> = ({
               </>
             ) : (
               <>
-                &larr; Back
+                <ChevronLeft size={14} />
+                <span>Back</span>
               </>
             )}
           </button>
 
-          <div style={{ height: '18px', width: '1px', backgroundColor: 'var(--border-subtle)' }} />
+          <div className="composer-topbar-divider" />
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)' }}>
-              Composer
-            </span>
-          </div>
+          <span className="composer-page-title">
+            Composer
+          </span>
 
           {/* Autosave status indicator */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', color: 'var(--text-muted)' }}>
-            <Clock size={13} color="#10b981" />
+          <div className="composer-status-badge saved">
+            <Clock size={12} color="#15803d" />
             <span>{lastSavedTime ? `Saved at ${lastSavedTime}` : 'Saved'}</span>
           </div>
 
@@ -667,21 +634,9 @@ export const ComposerView: React.FC<ComposerViewProps> = ({
               <div
                 onClick={() => setShowScheduleModal(true)}
                 title="Click to adjust scheduled date"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '4px 10px',
-                  borderRadius: '6px',
-                  backgroundColor: 'var(--color-primary-light)',
-                  color: 'var(--color-primary)',
-                  fontSize: '12px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  border: '1px solid var(--border-subtle)'
-                }}
+                className="composer-status-badge scheduled"
               >
-                <Calendar size={13} />
+                <Calendar size={12} />
                 <span>Scheduled: {label}</span>
               </div>
             );
@@ -689,45 +644,41 @@ export const ComposerView: React.FC<ComposerViewProps> = ({
         </div>
 
         {/* Action Buttons */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div className="composer-topbar-right">
           <button
             type="button"
             onClick={resetDraft}
-            className="btn btn-ghost btn-sm"
+            className="c-btn c-btn-ghost c-btn-sm"
             title="Reset to blank template"
-            style={{ cursor: 'pointer', color: 'var(--text-muted)' }}
           >
-            <RotateCcw size={14} />
+            <RotateCcw size={13} />
             <span>Clear</span>
           </button>
 
           <button
             type="button"
             onClick={saveDraftToStorage}
-            className="btn btn-secondary btn-sm"
-            style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+            className="c-btn c-btn-outline c-btn-sm"
           >
-            <Save size={14} />
+            <Save size={13} />
             <span>Save Draft</span>
           </button>
 
           <button
             type="button"
             onClick={() => setShowApprovalModal(true)}
-            className="btn btn-secondary btn-sm"
-            style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+            className="c-btn c-btn-outline c-btn-sm"
           >
-            <CheckSquare size={14} />
+            <CheckSquare size={13} />
             <span>Submit for Approval</span>
           </button>
 
           <button
             type="button"
             onClick={() => setShowScheduleModal(true)}
-            className="btn btn-secondary btn-sm"
-            style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+            className="c-btn c-btn-outline c-btn-sm"
           >
-            <Calendar size={14} />
+            <Calendar size={13} />
             <span>Schedule</span>
           </button>
 
@@ -735,24 +686,16 @@ export const ComposerView: React.FC<ComposerViewProps> = ({
             type="button"
             onClick={handlePublishNow}
             disabled={currentBrand.accounts.length === 0 || isPublishingReal}
-            className="btn btn-primary btn-sm"
-            style={{ 
-              cursor: currentBrand.accounts.length === 0 || isPublishingReal ? 'not-allowed' : 'pointer', 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '6px', 
-              fontWeight: 600,
-              opacity: currentBrand.accounts.length === 0 ? 0.6 : 1
-            }}
+            className="c-btn c-btn-primary c-btn-sm"
           >
             {isPublishingReal ? (
               <>
-                <Loader2 size={14} className="animate-spin" />
+                <Loader2 size={13} className="animate-spin" />
                 <span>Uploading {uploadProgressPercent > 0 ? `${uploadProgressPercent}%` : 'to YouTube...'}</span>
               </>
             ) : (
               <>
-                <Send size={14} />
+                <Send size={13} />
                 <span>Publish Now</span>
               </>
             )}
@@ -776,43 +719,42 @@ export const ComposerView: React.FC<ComposerViewProps> = ({
         >
           <div
             style={{
-              width: '60px',
-              height: '60px',
+              width: '64px',
+              height: '64px',
               borderRadius: '16px',
-              backgroundColor: 'var(--color-primary-light)',
-              color: 'var(--color-primary)',
+              backgroundColor: '#eef2ff',
+              color: '#4f46e5',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center'
+              justifyContent: 'center',
+              border: '1px solid #c7d2fe'
             }}
           >
-            <Radio size={28} />
+            <Radio size={30} />
           </div>
 
           <div style={{ maxWidth: '460px' }}>
-            <h2 style={{ fontSize: '19px', fontWeight: 800, color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.01em' }}>
+            <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#0f172a', margin: 0, letterSpacing: '-0.02em' }}>
               No Channels Connected
             </h2>
-            <p style={{ fontSize: '13.5px', color: 'var(--text-secondary)', marginTop: '8px', lineHeight: 1.5 }}>
+            <p style={{ fontSize: '13.5px', color: '#64748b', marginTop: '8px', lineHeight: 1.55 }}>
               Connect your social media accounts for <strong>{currentBrand.name}</strong> to start creating, customizing, and previewing posts.
             </p>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '8px' }}>
             <button
               type="button"
               onClick={() => setShowConnectModal(true)}
-              className="btn btn-primary"
-              style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 22px', fontSize: '13.5px', fontWeight: 700 }}
+              className="c-btn c-btn-primary"
             >
-              <Plus size={16} />
+              <Plus size={15} />
               <span>Connect Channels</span>
             </button>
             <button
               type="button"
               onClick={() => setCurrentView('channels')}
-              className="btn btn-secondary"
-              style={{ cursor: 'pointer', padding: '10px 18px', fontSize: '13.5px' }}
+              className="c-btn c-btn-outline"
             >
               Manage Channels
             </button>
@@ -820,645 +762,489 @@ export const ComposerView: React.FC<ComposerViewProps> = ({
         </div>
       ) : (
         /* Main Composer Two-Column Grid */
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: '1.2fr 0.8fr',
-            flex: 1,
-            minHeight: 0,
-            overflow: 'hidden'
-          }}
-        >
-        {/* Left Panel: Content Creation Editor */}
-        <div
-          style={{
-            padding: '24px',
-            overflowY: 'auto',
-            borderRight: '1px solid var(--border-subtle)',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '20px'
-          }}
-        >
-          {/* Channel Selector */}
-          <PlatformSelector
-            selectedPlatforms={selectedPlatforms}
-            onTogglePlatform={handleTogglePlatform}
-          />
+        <div className="composer-workspace-grid">
+          {/* Left Panel: Content Creation Editor */}
+          <div className="composer-editor-pane">
+            {/* Channel Selector */}
+            <PlatformSelector
+              selectedPlatforms={selectedPlatforms}
+              onTogglePlatform={handleTogglePlatform}
+            />
 
-          {/* Editor Tabs (Common Post vs Platform Variants) */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <div style={{ display: 'flex', gap: '6px', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '2px' }}>
-              <button
-                type="button"
-                onClick={() => setActiveEditorTab('common')}
-                style={{
-                  padding: '7px 12px',
-                  borderRadius: 'var(--radius-sm) var(--radius-sm) 0 0',
-                  border: 'none',
-                  borderBottom: activeEditorTab === 'common' ? '2px solid var(--color-primary)' : '2px solid transparent',
-                  backgroundColor: activeEditorTab === 'common' ? 'var(--bg-subtle)' : 'transparent',
-                  color: activeEditorTab === 'common' ? 'var(--color-primary)' : 'var(--text-secondary)',
-                  fontWeight: activeEditorTab === 'common' ? 700 : 500,
-                  fontSize: '12.5px',
-                  cursor: 'pointer'
-                }}
-              >
-                Common Post
-              </button>
+            {/* Editor Tabs (Common Post vs Platform Variants) */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div className="composer-tabs-track">
+                <button
+                  type="button"
+                  onClick={() => setActiveEditorTab('common')}
+                  className={`composer-tab-btn ${activeEditorTab === 'common' ? 'is-active' : ''}`}
+                >
+                  <span>Common Post</span>
+                </button>
 
-              {selectedPlatforms.map(p => {
-                const config = PLATFORM_CONFIG[p];
-                const isTabActive = activeEditorTab === p;
+                {selectedPlatforms.map(p => {
+                  const config = PLATFORM_CONFIG[p];
+                  const isTabActive = activeEditorTab === p;
 
-                return (
-                  <button
-                    key={p}
-                    type="button"
-                    onClick={() => setActiveEditorTab(p)}
-                    style={{
-                      padding: '7px 12px',
-                      borderRadius: 'var(--radius-sm) var(--radius-sm) 0 0',
-                      border: 'none',
-                      borderBottom: isTabActive ? `2px solid ${config.brandColor}` : '2px solid transparent',
-                      backgroundColor: isTabActive ? config.bgColor : 'transparent',
-                      color: isTabActive ? config.brandColor : 'var(--text-secondary)',
-                      fontWeight: isTabActive ? 700 : 500,
-                      fontSize: '12.5px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    {config.name}
-                  </button>
-                );
-              })}
-            </div>
+                  return (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => setActiveEditorTab(p)}
+                      className={`composer-tab-btn ${isTabActive ? 'is-active' : ''}`}
+                      style={{
+                        color: isTabActive ? config.brandColor : undefined
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', width: '13px', height: '13px' }}>
+                        {p === 'instagram' && <InstagramIcon size={13} color={isTabActive ? config.brandColor : '#64748b'} />}
+                        {p === 'facebook' && <FacebookIcon size={13} color={isTabActive ? config.brandColor : '#64748b'} />}
+                        {p === 'linkedin' && <LinkedinIcon size={13} color={isTabActive ? config.brandColor : '#64748b'} />}
+                        {p === 'youtube' && <YoutubeIcon size={13} color={isTabActive ? config.brandColor : '#64748b'} />}
+                      </div>
+                      <span>{config.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
 
-            {/* YouTube Title & Category fields */}
-            {activeEditorTab === 'youtube' && (
-              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '10px' }}>
+              {/* YouTube Title & Category fields */}
+              {activeEditorTab === 'youtube' && (
+                <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '12px' }}>
+                  <div>
+                    <label className="composer-form-label">
+                      Video Title *
+                    </label>
+                    <input
+                      type="text"
+                      value={draft.platformVariants.youtube?.title || ''}
+                      onChange={(e) => updateDraft({
+                        platformVariants: {
+                          ...draft.platformVariants,
+                          youtube: {
+                            ...draft.platformVariants.youtube,
+                            title: e.target.value
+                          }
+                        }
+                      })}
+                      placeholder="Enter YouTube video title..."
+                      maxLength={100}
+                      className="composer-form-input"
+                    />
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', fontSize: '11px', color: '#94a3b8', marginTop: '3px' }}>
+                      {(draft.platformVariants.youtube?.title || '').length} / 100
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="composer-form-label">
+                      Category
+                    </label>
+                    <select
+                      value={draft.platformVariants.youtube?.youtubeCategory || 'Technology'}
+                      onChange={(e) => updateDraft({
+                        platformVariants: {
+                          ...draft.platformVariants,
+                          youtube: {
+                            ...draft.platformVariants.youtube,
+                            youtubeCategory: e.target.value
+                          }
+                        }
+                      })}
+                      className="composer-form-select"
+                    >
+                      <option value="Technology">Technology</option>
+                      <option value="Education">Education</option>
+                      <option value="Entertainment">Entertainment</option>
+                      <option value="Howto & Style">How-to & Style</option>
+                      <option value="Film & Animation">Film & Animation</option>
+                      <option value="People & Blogs">People & Blogs</option>
+                      <option value="Science & Technology">Science & Tech</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+
+              {/* Textarea Input Wrap */}
+              <div className={`composer-editor-box ${isOverLimit ? 'limit-error' : ''}`}>
+                <textarea
+                  ref={captionTextareaRef}
+                  value={currentText}
+                  onChange={(e) => {
+                    savedSelectionRef.current = {
+                      start: e.target.selectionStart,
+                      end: e.target.selectionEnd
+                    };
+                    handleTextChange(e.target.value);
+                  }}
+                  onSelect={(e) => {
+                    const target = e.target as HTMLTextAreaElement;
+                    savedSelectionRef.current = {
+                      start: target.selectionStart,
+                      end: target.selectionEnd
+                    };
+                  }}
+                  onKeyUp={(e) => {
+                    const target = e.target as HTMLTextAreaElement;
+                    savedSelectionRef.current = {
+                      start: target.selectionStart,
+                      end: target.selectionEnd
+                    };
+                  }}
+                  onClick={(e) => {
+                    const target = e.target as HTMLTextAreaElement;
+                    savedSelectionRef.current = {
+                      start: target.selectionStart,
+                      end: target.selectionEnd
+                    };
+                  }}
+                  placeholder={
+                    activeEditorTab === 'common'
+                      ? "Write your caption..."
+                      : `Customize caption for ${PLATFORM_CONFIG[activeEditorTab].name}...`
+                  }
+                  rows={5}
+                  className="composer-textarea-field"
+                />
+
+                {/* Formatting & insertion toolbar */}
+                <div className="composer-editor-actions-bar">
+                  <div className="composer-tool-group">
+                    {/* Platform-specific Media Upload Button in Toolbar */}
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="composer-tool-button"
+                      title={
+                        activeEditorTab === 'youtube' || (selectedPlatforms.length === 1 && selectedPlatforms[0] === 'youtube')
+                          ? 'Upload video for YouTube (photos not supported)'
+                          : activeEditorTab === 'instagram'
+                          ? 'Upload photo or Reel (max 100MB)'
+                          : 'Upload photo or video'
+                      }
+                      aria-label="Upload media"
+                    >
+                      {activeEditorTab === 'youtube' || (selectedPlatforms.length === 1 && selectedPlatforms[0] === 'youtube') ? (
+                        <Video size={14} color="#ef4444" />
+                      ) : (
+                        <ImageIcon size={14} color="#4f46e5" />
+                      )}
+                      <span>
+                        {activeEditorTab === 'youtube' || (selectedPlatforms.length === 1 && selectedPlatforms[0] === 'youtube')
+                          ? 'Video'
+                          : 'Media'}
+                      </span>
+                    </button>
+
+                    {/* Emoji Button with Popover */}
+                    <div style={{ position: 'relative' }}>
+                      <button
+                        type="button"
+                        onClick={handleToggleEmojiPicker}
+                        className={`composer-tool-button ${showEmojiPicker ? 'is-active' : ''}`}
+                        title="Insert emoji"
+                        aria-label="Insert emoji"
+                        aria-expanded={showEmojiPicker}
+                      >
+                        <Smile size={14} color="#4f46e5" />
+                        <span>Emoji</span>
+                      </button>
+
+                      {/* Popover Emoji Picker */}
+                      {showEmojiPicker && (
+                        <EmojiPicker
+                          onSelect={handleInsertEmoji}
+                          onClose={() => setShowEmojiPicker(false)}
+                        />
+                      )}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleInsertHashtag}
+                      className="composer-tool-button"
+                      title="Insert hashtag"
+                    >
+                      <Hash size={14} color="#0284c7" />
+                      <span>Hashtag</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleInsertMention}
+                      className="composer-tool-button"
+                      title="Insert mention"
+                    >
+                      <span style={{ fontWeight: 700, color: '#7c3aed', fontSize: '13px', lineHeight: 1 }}>@</span>
+                      <span>Mention</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!draft.linkUrl) {
+                          updateDraft({
+                            linkUrl: 'https://crinoid.social',
+                            linkTitle: 'Crinoid Social — Multi-Channel Publishing SaaS',
+                            linkDomain: 'crinoid.social',
+                            linkDescription: 'Unify your social publishing workflow with platform-native adaptations and live previews.'
+                          });
+                        } else {
+                          updateDraft({ linkUrl: undefined });
+                        }
+                      }}
+                      className={`composer-tool-button ${draft.linkUrl ? 'is-active' : ''}`}
+                      title="Toggle link preview card"
+                    >
+                      <Link2 size={14} color={draft.linkUrl ? '#4f46e5' : '#64748b'} />
+                      <span>Link Card</span>
+                    </button>
+                  </div>
+
+                  {/* Character Counter */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div className={`composer-char-limit-badge ${isOverLimit ? 'exceeded' : ''}`}>
+                      <span>{currentText.length} / {activeCharLimit} chars</span>
+                      {isOverLimit && (
+                        <AlertCircle size={13} style={{ marginLeft: '4px', verticalAlign: 'middle', display: 'inline' }} />
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Instagram Hashtags field */}
+              {activeEditorTab === 'instagram' && (
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
-                    Video Title *
+                  <label className="composer-form-label">
+                    Instagram Hashtags
                   </label>
                   <input
                     type="text"
-                    value={draft.platformVariants.youtube?.title || ''}
+                    value={draft.platformVariants.instagram?.hashtags || ''}
                     onChange={(e) => updateDraft({
                       platformVariants: {
                         ...draft.platformVariants,
-                        youtube: {
-                          ...draft.platformVariants.youtube,
-                          title: e.target.value
+                        instagram: {
+                          ...draft.platformVariants.instagram,
+                          hashtags: e.target.value
                         }
                       }
                     })}
-                    placeholder="Enter YouTube video title..."
-                    maxLength={100}
-                    style={{
-                      width: '100%',
-                      padding: '8px 12px',
-                      borderRadius: 'var(--radius-md)',
-                      border: '1px solid var(--border-subtle)',
-                      fontSize: '13.5px'
-                    }}
+                    placeholder="#crinoid #branding #design #social"
+                    className="composer-form-input"
                   />
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                    {(draft.platformVariants.youtube?.title || '').length} / 100
-                  </div>
                 </div>
+              )}
 
+              {/* Platform-specific options: First Comment */}
+              {(activeEditorTab === 'instagram' || activeEditorTab === 'facebook' || activeEditorTab === 'linkedin') && (
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
-                    Category
+                  <label className="composer-form-label">
+                    First Comment ({PLATFORM_CONFIG[activeEditorTab].name})
                   </label>
-                  <select
-                    value={draft.platformVariants.youtube?.youtubeCategory || 'Technology'}
+                  <input
+                    type="text"
+                    value={draft.platformVariants[activeEditorTab]?.firstComment || ''}
                     onChange={(e) => updateDraft({
                       platformVariants: {
                         ...draft.platformVariants,
-                        youtube: {
-                          ...draft.platformVariants.youtube,
-                          youtubeCategory: e.target.value
+                        [activeEditorTab]: {
+                          ...draft.platformVariants[activeEditorTab],
+                          firstComment: e.target.value
                         }
                       }
                     })}
-                    style={{
-                      width: '100%',
-                      padding: '8px 12px',
-                      borderRadius: 'var(--radius-md)',
-                      border: '1px solid var(--border-subtle)',
-                      fontSize: '13px',
-                      backgroundColor: '#ffffff'
-                    }}
-                  >
-                    <option value="Technology">Technology</option>
-                    <option value="Education">Education</option>
-                    <option value="Entertainment">Entertainment</option>
-                    <option value="Howto & Style">How-to & Style</option>
-                    <option value="Film & Animation">Film & Animation</option>
-                    <option value="People & Blogs">People & Blogs</option>
-                    <option value="Science & Technology">Science & Tech</option>
-                  </select>
+                    placeholder={`Add a first comment on ${PLATFORM_CONFIG[activeEditorTab].name}...`}
+                    className="composer-form-input"
+                  />
                 </div>
-              </div>
-            )}
+              )}
+            </div>
 
-            {/* Textarea Input Wrap */}
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                borderRadius: 'var(--radius-lg)',
-                border: isOverLimit ? '1px solid #ef4444' : '1px solid var(--border-subtle)',
-                backgroundColor: '#ffffff',
-                position: 'relative'
-              }}
-            >
-              <textarea
-                ref={captionTextareaRef}
-                value={currentText}
-                onChange={(e) => {
-                  savedSelectionRef.current = {
-                    start: e.target.selectionStart,
-                    end: e.target.selectionEnd
-                  };
-                  handleTextChange(e.target.value);
-                }}
-                onSelect={(e) => {
-                  const target = e.target as HTMLTextAreaElement;
-                  savedSelectionRef.current = {
-                    start: target.selectionStart,
-                    end: target.selectionEnd
-                  };
-                }}
-                onKeyUp={(e) => {
-                  const target = e.target as HTMLTextAreaElement;
-                  savedSelectionRef.current = {
-                    start: target.selectionStart,
-                    end: target.selectionEnd
-                  };
-                }}
-                onClick={(e) => {
-                  const target = e.target as HTMLTextAreaElement;
-                  savedSelectionRef.current = {
-                    start: target.selectionStart,
-                    end: target.selectionEnd
-                  };
-                }}
-                placeholder={
-                  activeEditorTab === 'common'
-                    ? "Write your caption..."
-                    : `Customize caption for ${PLATFORM_CONFIG[activeEditorTab].name}...`
-                }
-                rows={5}
-                style={{
-                  width: '100%',
-                  padding: '14px 16px',
-                  border: 'none',
-                  outline: 'none',
-                  fontSize: '14px',
-                  fontFamily: 'inherit',
-                  color: 'var(--text-primary)',
-                  resize: 'vertical',
-                  lineHeight: 1.5,
-                  borderRadius: 'var(--radius-lg) var(--radius-lg) 0 0'
-                }}
-              />
+            {/* Hidden File Input for Toolbar */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept="image/*,video/*"
+              onChange={handleFileUpload}
+              style={{ display: 'none' }}
+            />
 
-              {/* Formatting & insertion toolbar */}
+            {/* Media Error Message Banner */}
+            {mediaErrorMessage && (
               <div
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  padding: '8px 12px',
-                  borderTop: '1px solid var(--border-subtle)',
-                  backgroundColor: 'var(--bg-subtle)',
-                  position: 'relative',
-                  borderRadius: '0 0 var(--radius-lg) var(--radius-lg)'
+                  padding: '10px 14px',
+                  borderRadius: '8px',
+                  backgroundColor: '#fef2f2',
+                  border: '1px solid #fecaca',
+                  color: '#b91c1c',
+                  fontSize: '12.5px',
+                  lineHeight: 1.4
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  {/* Platform-specific Media Upload Button in Toolbar */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <AlertCircle size={15} color="#dc2626" style={{ flexShrink: 0 }} />
+                  <span>{mediaErrorMessage}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setMediaErrorMessage(null)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#b91c1c', padding: '2px', display: 'flex' }}
+                  title="Dismiss"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            )}
+
+            {/* Attached Media Strip (only shown when media is attached) */}
+            {draft.mediaUrls.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ fontSize: '12px', fontWeight: 600, color: '#475569' }}>
+                    Attached Media ({draft.mediaUrls.length})
+                  </div>
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     style={{
                       background: 'none',
                       border: 'none',
+                      fontSize: '11.5px',
+                      color: '#4f46e5',
+                      fontWeight: 600,
                       cursor: 'pointer',
-                      padding: '4px 8px',
-                      borderRadius: '4px',
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '4px',
-                      fontSize: '12px',
-                      color: 'var(--text-secondary)'
+                      gap: '4px'
                     }}
-                    title={
-                      activeEditorTab === 'youtube' || (selectedPlatforms.length === 1 && selectedPlatforms[0] === 'youtube')
-                        ? 'Upload video for YouTube (photos not supported)'
-                        : activeEditorTab === 'instagram'
-                        ? 'Upload photo or Reel (max 100MB)'
-                        : 'Upload photo or video'
-                    }
-                    aria-label="Upload media"
                   >
-                    {activeEditorTab === 'youtube' || (selectedPlatforms.length === 1 && selectedPlatforms[0] === 'youtube') ? (
-                      <Video size={15} color="#FF0000" />
-                    ) : (
-                      <ImageIcon size={15} color="var(--color-primary)" />
-                    )}
-                    <span>
-                      {activeEditorTab === 'youtube' || (selectedPlatforms.length === 1 && selectedPlatforms[0] === 'youtube')
-                        ? 'Video'
-                        : 'Media'}
-                    </span>
+                    <Plus size={13} />
+                    <span>Add more</span>
                   </button>
+                </div>
 
-                  {/* Emoji Button with Popover */}
-                  <div style={{ position: 'relative' }}>
+                <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '6px' }}>
+                  {draft.mediaUrls.map((url, index) => (
+                    <div key={index} className="composer-media-card">
+                      <div style={{ position: 'relative', height: '90px' }}>
+                        <img src={url} alt={`Attachment ${index + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveMedia(index)}
+                          style={{
+                            position: 'absolute',
+                            top: '4px',
+                            right: '4px',
+                            width: '20px',
+                            height: '20px',
+                            borderRadius: '50%',
+                            backgroundColor: 'rgba(15, 23, 42, 0.75)',
+                            color: '#fff',
+                            border: 'none',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}
+                        >
+                          <X size={11} />
+                        </button>
+
+                        <div style={{ position: 'absolute', bottom: '4px', left: '4px', background: 'rgba(15, 23, 42, 0.75)', color: '#fff', padding: '1px 5px', borderRadius: '4px', fontSize: '10px', fontWeight: 700 }}>
+                          {index + 1}
+                        </div>
+                      </div>
+
+                      {/* Media Actions */}
+                      <div style={{ padding: '5px 6px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#ffffff', borderTop: '1px solid #e2e8f0' }}>
+                        <button
+                          type="button"
+                          onClick={() => setEditingAltTextIndex(index)}
+                          style={{ background: 'none', border: 'none', padding: 0, fontSize: '11px', color: '#4f46e5', fontWeight: 600, cursor: 'pointer' }}
+                        >
+                          Alt Text
+                        </button>
+
+                        <div style={{ display: 'flex', gap: '2px' }}>
+                          <button
+                            type="button"
+                            disabled={index === 0}
+                            onClick={() => handleMoveMedia(index, index - 1)}
+                            style={{ background: 'none', border: 'none', cursor: index === 0 ? 'default' : 'pointer', opacity: index === 0 ? 0.3 : 1, padding: '2px', display: 'flex' }}
+                            title="Move left"
+                          >
+                            <ChevronLeft size={13} />
+                          </button>
+                          <button
+                            type="button"
+                            disabled={index === draft.mediaUrls.length - 1}
+                            onClick={() => handleMoveMedia(index, index + 1)}
+                            style={{ background: 'none', border: 'none', cursor: index === draft.mediaUrls.length - 1 ? 'default' : 'pointer', opacity: index === draft.mediaUrls.length - 1 ? 0.3 : 1, padding: '2px', display: 'flex' }}
+                            title="Move right"
+                          >
+                            <ChevronRight size={13} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Video Thumbnail Selector Trigger */}
+                {(draft.mediaType === 'video' || draft.mediaUrls.some(u => u.endsWith('.mp4'))) && (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', borderRadius: '8px', backgroundColor: '#f8fafc', border: '1px solid #e2e8f0' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 500, color: '#334155' }}>
+                      <Video size={14} color="#4f46e5" />
+                      <span>Video Thumbnail</span>
+                    </div>
                     <button
                       type="button"
-                      onClick={handleToggleEmojiPicker}
-                      style={{ 
-                        background: showEmojiPicker ? 'var(--color-primary-light, #eef2ff)' : 'none', 
-                        border: 'none', 
-                        cursor: 'pointer', 
-                        padding: '4px 8px', 
-                        borderRadius: '4px', 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        gap: '4px', 
-                        fontSize: '12px', 
-                        color: showEmojiPicker ? 'var(--color-primary)' : 'var(--text-secondary)' 
-                      }}
-                      title="Insert emoji"
-                      aria-label="Insert emoji"
-                      aria-expanded={showEmojiPicker}
+                      onClick={() => setShowThumbnailSelector(true)}
+                      className="c-btn c-btn-outline c-btn-sm"
                     >
-                      <Smile size={15} color="var(--color-primary)" />
-                      <span>Emoji</span>
+                      Change Thumbnail
                     </button>
-
-                    {/* Popover Emoji Picker */}
-                    {showEmojiPicker && (
-                      <EmojiPicker
-                        onSelect={handleInsertEmoji}
-                        onClose={() => setShowEmojiPicker(false)}
-                      />
-                    )}
                   </div>
-
-                  <button
-                    type="button"
-                    onClick={handleInsertHashtag}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px 8px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: 'var(--text-secondary)' }}
-                    title="Insert hashtag"
-                  >
-                    <Hash size={15} color="#0284c7" />
-                    <span>Hashtag</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={handleInsertMention}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px 8px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: 'var(--text-secondary)' }}
-                    title="Insert mention"
-                  >
-                    <span style={{ fontWeight: 700, color: '#7c3aed' }}>@</span>
-                    <span>Mention</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (!draft.linkUrl) {
-                        updateDraft({
-                          linkUrl: 'https://crinoid.social',
-                          linkTitle: 'Crinoid Social — Multi-Channel Publishing SaaS',
-                          linkDomain: 'crinoid.social',
-                          linkDescription: 'Unify your social publishing workflow with platform-native adaptations and live previews.'
-                        });
-                      } else {
-                        updateDraft({ linkUrl: undefined });
-                      }
-                    }}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer',
-                      padding: '4px 8px',
-                      borderRadius: '4px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      fontSize: '12px',
-                      color: draft.linkUrl ? 'var(--color-primary)' : 'var(--text-secondary)',
-                      fontWeight: draft.linkUrl ? 700 : 400
-                    }}
-                    title="Toggle link preview card"
-                  >
-                    <Link2 size={15} />
-                    <span>Link Card</span>
-                  </button>
-                </div>
-
-                {/* Character Counter */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span
-                    style={{
-                      fontSize: '12px',
-                      fontWeight: 600,
-                      color: isOverLimit ? '#dc2626' : 'var(--text-muted)'
-                    }}
-                  >
-                    {currentText.length} / {activeCharLimit} chars
-                  </span>
-                  {isOverLimit && (
-                    <span title="Exceeds platform limit">
-                      <AlertCircle size={14} color="#dc2626" />
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Instagram Hashtags field */}
-            {activeEditorTab === 'instagram' && (
-              <div style={{ marginTop: '4px' }}>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
-                  Instagram Hashtags
-                </label>
-                <input
-                  type="text"
-                  value={draft.platformVariants.instagram?.hashtags || ''}
-                  onChange={(e) => updateDraft({
-                    platformVariants: {
-                      ...draft.platformVariants,
-                      instagram: {
-                        ...draft.platformVariants.instagram,
-                        hashtags: e.target.value
-                      }
-                    }
-                  })}
-                  placeholder="#crinoid #branding #design #social"
-                  style={{
-                    width: '100%',
-                    padding: '8px 12px',
-                    borderRadius: 'var(--radius-md)',
-                    border: '1px solid var(--border-subtle)',
-                    fontSize: '13px'
-                  }}
-                />
+                )}
               </div>
             )}
 
-            {/* Platform-specific options: First Comment */}
-            {(activeEditorTab === 'instagram' || activeEditorTab === 'facebook' || activeEditorTab === 'linkedin') && (
-              <div style={{ marginTop: '4px' }}>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
-                  First Comment ({PLATFORM_CONFIG[activeEditorTab].name})
-                </label>
-                <input
-                  type="text"
-                  value={draft.platformVariants[activeEditorTab]?.firstComment || ''}
-                  onChange={(e) => updateDraft({
-                    platformVariants: {
-                      ...draft.platformVariants,
-                      [activeEditorTab]: {
-                        ...draft.platformVariants[activeEditorTab],
-                        firstComment: e.target.value
-                      }
-                    }
-                  })}
-                  placeholder={`Add a first comment on ${PLATFORM_CONFIG[activeEditorTab].name}...`}
-                  style={{
-                    width: '100%',
-                    padding: '8px 12px',
-                    borderRadius: 'var(--radius-md)',
-                    border: '1px solid var(--border-subtle)',
-                    fontSize: '13px'
-                  }}
-                />
-              </div>
+            {/* Section 4: Attached Link Card (if enabled) */}
+            {draft.linkUrl && (
+              <LinkAttachmentCard
+                url={draft.linkUrl}
+                title={draft.linkTitle}
+                domain={draft.linkDomain}
+                description={draft.linkDescription}
+                image={draft.linkImage}
+                onUpdate={(data) => updateDraft({
+                  linkUrl: data.url,
+                  linkTitle: data.title,
+                  linkDomain: data.domain,
+                  linkDescription: data.description,
+                  linkImage: data.image
+                })}
+                onRemove={() => updateDraft({ linkUrl: undefined })}
+              />
             )}
           </div>
 
-          {/* Hidden File Input for Toolbar */}
-          <input
-            ref={fileInputRef}
-            type="file"
-            multiple
-            accept={
-              activeEditorTab === 'youtube' || (selectedPlatforms.length === 1 && selectedPlatforms[0] === 'youtube')
-                ? 'video/mp4,video/quicktime,video/webm'
-                : 'image/jpeg,image/png,image/webp,video/mp4,video/quicktime'
-            }
-            onChange={handleFileUpload}
-            style={{ display: 'none' }}
-          />
-
-          {/* Media Rejection / Format Error Notice */}
-          {mediaErrorMessage && (
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '10px 14px',
-                borderRadius: 'var(--radius-md)',
-                backgroundColor: '#fef2f2',
-                border: '1px solid #fecaca',
-                color: '#b91c1c',
-                fontSize: '12.5px',
-                lineHeight: 1.4
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <AlertCircle size={16} color="#dc2626" style={{ flexShrink: 0 }} />
-                <span>{mediaErrorMessage}</span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setMediaErrorMessage(null)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#b91c1c', padding: '2px', display: 'flex' }}
-                title="Dismiss"
-              >
-                <X size={15} />
-              </button>
-            </div>
-          )}
-
-
-
-          {/* Attached Media Strip (only shown when media is attached) */}
-          {draft.mediaUrls.length > 0 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                  Attached Media ({draft.mediaUrls.length})
-                </div>
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    fontSize: '11.5px',
-                    color: 'var(--color-primary)',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px'
-                  }}
-                >
-                  <Plus size={13} />
-                  <span>Add more</span>
-                </button>
-              </div>
-
-              <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '6px' }}>
-                {draft.mediaUrls.map((url, index) => (
-                  <div
-                    key={index}
-                    style={{
-                      position: 'relative',
-                      width: '120px',
-                      flexShrink: 0,
-                      borderRadius: 'var(--radius-md)',
-                      overflow: 'hidden',
-                      border: '1px solid var(--border-subtle)',
-                      backgroundColor: 'var(--bg-muted)',
-                      display: 'flex',
-                      flexDirection: 'column'
-                    }}
-                  >
-                    <div style={{ position: 'relative', height: '90px' }}>
-                      <img src={url} alt={`Attachment ${index + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveMedia(index)}
-                        style={{
-                          position: 'absolute',
-                          top: '4px',
-                          right: '4px',
-                          width: '20px',
-                          height: '20px',
-                          borderRadius: '50%',
-                          backgroundColor: 'rgba(0,0,0,0.6)',
-                          color: '#fff',
-                          border: 'none',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center'
-                        }}
-                      >
-                        <X size={12} />
-                      </button>
-
-                      <div style={{ position: 'absolute', bottom: '4px', left: '4px', background: 'rgba(0,0,0,0.6)', color: '#fff', padding: '1px 5px', borderRadius: '4px', fontSize: '10px', fontWeight: 700 }}>
-                        {index + 1}
-                      </div>
-                    </div>
-
-                    {/* Media Actions */}
-                    <div style={{ padding: '4px 6px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#ffffff', borderTop: '1px solid var(--border-subtle)' }}>
-                      <button
-                        type="button"
-                        onClick={() => setEditingAltTextIndex(index)}
-                        style={{ background: 'none', border: 'none', padding: 0, fontSize: '11px', color: 'var(--color-primary)', fontWeight: 600, cursor: 'pointer' }}
-                      >
-                        Alt Text
-                      </button>
-
-                      <div style={{ display: 'flex', gap: '2px' }}>
-                        <button
-                          type="button"
-                          disabled={index === 0}
-                          onClick={() => handleMoveMedia(index, index - 1)}
-                          style={{ background: 'none', border: 'none', cursor: index === 0 ? 'default' : 'pointer', opacity: index === 0 ? 0.3 : 1, padding: '2px' }}
-                          title="Move left"
-                        >
-                          <ChevronLeft size={13} />
-                        </button>
-                        <button
-                          type="button"
-                          disabled={index === draft.mediaUrls.length - 1}
-                          onClick={() => handleMoveMedia(index, index + 1)}
-                          style={{ background: 'none', border: 'none', cursor: index === draft.mediaUrls.length - 1 ? 'default' : 'pointer', opacity: index === draft.mediaUrls.length - 1 ? 0.3 : 1, padding: '2px' }}
-                          title="Move right"
-                        >
-                          <ChevronRight size={13} />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Video Thumbnail Selector Trigger */}
-              {(draft.mediaType === 'video' || draft.mediaUrls.some(u => u.endsWith('.mp4'))) && (
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--bg-subtle)', border: '1px solid var(--border-subtle)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px' }}>
-                    <Video size={15} color="var(--color-primary)" />
-                    <span>Video Thumbnail</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setShowThumbnailSelector(true)}
-                    className="btn btn-secondary btn-sm"
-                    style={{ cursor: 'pointer' }}
-                  >
-                    Change Thumbnail
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Section 4: Attached Link Card (if enabled) */}
-          {draft.linkUrl && (
-            <LinkAttachmentCard
-              url={draft.linkUrl}
-              title={draft.linkTitle}
-              domain={draft.linkDomain}
-              description={draft.linkDescription}
-              image={draft.linkImage}
-              onUpdate={(data) => updateDraft({
-                linkUrl: data.url,
-                linkTitle: data.title,
-                linkDomain: data.domain,
-                linkDescription: data.description,
-                linkImage: data.image
-              })}
-              onRemove={() => updateDraft({ linkUrl: undefined })}
+          {/* Right Panel: Interactive Live Previews */}
+          <div className="composer-preview-pane">
+            <PlatformPreviews
+              draft={draft}
+              selectedPlatforms={selectedPlatforms}
             />
-          )}
-
+          </div>
         </div>
-
-        {/* Right Panel: Interactive Live Previews */}
-        <div
-          style={{
-            padding: '24px',
-            overflowY: 'auto',
-            backgroundColor: '#ffffff',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '16px'
-          }}
-        >
-          <PlatformPreviews
-            draft={draft}
-            selectedPlatforms={selectedPlatforms}
-          />
-        </div>
-      </div>
-    )}
+      )}
 
       {/* Modals */}
       {editingAltTextIndex !== null && (

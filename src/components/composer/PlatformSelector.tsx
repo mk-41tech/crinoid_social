@@ -8,7 +8,7 @@ import {
   LinkedinIcon, 
   YoutubeIcon 
 } from '../common/SocialIcons';
-import { Check, Plus, Settings } from 'lucide-react';
+import { Check, Plus } from 'lucide-react';
 
 interface PlatformSelectorProps {
   selectedPlatforms: SocialPlatform[];
@@ -34,29 +34,21 @@ export const PlatformSelector: React.FC<PlatformSelectorProps> = ({
   );
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <label style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
+    <div className="composer-channel-row">
+      <div className="composer-channel-header">
+        <label className="composer-channel-title">
           Publish to
         </label>
         <button
           type="button"
           onClick={() => setCurrentView('channels')}
-          style={{
-            background: 'none',
-            border: 'none',
-            fontSize: '11.5px',
-            color: 'var(--color-primary)',
-            fontWeight: 600,
-            cursor: 'pointer',
-            padding: 0
-          }}
+          className="composer-channel-link"
         >
-          Manage Channels &rarr;
+          <span>Manage Channels &rarr;</span>
         </button>
       </div>
 
-      <div className="platform-selector-group" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
+      <div className="composer-channel-pills">
         {connectedPlatforms.map(p => {
           const isSelected = selectedPlatforms.includes(p.id);
           const config = PLATFORM_CONFIG[p.id];
@@ -65,22 +57,28 @@ export const PlatformSelector: React.FC<PlatformSelectorProps> = ({
             <button
               key={p.id}
               type="button"
-              className={`platform-chip ${isSelected ? 'selected' : ''}`}
+              className={`composer-channel-pill ${isSelected ? 'is-active' : ''}`}
               onClick={() => onTogglePlatform(p.id)}
               style={{
-                borderColor: isSelected ? config.brandColor : 'var(--border-subtle)',
-                backgroundColor: isSelected ? config.bgColor : '#ffffff',
-                color: isSelected ? 'var(--text-primary)' : 'var(--text-secondary)'
+                borderColor: isSelected ? config.brandColor : undefined,
+                backgroundColor: isSelected ? config.bgColor : undefined,
+                color: isSelected ? config.brandColor : undefined
               }}
             >
               <div 
-                className="platform-chip-icon"
-                style={{ color: config.brandColor }}
+                style={{ 
+                  color: config.brandColor,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '15px',
+                  height: '15px'
+                }}
               >
                 {p.icon}
               </div>
               <span style={{ fontWeight: isSelected ? 700 : 500 }}>{p.label}</span>
-              {isSelected && <Check size={14} color={config.brandColor} />}
+              {isSelected && <Check size={13} color={config.brandColor} />}
             </button>
           );
         })}
@@ -89,23 +87,10 @@ export const PlatformSelector: React.FC<PlatformSelectorProps> = ({
         <button
           type="button"
           onClick={() => setShowConnectModal(true)}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px',
-            padding: '8px 12px',
-            borderRadius: 'var(--radius-md)',
-            border: '1px dashed var(--border-subtle)',
-            backgroundColor: '#ffffff',
-            color: 'var(--text-secondary)',
-            fontSize: '12px',
-            fontWeight: 600,
-            cursor: 'pointer',
-            transition: 'all var(--transition-fast)'
-          }}
+          className="composer-channel-add"
           title="Connect another social channel"
         >
-          <Plus size={13} color="var(--color-primary)" />
+          <Plus size={13} color="var(--color-primary, #4f46e5)" />
           <span>Connect Channel</span>
         </button>
       </div>
