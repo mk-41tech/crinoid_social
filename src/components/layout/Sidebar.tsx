@@ -50,22 +50,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
     }
   };
 
-  // Determine if a section is required by the active page (cannot be closed while active)
-  const isRequiredByActivePage = (sectionId: string): boolean => {
-    if (sectionId === 'publish' && (currentView === 'composer' || currentView === 'create-post' || currentView === 'calendar' || currentView === 'posts' || currentView === 'approval' || currentView === 'content-library')) return true;
-    if (sectionId === 'workspace' && currentView === 'channels') return true;
-    return false;
-  };
-
-  // Determine if a section should be expanded
+  // Determine if a section should be expanded (driven by user toggle state)
   const isSectionExpanded = (sectionId: string): boolean => {
-    // 1. Active page requirement takes precedence
-    if (isRequiredByActivePage(sectionId)) return true;
-
-    // 2. Hover opens the submenu dynamically
-    if (hoveredModule === sectionId) return true;
-
-    // 3. User clicked/pinned state
     return !!pinnedModules[sectionId];
   };
 
@@ -77,12 +63,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
       return;
     }
 
-    // If required by active page, preserve open state
-    if (isRequiredByActivePage(sectionId)) {
-      return;
-    }
-
-    // Toggle pinned state independently of hover
+    // Toggle pinned state on click
     setPinnedModules(prev => ({
       ...prev,
       [sectionId]: !prev[sectionId]
@@ -250,7 +231,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
                       style={{
                         transform: isExpanded ? 'rotate(0deg)' : 'rotate(-90deg)',
                         transition: 'transform 200ms ease',
-                        color: 'var(--text-light)'
+                        color: 'var(--text-light)',
+                        pointerEvents: 'none'
                       }}
                     />
                   )}

@@ -1,10 +1,11 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { SocialPlatform } from '../../types';
 import { PLATFORM_CONFIG } from '../../config/platformsConfig';
 import { PlatformSelector } from './PlatformSelector';
 import { PlatformPreviews } from './PlatformPreviews';
 import { EmojiPicker } from './EmojiPicker';
+import { ContentLibraryMediaModal } from './ContentLibraryMediaModal';
 import { AltTextModal } from './AltTextModal';
 import { ThumbnailSelector } from './ThumbnailSelector';
 import { LinkAttachmentCard } from './LinkAttachmentCard';
@@ -35,8 +36,11 @@ import {
   AlertCircle,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   Radio,
   Plus,
+  FolderKanban,
+  Upload,
   Loader2
 } from 'lucide-react';
 
@@ -90,6 +94,23 @@ export const ComposerView: React.FC<ComposerViewProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const captionTextareaRef = useRef<HTMLTextAreaElement>(null);
   const savedSelectionRef = useRef<{ start: number; end: number }>({ start: 0, end: 0 });
+  const mediaDropdownRef = useRef<HTMLDivElement>(null);
+  const [showMediaDropdown, setShowMediaDropdown] = useState(false);
+  const [isContentLibraryModalOpen, setIsContentLibraryModalOpen] = useState(false);
+
+  useEffect(() => {
+    const handleClickOutsideMediaDropdown = (e: MouseEvent) => {
+      if (mediaDropdownRef.current && !mediaDropdownRef.current.contains(e.target as Node)) {
+        setShowMediaDropdown(false);
+      }
+    };
+    if (showMediaDropdown) {
+      document.addEventListener('mousedown', handleClickOutsideMediaDropdown);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutsideMediaDropdown);
+    };
+  }, [showMediaDropdown]);
 
   // Synchronize platforms
   const handleTogglePlatform = (platform: SocialPlatform) => {
@@ -272,6 +293,30 @@ export const ComposerView: React.FC<ComposerViewProps> = ({
     // Reset file input so user can re-select same file if needed
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
+    }
+  };
+
+  const handleAttachContentLibraryMedia = (selectedUrls: string[], detectedType: 'image' | 'video' | 'carousel') => {
+    const isYouTubeOnly = selectedPlatforms.length === 1 && selectedPlatforms[0] === 'youtube';
+    const hasYouTube = selectedPlatforms.includes('youtube');
+
+    const combinedUrls = [...draft.mediaUrls];
+    selectedUrls.forEach(url => {
+      if (!combinedUrls.includes(url)) {
+        combinedUrls.push(url);
+      }
+    });
+
+    const isVideo = detectedType === 'video' || draft.mediaType === 'video' || combinedUrls.some(u => u.endsWith('.mp4'));
+    const finalMediaType = isVideo ? 'video' : combinedUrls.length > 1 ? 'carousel' : 'image';
+
+    updateDraft({
+      mediaUrls: combinedUrls,
+      mediaType: finalMediaType
+    });
+
+    if (hasYouTube && !isYouTubeOnly && combinedUrls.some(u => !u.endsWith('.mp4'))) {
+      showToast('info', 'Note: Photos cannot be published to YouTube and will be omitted for YouTube.');
     }
   };
 
@@ -910,31 +955,117 @@ export const ComposerView: React.FC<ComposerViewProps> = ({
                 {/* Formatting & insertion toolbar */}
                 <div className="composer-editor-actions-bar">
                   <div className="composer-tool-group">
-                    {/* Platform-specific Media Upload Button in Toolbar */}
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="composer-tool-button"
-                      title={
-                        activeEditorTab === 'youtube' || (selectedPlatforms.length === 1 && selectedPlatforms[0] === 'youtube')
-                          ? 'Upload video for YouTube (photos not supported)'
-                          : activeEditorTab === 'instagram'
-                          ? 'Upload photo or Reel (max 100MB)'
-                          : 'Upload photo or video'
-                      }
-                      aria-label="Upload media"
-                    >
-                      {activeEditorTab === 'youtube' || (selectedPlatforms.length === 1 && selectedPlatforms[0] === 'youtube') ? (
-                        <Video size={14} color="#ef4444" />
-                      ) : (
-                        <ImageIcon size={14} color="#4f46e5" />
+                    {/* Platform-specific Media Button with Content Library / Device Menu */}
+                    <div style={{ position: 'relative' }} ref={mediaDropdownRef}>
+                      <button
+                        type="button"
+                        onClick={() => setShowMediaDropdown(prev => !prev)}
+                        className={`composer-tool-button ${showMediaDropdown || isContentLibraryModalOpen ? 'is-active' : ''}`}
+                        title={
+                          activeEditorTab === 'youtube' || (selectedPlatforms.length === 1 && selectedPlatforms[0] === 'youtube')
+                            ? 'Attach video from Content Library or Device'
+                            : 'Attach media from Content Library or Device'
+                        }
+                        aria-label="Attach media"
+                        aria-expanded={showMediaDropdown}
+                      >
+                        {activeEditorTab === 'youtube' || (selectedPlatforms.length === 1 && selectedPlatforms[0] === 'youtube') ? (
+                          <Video size={14} color="#ef4444" />
+                        ) : (
+                          <ImageIcon size={14} color="#4f46e5" />
+                        )}
+                        <span>
+                          {activeEditorTab === 'youtube' || (selectedPlatforms.length === 1 && selectedPlatforms[0] === 'youtube')
+                            ? 'Video'
+                            : 'Media'}
+                        </span>
+                        <ChevronDown size={12} style={{ opacity: 0.7, marginLeft: -1 }} />
+                      </button>
+
+                      {showMediaDropdown && (
+                        <div
+                          className="composer-media-menu"
+                          style={{
+                            position: 'absolute',
+                            top: 'calc(100% + 6px)',
+                            left: 0,
+                            zIndex: 80,
+                            backgroundColor: '#ffffff',
+                            border: '1px solid #e2e8f0',
+                            borderRadius: '10px',
+                            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+                            padding: '6px',
+                            minWidth: '230px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '3px'
+                          }}
+                        >
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setShowMediaDropdown(false);
+                              setIsContentLibraryModalOpen(true);
+                            }}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '10px',
+                              padding: '8px 12px',
+                              fontSize: '12.5px',
+                              fontWeight: 500,
+                              color: '#0f172a',
+                              backgroundColor: 'transparent',
+                              border: 'none',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              textAlign: 'left',
+                              width: '100%',
+                              transition: 'background-color 150ms ease'
+                            }}
+                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f1f5f9')}
+                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                          >
+                            <FolderKanban size={16} color="#4f46e5" />
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                              <span style={{ fontWeight: 600 }}>Choose from Content Library</span>
+                              <span style={{ fontSize: '11px', color: '#64748b' }}>Select existing assets & brand media</span>
+                            </div>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setShowMediaDropdown(false);
+                              fileInputRef.current?.click();
+                            }}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '10px',
+                              padding: '8px 12px',
+                              fontSize: '12.5px',
+                              fontWeight: 500,
+                              color: '#0f172a',
+                              backgroundColor: 'transparent',
+                              border: 'none',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              textAlign: 'left',
+                              width: '100%',
+                              transition: 'background-color 150ms ease'
+                            }}
+                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f1f5f9')}
+                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                          >
+                            <Upload size={16} color="#0284c7" />
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                              <span style={{ fontWeight: 600 }}>Upload from Computer</span>
+                              <span style={{ fontSize: '11px', color: '#64748b' }}>Directly upload files from device</span>
+                            </div>
+                          </button>
+                        </div>
                       )}
-                      <span>
-                        {activeEditorTab === 'youtube' || (selectedPlatforms.length === 1 && selectedPlatforms[0] === 'youtube')
-                          ? 'Video'
-                          : 'Media'}
-                      </span>
-                    </button>
+                    </div>
 
                     {/* Emoji Button with Popover */}
                     <div style={{ position: 'relative' }}>
@@ -1112,7 +1243,7 @@ export const ComposerView: React.FC<ComposerViewProps> = ({
                   </div>
                   <button
                     type="button"
-                    onClick={() => fileInputRef.current?.click()}
+                    onClick={() => setIsContentLibraryModalOpen(true)}
                     style={{
                       background: 'none',
                       border: 'none',
@@ -1124,6 +1255,7 @@ export const ComposerView: React.FC<ComposerViewProps> = ({
                       alignItems: 'center',
                       gap: '4px'
                     }}
+                    title="Add media from Content Library or Device"
                   >
                     <Plus size={13} />
                     <span>Add more</span>
@@ -1329,6 +1461,19 @@ export const ComposerView: React.FC<ComposerViewProps> = ({
           }}
         />
       )}
+
+      {/* Content Library Media Selection Modal */}
+      <ContentLibraryMediaModal
+        isOpen={isContentLibraryModalOpen}
+        onClose={() => setIsContentLibraryModalOpen(false)}
+        onAttachMedia={handleAttachContentLibraryMedia}
+        onUploadFromDevice={() => fileInputRef.current?.click()}
+        selectedPlatforms={selectedPlatforms}
+        currentAttachedUrls={draft.mediaUrls}
+        brandId={currentBrand?.id || 'brand-crinoid'}
+        brandName={currentBrand?.name || 'Crinoid Social'}
+        showToast={showToast}
+      />
     </div>
   );
 };

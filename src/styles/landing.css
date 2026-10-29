@@ -1,6 +1,7 @@
 /* =========================================================================
-   CRINOID SOCIAL — SHADCN/UI SAAS LANDING PAGE DESIGN SYSTEM
-   Scoped exclusively to .landing-root and .public-header-root
+   CRINOID SOCIAL — SAAS LANDING PAGE DESIGN SYSTEM & AMBIENT ANIMATIONS
+   Inspired by ani.jpeg and high-end SaaS designs (Linear, Stripe, Buffer)
+   Composite-only GPU-accelerated animations, zero layout shift, full reduced-motion support
    ========================================================================= */
 
 /* Root Container */
@@ -21,9 +22,9 @@
   left: 0;
   right: 0;
   height: 68px;
-  background-color: rgba(255, 255, 255, 0.82);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background-color: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border-bottom: 1px solid rgba(226, 232, 240, 0.8);
   display: flex;
   align-items: center;
@@ -34,7 +35,7 @@
 }
 
 .public-header-container {
-  max-width: 1240px;
+  max-width: 1280px;
   width: 100%;
   margin: 0 auto;
   display: flex;
@@ -50,8 +51,8 @@
   font-weight: 500;
   color: #64748b;
   cursor: pointer;
-  padding: 8px 12px;
-  border-radius: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
   transition: all 0.15s ease;
   text-decoration: none;
   display: inline-flex;
@@ -69,45 +70,22 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background-color: #0f172a;
+  background-color: #4f46e5;
   color: #ffffff;
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 600;
-  padding: 9px 20px;
-  border-radius: 8px;
+  padding: 10px 22px;
+  border-radius: 9999px;
   border: 1px solid transparent;
   cursor: pointer;
-  transition: all 0.15s ease;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.28);
   text-decoration: none;
 }
 
 .shadcn-btn-primary:hover {
-  background-color: #1e293b;
-  box-shadow: 0 4px 12px 0 rgba(15, 23, 42, 0.12);
-  transform: translateY(-1px);
-}
-
-.shadcn-btn-gradient {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-  color: #ffffff;
-  font-size: 13.5px;
-  font-weight: 600;
-  padding: 9px 20px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.25);
-}
-
-.shadcn-btn-gradient:hover {
-  opacity: 0.95;
-  box-shadow: 0 4px 16px rgba(79, 70, 229, 0.35);
+  background-color: #4338ca;
+  box-shadow: 0 6px 20px rgba(79, 70, 229, 0.38);
   transform: translateY(-1px);
 }
 
@@ -118,21 +96,24 @@
   gap: 8px;
   background-color: #ffffff;
   color: #0f172a;
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 600;
-  padding: 9px 20px;
-  border-radius: 8px;
-  border: 1px solid #cbd5e1;
+  padding: 10px 22px;
+  border-radius: 9999px;
+  border: 1px solid #e2e8f0;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
 }
 
 .shadcn-btn-outline:hover {
   background-color: #f8fafc;
-  border-color: #94a3b8;
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
 }
 
-/* Section Header */
+/* Section Header Typography */
 .landing-section-eyebrow {
   display: inline-flex;
   align-items: center;
@@ -162,11 +143,11 @@
   margin: 0 auto;
 }
 
-/* Shadcn Card */
+/* Cards */
 .shadcn-card {
   background-color: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 14px;
+  border-radius: 16px;
   padding: 28px;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03);
@@ -183,15 +164,15 @@
 .shadcn-card-highlighted {
   background-color: #ffffff;
   border: 2px solid #6366f1;
-  border-radius: 14px;
+  border-radius: 16px;
   padding: 28px;
   box-shadow: 0 12px 30px -8px rgba(99, 102, 241, 0.15);
   position: relative;
   display: flex;
   flex-direction: column;
+  animation: ambientCardPulse 8s ease-in-out infinite;
 }
 
-/* Micro Badge */
 .shadcn-pill-badge {
   display: inline-flex;
   align-items: center;
@@ -203,25 +184,270 @@
   letter-spacing: 0.03em;
 }
 
-/* Grid Background */
+/* =========================================================================
+   ANIMATED AMBIENT BACKGROUND SYSTEM
+   ========================================================================= */
+
 .hero-radial-bg {
   position: relative;
-  background: radial-gradient(circle at 50% 10%, rgba(99, 102, 241, 0.08) 0%, rgba(248, 250, 252, 0.5) 45%, #ffffff 80%);
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 15%, rgba(99, 102, 241, 0.08) 0%, rgba(248, 250, 252, 0.6) 50%, #ffffff 85%);
 }
 
 .hero-radial-bg::before {
   content: "";
   position: absolute;
   inset: 0;
-  background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
-  background-size: 28px 28px;
-  opacity: 0.35;
-  mask-image: radial-gradient(ellipse at 50% 20%, #000 30%, transparent 75%);
-  -webkit-mask-image: radial-gradient(ellipse at 50% 20%, #000 30%, transparent 75%);
+  background-image: radial-gradient(#cbd5e1 1.2px, transparent 1.2px);
+  background-size: 32px 32px;
+  opacity: 0.32;
+  mask-image: radial-gradient(ellipse at 50% 30%, #000 35%, transparent 80%);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 30%, #000 35%, transparent 80%);
+  pointer-events: none;
+  animation: gridBreathe 14s ease-in-out infinite;
+}
+
+@keyframes gridBreathe {
+  0%, 100% { opacity: 0.25; }
+  50% { opacity: 0.42; }
+}
+
+.hero-ambient-container {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hero-ambient-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(85px);
+  will-change: transform, opacity;
   pointer-events: none;
 }
 
-/* Channels Card */
+/* Purple / Lavender Gradient Cloud - Top Left & Center */
+.hero-blob-purple {
+  top: -12%;
+  left: 2%;
+  width: 620px;
+  height: 620px;
+  background: radial-gradient(circle, rgba(147, 51, 234, 0.32) 0%, rgba(99, 102, 241, 0.20) 45%, rgba(238, 242, 255, 0) 70%);
+  animation: floatOrbPurple 22s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
+}
+
+/* Sky Blue / Cyan Gradient Cloud - Top Right behind Mockup */
+.hero-blob-blue {
+  top: 2%;
+  right: -5%;
+  width: 650px;
+  height: 650px;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.34) 0%, rgba(96, 165, 250, 0.20) 45%, rgba(239, 246, 255, 0) 70%);
+  animation: floatOrbBlue 25s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
+}
+
+/* Pink / Rose Gradient Cloud - Bottom Right */
+.hero-blob-pink {
+  bottom: 0%;
+  right: 15%;
+  width: 550px;
+  height: 550px;
+  background: radial-gradient(circle, rgba(244, 114, 182, 0.28) 0%, rgba(236, 72, 153, 0.16) 45%, rgba(253, 242, 248, 0) 70%);
+  animation: floatOrbPink 20s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
+}
+
+@keyframes floatOrbPurple {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+    opacity: 0.75;
+  }
+  50% {
+    transform: translate3d(60px, 45px, 0) scale(1.1) rotate(15deg);
+    opacity: 0.95;
+  }
+  100% {
+    transform: translate3d(-40px, 65px, 0) scale(0.92) rotate(-10deg);
+    opacity: 0.7;
+  }
+}
+
+@keyframes floatOrbBlue {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: translate3d(-70px, 50px, 0) scale(1.08);
+    opacity: 0.92;
+  }
+  100% {
+    transform: translate3d(-40px, -35px, 0) scale(0.95);
+    opacity: 0.65;
+  }
+}
+
+@keyframes floatOrbPink {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.65;
+  }
+  50% {
+    transform: translate3d(50px, -40px, 0) scale(1.12);
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate3d(-45px, 30px, 0) scale(0.92);
+    opacity: 0.6;
+  }
+}
+
+/* =========================================================================
+   HERO FLOATING MOCKUP & CARDS ANIMATIONS (ani.jpeg)
+   ========================================================================= */
+
+/* Hero Top Feature Pill */
+.hero-pill-badge {
+  animation: floatSubtle 6s ease-in-out infinite;
+}
+
+.hero-pill-badge svg {
+  animation: sparkleTwinkle 5s ease-in-out infinite;
+}
+
+@keyframes sparkleTwinkle {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.2) rotate(15deg); }
+}
+
+/* Floating Card 1: Adventure Post Card (Top Right) */
+.floating-card-post {
+  animation: floatCardPost 7s ease-in-out infinite alternate;
+  box-shadow: 0 16px 36px -6px rgba(15, 23, 42, 0.12), 0 8px 16px -4px rgba(15, 23, 42, 0.08);
+  transition: transform 0.3s ease;
+}
+
+@keyframes floatCardPost {
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(1deg); }
+  100% { transform: translateY(3px) rotate(-0.5deg); }
+}
+
+/* Floating Card 2: Calendar Card (Right) */
+.floating-card-calendar {
+  animation: floatCardCalendar 8s ease-in-out infinite alternate;
+  box-shadow: 0 16px 36px -6px rgba(15, 23, 42, 0.12), 0 8px 16px -4px rgba(15, 23, 42, 0.08);
+  transition: transform 0.3s ease;
+}
+
+@keyframes floatCardCalendar {
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-7px) rotate(-1deg); }
+  100% { transform: translateY(4px) rotate(0.5deg); }
+}
+
+/* Floating Card 3: Total Engagement Card (Bottom Right) */
+.floating-card-engagement {
+  animation: floatCardEngagement 6.5s ease-in-out infinite alternate;
+  box-shadow: 0 16px 36px -6px rgba(15, 23, 42, 0.12), 0 8px 16px -4px rgba(15, 23, 42, 0.08);
+  transition: transform 0.3s ease;
+}
+
+@keyframes floatCardEngagement {
+  0% { transform: translateY(0px) scale(1); }
+  50% { transform: translateY(-6px) scale(1.015); }
+  100% { transform: translateY(2px) scale(0.995); }
+}
+
+/* Floating Button: Publish Pill Button (Bottom Left) */
+.floating-btn-publish {
+  animation: floatBtnPublish 5.5s ease-in-out infinite alternate;
+  box-shadow: 0 12px 28px rgba(79, 70, 229, 0.35);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+@keyframes floatBtnPublish {
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-6px) rotate(-1.5deg); }
+  100% { transform: translateY(3px) rotate(1deg); }
+}
+
+.floating-btn-publish:hover {
+  transform: translateY(-8px) scale(1.04);
+  box-shadow: 0 16px 34px rgba(79, 70, 229, 0.45);
+}
+
+/* Floating Vertical Social Strip */
+.floating-social-strip {
+  animation: floatSocialStrip 6s ease-in-out infinite alternate;
+  transition: transform 0.3s ease;
+}
+
+@keyframes floatSocialStrip {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+  100% { transform: translateY(3px); }
+}
+
+/* Hero Decorative Orbit Line SVG Animation */
+.hero-orbit-svg {
+  animation: orbitRotate 45s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes orbitRotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Generic Subtle Float */
+@keyframes floatSubtle {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+}
+
+/* Social Icon Badges Staggered Float */
+.social-icon-badge-floating {
+  display: inline-flex;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  animation: floatSubtle 4.5s ease-in-out infinite;
+}
+
+.social-icon-badge-floating:nth-child(1) { animation-delay: 0s; }
+.social-icon-badge-floating:nth-child(2) { animation-delay: 0.8s; }
+.social-icon-badge-floating:nth-child(3) { animation-delay: 1.6s; }
+.social-icon-badge-floating:nth-child(4) { animation-delay: 2.4s; }
+.social-icon-badge-floating:nth-child(5) { animation-delay: 3.2s; }
+.social-icon-badge-floating:nth-child(6) { animation-delay: 4.0s; }
+.social-icon-badge-floating:nth-child(7) { animation-delay: 4.8s; }
+
+.social-icon-badge-floating:hover {
+  transform: translateY(-3px) scale(1.08);
+}
+
+/* Feature Row Cards (ani.jpeg bottom row) */
+.hero-feature-card {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+}
+
+.hero-feature-card:hover {
+  transform: translateY(-4px);
+  border-color: #cbd5e1;
+  box-shadow: 0 10px 24px -4px rgba(15, 23, 42, 0.08);
+}
+
+/* Channel Pill Cards Staggered Ambient Float */
 .channel-pill-card {
   width: 170px;
   padding: 24px 16px;
@@ -232,17 +458,244 @@
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  animation: floatSubtle 6s ease-in-out infinite;
 }
 
+.channel-pill-card:nth-child(1) { animation-delay: 0s; }
+.channel-pill-card:nth-child(2) { animation-delay: 1.2s; }
+.channel-pill-card:nth-child(3) { animation-delay: 2.4s; }
+.channel-pill-card:nth-child(4) { animation-delay: 3.6s; }
+.channel-pill-card:nth-child(5) { animation-delay: 4.8s; }
+
 .channel-pill-card:hover {
-  transform: translateY(-3px);
+  transform: translateY(-6px) scale(1.02);
   border-color: #cbd5e1;
-  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.08);
+}
+
+/* Highlighted Card Ambient Pulse */
+@keyframes ambientCardPulse {
+  0%, 100% {
+    border-color: #6366f1;
+    box-shadow: 0 12px 30px -8px rgba(99, 102, 241, 0.15);
+  }
+  50% {
+    border-color: #818cf8;
+    box-shadow: 0 16px 36px -8px rgba(99, 102, 241, 0.24);
+  }
+}
+
+/* Channels section ambient glow */
+.channels-ambient-container {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.channels-ambient-blob {
+  position: absolute;
+  top: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 600px;
+  height: 280px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(99, 102, 241, 0.07) 0%, rgba(248, 250, 252, 0) 70%);
+  filter: blur(50px);
+  pointer-events: none;
+}
+
+
+/* =========================================================================
+   CURVED PATH MOTION ANIMATION FOR 5 SOCIAL ICONS (Task 2)
+   Composite-only GPU-accelerated CSS offset-path animation
+   ========================================================================= */
+
+.hero-orbit-stage {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 700px;
+  height: 520px;
+  pointer-events: none;
+  z-index: 12;
+}
+
+.curved-orbit-icon {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  border: 1.5px solid rgba(226, 232, 240, 0.95);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  offset-path: path("M 350,40 a 330,220 0 1,1 0,440 a 330,220 0 1,1 0,-440");
+  offset-rotate: 0deg;
+  animation: travelAlongCurve 22s linear infinite;
+  pointer-events: none;
+  will-change: offset-distance;
+}
+
+.curved-orbit-icon-1 { animation-delay: 0s; }
+.curved-orbit-icon-2 { animation-delay: -4.4s; }
+.curved-orbit-icon-3 { animation-delay: -8.8s; }
+.curved-orbit-icon-4 { animation-delay: -13.2s; }
+.curved-orbit-icon-5 { animation-delay: -17.6s; }
+
+@keyframes travelAlongCurve {
+  0% {
+    offset-distance: 0%;
+  }
+  100% {
+    offset-distance: 100%;
+  }
+}
+
+/* =========================================================================
+   WATCH DEMO VIDEO MODAL (Task 3)
+   ========================================================================= */
+
+.demo-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.78);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeInModal 0.2s ease-out;
+}
+
+.demo-modal-dialog {
+  background-color: #0f172a;
+  color: #ffffff;
+  border-radius: 16px;
+  max-width: 960px;
+  width: 100%;
+  box-shadow: 0 25px 60px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: scaleUpModal 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fadeInModal {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleUpModal {
+  from { transform: scale(0.96); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.demo-modal-header {
+  padding: 16px 22px;
+  background-color: #1e293b;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.demo-modal-close-btn {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.demo-modal-close-btn:hover {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.demo-video-player-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background-color: #000000;
+}
+
+.demo-video-element {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  outline: none;
+}
+
+.demo-modal-footer {
+  padding: 16px 22px;
+  background-color: #1e293b;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* Accessibility: Respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .hero-ambient-blob,
+  .curved-orbit-icon,
+  .hero-radial-bg::before,
+  .channel-pill-card,
+  .social-icon-badge-floating,
+  .floating-card-post,
+  .floating-card-calendar,
+  .floating-card-engagement,
+  .floating-btn-publish,
+  .floating-social-strip,
+  .hero-orbit-svg,
+  .shadcn-card-highlighted,
+  .hero-pill-badge,
+  .hero-pill-badge svg {
+    animation: none !important;
+    transform: none !important;
+    transition: none !important;
+  }
 }
 
 /* Responsive utilities */
+@media (max-width: 1024px) {
+  .hero-two-column-layout {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+  }
+  .hero-left-col {
+    max-width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+  }
+  .hero-mockup-wrapper {
+    width: 100% !important;
+    max-width: 680px !important;
+    margin-top: 32px !important;
+  }
+}
+
 @media (max-width: 840px) {
   .public-header-root {
     padding: 0 20px;
