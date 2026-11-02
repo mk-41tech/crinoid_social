@@ -28,7 +28,6 @@ import {
   Users,
   BarChart2,
   Folder,
-  Send,
   MousePointer2
 } from 'lucide-react';
 import '../../styles/landing.css';
@@ -146,7 +145,7 @@ export const LandingPage: React.FC = () => {
                 }}
               >
                 Manage Your Social Media{' '}
-                <span style={{ color: '#2563eb' }}>
+                <span className="hero-gradient-text" style={{ color: '#2563eb' }}>
                   in One Place
                 </span>
               </h1>
@@ -219,43 +218,6 @@ export const LandingPage: React.FC = () => {
             {/* Right Column: Hero Mockup with Floating Cards (ani.jpeg) */}
             <div className="hero-mockup-wrapper" style={{ flex: '1 1 640px', maxWidth: '690px', position: 'relative' }}>
               
-              {/* Decorative Orbital Stage with Curved Path & 5 Animated Social Icons (Task 2) */}
-              <div className="hero-orbit-stage" aria-hidden="true">
-                <svg width="700" height="520" viewBox="0 0 700 520" fill="none" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.75 }}>
-                  <ellipse cx="350" cy="260" rx="330" ry="220" stroke="url(#orbitGradient)" strokeWidth="1.5" strokeDasharray="6 8" />
-                  <ellipse cx="350" cy="260" rx="280" ry="180" stroke="url(#orbitGradient2)" strokeWidth="1.2" transform="rotate(-12 350 260)" />
-                  <defs>
-                    <linearGradient id="orbitGradient" x1="0" y1="0" x2="700" y2="520" gradientUnits="userSpaceOnUse">
-                      <stop stopColor="#a855f7" stopOpacity="0.6" />
-                      <stop offset="0.5" stopColor="#38bdf8" stopOpacity="0.8" />
-                      <stop offset="1" stopColor="#ec4899" stopOpacity="0.5" />
-                    </linearGradient>
-                    <linearGradient id="orbitGradient2" x1="700" y1="0" x2="0" y2="520" gradientUnits="userSpaceOnUse">
-                      <stop stopColor="#6366f1" stopOpacity="0.5" />
-                      <stop offset="0.7" stopColor="#06b6d4" stopOpacity="0.7" />
-                      <stop offset="1" stopColor="#8b5cf6" stopOpacity="0.4" />
-                    </linearGradient>
-                  </defs>
-                </svg>
-
-                {/* 5 Social Media Icons Travelling Along the Curved Orbit */}
-                <div className="curved-orbit-icon curved-orbit-icon-1" title="Instagram">
-                  <InstagramIcon size={18} color="#e1306c" />
-                </div>
-                <div className="curved-orbit-icon curved-orbit-icon-2" title="Facebook">
-                  <FacebookIcon size={18} color="#1877f2" />
-                </div>
-                <div className="curved-orbit-icon curved-orbit-icon-3" title="X">
-                  <XIcon size={15} color="#0f172a" />
-                </div>
-                <div className="curved-orbit-icon curved-orbit-icon-4" title="LinkedIn">
-                  <LinkedinIcon size={18} color="#0a66c2" />
-                </div>
-                <div className="curved-orbit-icon curved-orbit-icon-5" title="YouTube">
-                  <YoutubeIcon size={18} color="#ff0000" />
-                </div>
-              </div>
-
               {/* Floating Vertical Social Strip (Left Edge of Mockup) */}
               <div 
                 className="floating-social-strip"
@@ -339,6 +301,7 @@ export const LandingPage: React.FC = () => {
 
               {/* Main Product Dashboard Mockup Window */}
               <div
+                className="hero-dashboard-mockup"
                 style={{
                   backgroundColor: '#ffffff',
                   borderRadius: '18px',
@@ -509,33 +472,7 @@ export const LandingPage: React.FC = () => {
                 </svg>
               </div>
 
-              {/* Floating Button: Publish Pill Button (Bottom Left) */}
-              <button
-                type="button"
-                onClick={handleGetStarted}
-                className="floating-btn-publish"
-                style={{
-                  position: 'absolute',
-                  left: '-8px',
-                  bottom: '-16px',
-                  zIndex: 24,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  backgroundColor: '#4f46e5',
-                  color: '#ffffff',
-                  padding: '10px 20px',
-                  borderRadius: '9999px',
-                  border: 'none',
-                  fontSize: '13px',
-                  fontWeight: 700,
-                  cursor: 'pointer'
-                }}
-              >
-                <Send size={14} />
-                <span>Publish</span>
-              </button>
-            </div>
+              </div>
           </div>
 
           {/* 5 Feature Cards Row below Hero (ani.jpeg) */}
