@@ -689,3 +689,4 @@ async function handleApiRequests(req, res, next) {
     return sendJson(res, 500, { error: 'Internal Server Error' });
   }
 }
+

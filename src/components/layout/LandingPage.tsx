@@ -52,13 +52,13 @@ export const LandingPage: React.FC = () => {
       document.body.style.overflow = '';
     }
   }, [isDemoModalOpen]);
-  const { setCurrentView, enterDemoWorkspace, isAuthenticated } = useApp();
+  const { setCurrentView, isAuthenticated } = useApp();
 
   const handleGetStarted = () => {
     if (isAuthenticated) {
       setCurrentView('composer');
     } else {
-      enterDemoWorkspace();
+      setCurrentView('login');
     }
   };
 
