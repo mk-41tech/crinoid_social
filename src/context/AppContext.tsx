@@ -386,12 +386,32 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       };
     }
 
+    const userMeta: Record<string, { id: string; avatar: string }> = {
+      'muthu@crinoid.social': {
+        id: 'u-1',
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80'
+      },
+      'priya@crinoid.social': {
+        id: 'u-2',
+        avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=120&auto=format&fit=crop&q=80'
+      },
+      'karthik@crinoid.social': {
+        id: 'u-3',
+        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&auto=format&fit=crop&q=80'
+      }
+    };
+
+    const meta = userMeta[cleanEmail] || {
+      id: 'usr-' + matched.name.toLowerCase().replace(/\\s+/g, '-'),
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80'
+    };
+
     const user: BrandUser = {
-      id: 'usr-' + matched.name.toLowerCase().replace(/\s+/g, '-'),
+      id: meta.id,
       name: matched.name,
       email: matched.email,
       role: matched.role as BrandUser['role'],
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80',
+      avatar: meta.avatar,
       brandId: currentBrand.id
     };
 

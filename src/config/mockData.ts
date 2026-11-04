@@ -67,6 +67,30 @@ export const MOCK_BRANDS: Brand[] = [
     color: '#0D9488',
     users: [
       {
+        id: 'u-3',
+        name: 'Karthik',
+        email: 'karthik@crinoid.social',
+        role: 'Approver',
+        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80',
+        brandId: 'brand-nexus'
+      },
+      {
+        id: 'u-1',
+        name: 'Muthukumar',
+        email: 'muthu@crinoid.social',
+        role: 'Social Lead',
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
+        brandId: 'brand-nexus'
+      },
+      {
+        id: 'u-2',
+        name: 'Priya',
+        email: 'priya@crinoid.social',
+        role: 'Content Creator',
+        avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&auto=format&fit=crop&q=80',
+        brandId: 'brand-nexus'
+      },
+      {
         id: 'u-4',
         name: 'Kavitha',
         email: 'kavitha@nexuslife.io',

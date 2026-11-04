@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CheckSquare, X, Send, UserCheck, AlertCircle } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { Avatar } from '../common/Avatar';
+import { BrandUser } from '../../types';
+import { approvalService } from '../../services/approvalService';
 
 interface ApprovalModalProps {
   onSubmitApproval: (reviewerId: string, note: string) => void;
@@ -12,12 +14,38 @@ export const ApprovalModal: React.FC<ApprovalModalProps> = ({
   onSubmitApproval,
   onClose
 }) => {
-  const { currentBrand } = useApp();
-  const [selectedReviewerId, setSelectedReviewerId] = useState(currentBrand.users[0]?.id || '');
+  const { currentBrand, showToast } = useApp();
+
+  // Filter currentBrand users to strictly authorized approvers
+  const initialApprovers = currentBrand.users.filter(u => u.role.toLowerCase() === 'approver');
+  const [approvers, setApprovers] = useState<BrandUser[]>(initialApprovers);
+  const [selectedReviewerId, setSelectedReviewerId] = useState(initialApprovers[0]?.id || '');
   const [note, setNote] = useState('');
+
+  // Synchronize with authoritative backend approver list
+  useEffect(() => {
+    let isMounted = true;
+    approvalService.getBrandApprovers(currentBrand.id).then(backendApprovers => {
+      if (!isMounted) return;
+      if (backendApprovers && backendApprovers.length > 0) {
+        setApprovers(backendApprovers);
+        if (!selectedReviewerId || !backendApprovers.some(a => a.id === selectedReviewerId)) {
+          setSelectedReviewerId(backendApprovers[0].id);
+        }
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [currentBrand.id]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!selectedReviewerId) {
+      showToast('error', 'Please select an authorized brand approver.');
+      return;
+    }
     onSubmitApproval(selectedReviewerId, note);
     onClose();
   };
@@ -77,35 +105,43 @@ export const ApprovalModal: React.FC<ApprovalModalProps> = ({
               Assign Brand Approver ({currentBrand.name})
             </label>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              {currentBrand.users.map(user => {
-                const isSelected = user.id === selectedReviewerId;
+              {approvers.length === 0 ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px', borderRadius: 'var(--radius-md)', backgroundColor: '#fff7ed', border: '1px solid #ffedd5', color: '#c2410c', fontSize: '12px' }}>
+                  <AlertCircle size={16} />
+                  <span>No authorized approver found for {currentBrand.name}.</span>
+                </div>
+              ) : (
+                approvers.map(user => {
+                  const isSelected = user.id === selectedReviewerId;
 
-                return (
-                  <div
-                    key={user.id}
-                    onClick={() => setSelectedReviewerId(user.id)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      padding: '8px 12px',
-                      borderRadius: 'var(--radius-md)',
-                      border: isSelected ? '2px solid var(--color-primary)' : '1px solid var(--border-subtle)',
-                      backgroundColor: isSelected ? 'var(--color-primary-light)' : '#ffffff',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <Avatar src={user.avatar} name={user.name} size={30} />
-                      <div>
-                        <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>{user.name}</div>
-                        <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{user.role} &bull; {user.email}</div>
+                  return (
+                    <div
+                      key={user.id}
+                      onClick={() => setSelectedReviewerId(user.id)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '10px 14px',
+                        borderRadius: 'var(--radius-md)',
+                        border: isSelected ? '2px solid var(--color-primary)' : '1px solid var(--border-subtle)',
+                        backgroundColor: isSelected ? 'var(--color-primary-light)' : '#ffffff',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease'
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <Avatar src={user.avatar} name={user.name} size={32} />
+                        <div>
+                          <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>{user.name}</div>
+                          <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{user.role} &bull; {user.email}</div>
+                        </div>
                       </div>
+                      {isSelected && <UserCheck size={16} color="var(--color-primary)" />}
                     </div>
-                    {isSelected && <UserCheck size={16} color="var(--color-primary)" />}
-                  </div>
-                );
-              })}
+                  );
+                })
+              )}
             </div>
           </div>
 
@@ -144,8 +180,9 @@ export const ApprovalModal: React.FC<ApprovalModalProps> = ({
             </button>
             <button
               type="submit"
+              disabled={approvers.length === 0}
               className="btn btn-primary btn-sm"
-              style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+              style={{ cursor: approvers.length === 0 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
             >
               <Send size={14} />
               <span>Submit for Approval</span>

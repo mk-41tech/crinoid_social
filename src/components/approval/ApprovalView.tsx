@@ -10,6 +10,7 @@ import {
 } from './types';
 import { ApprovalReviewModal } from './ApprovalReviewModal';
 import { ApprovalRulesTab } from './ApprovalRulesTab';
+import { approvalService } from '../../services/approvalService';
 import { InstagramIcon, FacebookIcon, LinkedinIcon, YoutubeIcon, XIcon } from '../common/SocialIcons';
 import '../../styles/approval.css';
 import {
@@ -164,7 +165,7 @@ const getInitialApprovalItems = (brandId: string): ApprovalPostItem[] => {
           action: 'Submitted for Approval',
           user: { id: 'u-2', name: 'Priya', role: 'Content Creator' },
           timestamp: formatISO(-1),
-          note: 'Ready for quick approval review before weekend scheduling.'
+          note: 'Carousel slides and copy ready for review.'
         }
       ],
       comments: [
@@ -173,7 +174,7 @@ const getInitialApprovalItems = (brandId: string): ApprovalPostItem[] => {
           authorId: 'u-2',
           authorName: 'Priya',
           authorRole: 'Content Creator',
-          content: 'Ready for quick approval review before weekend scheduling. @Karthik',
+          content: 'Carousel slides and copy ready for review. @Karthik',
           timestamp: formatISO(-1),
           type: 'comment'
         }
@@ -182,10 +183,10 @@ const getInitialApprovalItems = (brandId: string): ApprovalPostItem[] => {
     {
       id: 'APP-503',
       brandId,
-      caption: 'Behind the scenes at our creative studio. Swipe through to see how our brand aesthetic comes to life. ✨ [Draft v1]',
-      mediaUrls: ['https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600&auto=format&fit=crop&q=80'],
+      caption: '🌿 Weekend special: Explore our mindful wellness collection with free express shipping across all regions.',
+      mediaUrls: ['https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=600&auto=format&fit=crop&q=80'],
       mediaType: 'image',
-      thumbnailUrl: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600&auto=format&fit=crop&q=80',
+      thumbnailUrl: 'https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=600&auto=format&fit=crop&q=80',
       platforms: ['instagram'],
       author: {
         id: 'u-2',
@@ -193,22 +194,22 @@ const getInitialApprovalItems = (brandId: string): ApprovalPostItem[] => {
         role: 'Content Creator'
       },
       assignedApprover: {
-        id: 'u-1',
-        name: 'Muthukumar',
-        role: 'Social Lead'
+        id: 'u-3',
+        name: 'Karthik',
+        role: 'Approver'
       },
       status: 'changes_requested',
       submittedAt: formatISO(-12),
       reviewedAt: formatISO(-10),
-      campaign: 'Brand Awareness',
+      campaign: 'Weekend Drops',
       version: 1,
       requiresClientApproval: false,
       steps: [
         {
           stepNumber: 1,
-          title: 'Creative Lead Sign-off',
-          assignedRole: 'Social Lead',
-          assignedApproverName: 'Muthukumar',
+          title: 'Brand Tone Review',
+          assignedRole: 'Approver',
+          assignedApproverName: 'Karthik',
           status: 'changes_requested'
         }
       ],
@@ -219,24 +220,24 @@ const getInitialApprovalItems = (brandId: string): ApprovalPostItem[] => {
           action: 'Submitted for Approval',
           user: { id: 'u-2', name: 'Priya', role: 'Content Creator' },
           timestamp: formatISO(-12),
-          note: 'Submitted creative studio carousel.'
+          note: 'Weekend promo post submitted.'
         },
         {
           id: 'hist-503-2',
           type: 'changes_requested',
           action: 'Changes Requested',
-          user: { id: 'u-1', name: 'Muthukumar', role: 'Social Lead' },
+          user: { id: 'u-3', name: 'Karthik', role: 'Approver' },
           timestamp: formatISO(-10),
-          note: 'Please adjust the color grading on slide 2 and add official brand hashtags before we approve.'
+          note: 'Please update the free shipping terms and highlight eco-friendly packaging.'
         }
       ],
       comments: [
         {
           id: 'comm-4',
-          authorId: 'u-1',
-          authorName: 'Muthukumar',
-          authorRole: 'Social Lead',
-          content: 'Please adjust the color grading on slide 2 and add official brand hashtags before we approve. @Priya',
+          authorId: 'u-3',
+          authorName: 'Karthik',
+          authorRole: 'Approver',
+          content: 'Please update the free shipping terms and highlight eco-friendly packaging.',
           timestamp: formatISO(-10),
           type: 'decision',
           decision: 'changes_requested'
@@ -312,9 +313,10 @@ const getInitialApprovalItems = (brandId: string): ApprovalPostItem[] => {
     {
       id: 'APP-505',
       brandId,
-      caption: 'Unverified coupon discount code flash sale: Get 70% off with coupon code CRN70 today only!',
-      mediaUrls: [],
-      mediaType: 'text',
+      caption: '🔥 Massive 70% flash discount on all accessories this afternoon only! Use promo code FLASH70.',
+      mediaUrls: ['https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&auto=format&fit=crop&q=80'],
+      mediaType: 'image',
+      thumbnailUrl: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&auto=format&fit=crop&q=80',
       platforms: ['facebook'],
       author: {
         id: 'u-2',
@@ -322,9 +324,9 @@ const getInitialApprovalItems = (brandId: string): ApprovalPostItem[] => {
         role: 'Content Creator'
       },
       assignedApprover: {
-        id: 'u-1',
-        name: 'Muthukumar',
-        role: 'Social Lead'
+        id: 'u-3',
+        name: 'Karthik',
+        role: 'Approver'
       },
       status: 'rejected',
       submittedAt: formatISO(-30),
@@ -413,7 +415,7 @@ export const ApprovalView: React.FC = () => {
   const [platformFilter, setPlatformFilter] = useState<string>('all');
   const [clientFilter, setClientFilter] = useState<boolean | 'all'>('all');
 
-  // Persistence with backwards-compatible history upgrade
+  // Initial state with backwards-compatible history upgrade
   const [items, setItems] = useState<ApprovalPostItem[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_APPROVAL_POSTS);
@@ -447,6 +449,21 @@ export const ApprovalView: React.FC = () => {
     return getInitialApprovalRules();
   });
 
+  // Load shared approval records from authoritative backend API
+  useEffect(() => {
+    let isMounted = true;
+    approvalService.getApprovals(currentBrand.id).then(serverItems => {
+      if (isMounted && Array.isArray(serverItems) && serverItems.length > 0) {
+        setItems(serverItems);
+      }
+    }).catch(e => {
+      console.warn('Failed to load shared approvals from server', e);
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, [currentBrand.id]);
+
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_APPROVAL_POSTS, JSON.stringify(items));
@@ -472,31 +489,73 @@ export const ApprovalView: React.FC = () => {
     return items.find(i => i.id === reviewTarget.id) || reviewTarget;
   }, [items, reviewTarget]);
 
-  // Tab Counts: include in_review, submitted, resubmitted in pending
+  // Role-based visibility logic across tabs
+  const isPostVisibleInTab = (item: ApprovalPostItem, tab: ApprovalTab) => {
+    const userRole = (currentUser?.role || '').toLowerCase();
+    const isApprover = userRole === 'approver';
+    const isCreator = userRole === 'content creator';
+
+    if (tab === 'pending') {
+      if (item.status !== 'in_review' && item.status !== 'resubmitted' && item.status !== 'submitted' && item.status !== 'draft') {
+        return false;
+      }
+      if (isApprover) {
+        return (
+          item.assignedApprover?.id === currentUser?.id ||
+          item.assignedApprover?.name?.toLowerCase() === currentUser?.name?.toLowerCase() ||
+          !item.assignedApprover
+        );
+      }
+      if (isCreator) {
+        return item.author?.id === currentUser?.id;
+      }
+      return true;
+    }
+
+    if (tab === 'changes_requested') {
+      if (item.status !== 'changes_requested') return false;
+      if (isCreator) return item.author?.id === currentUser?.id;
+      if (isApprover) return item.assignedApprover?.id === currentUser?.id || item.assignedApprover?.name?.toLowerCase() === currentUser?.name?.toLowerCase();
+      return true;
+    }
+
+    if (tab === 'approved') {
+      // Shared across all authorized brand users!
+      return item.status === 'approved';
+    }
+
+    if (tab === 'rejected') {
+      if (item.status !== 'rejected') return false;
+      if (isCreator) return item.author?.id === currentUser?.id;
+      if (isApprover) return item.assignedApprover?.id === currentUser?.id || item.assignedApprover?.name?.toLowerCase() === currentUser?.name?.toLowerCase();
+      return true;
+    }
+
+    if (tab === 'all') {
+      if (isCreator) return item.author?.id === currentUser?.id;
+      return true;
+    }
+
+    return true;
+  };
+
+  // Tab Counts with role-awareness
   const tabCounts = useMemo(() => {
     return {
-      pending: items.filter(i => i.status === 'in_review' || i.status === 'resubmitted' || i.status === 'submitted' || i.status === 'draft').length,
-      changes_requested: items.filter(i => i.status === 'changes_requested').length,
-      approved: items.filter(i => i.status === 'approved').length,
-      rejected: items.filter(i => i.status === 'rejected').length,
-      all: items.length,
+      pending: items.filter(i => isPostVisibleInTab(i, 'pending')).length,
+      changes_requested: items.filter(i => isPostVisibleInTab(i, 'changes_requested')).length,
+      approved: items.filter(i => isPostVisibleInTab(i, 'approved')).length,
+      rejected: items.filter(i => isPostVisibleInTab(i, 'rejected')).length,
+      all: items.filter(i => isPostVisibleInTab(i, 'all')).length,
       rules: rules.filter(r => r.enabled).length
     };
-  }, [items, rules]);
+  }, [items, rules, currentUser]);
 
   // Filtered List
   const filteredItems = useMemo(() => {
     return items.filter(item => {
-      // Tab filter
-      if (activeTab === 'pending') {
-        if (item.status !== 'in_review' && item.status !== 'resubmitted' && item.status !== 'submitted' && item.status !== 'draft') return false;
-      } else if (activeTab === 'changes_requested') {
-        if (item.status !== 'changes_requested') return false;
-      } else if (activeTab === 'approved') {
-        if (item.status !== 'approved') return false;
-      } else if (activeTab === 'rejected') {
-        if (item.status !== 'rejected') return false;
-      }
+      // Role and tab visibility
+      if (!isPostVisibleInTab(item, activeTab)) return false;
 
       // Platform filter
       if (platformFilter !== 'all' && !item.platforms.includes(platformFilter as any)) {
@@ -519,16 +578,22 @@ export const ApprovalView: React.FC = () => {
 
       return true;
     });
-  }, [items, activeTab, platformFilter, clientFilter, searchQuery]);
+  }, [items, activeTab, platformFilter, clientFilter, searchQuery, currentUser]);
 
   // Review Decisions with multi-step enforcement, timestamps, and history logging
-  const handleApprove = (postId: string, note = 'Approved post for scheduling and publishing.') => {
-    const actor = currentUser || { id: 'u-1', name: 'Muthukumar', role: 'Social Lead' as const, avatar: '' };
+  const handleApprove = async (postId: string, note = 'Approved post for scheduling and publishing.') => {
+    const actor = currentUser || { id: 'u-3', name: 'Karthik', role: 'Approver' as const, avatar: '' };
     const nowIso = new Date().toISOString();
+
+    // Persist decision to shared backend
+    try {
+      await approvalService.submitDecision(postId, 'approve', actor, note);
+    } catch (e) {
+      console.warn('Backend submitDecision failed, updating locally', e);
+    }
 
     setItems(prev => prev.map(item => {
       if (item.id === postId) {
-        // Multi-step rule enforcement: find first pending or changes_requested step
         const stepIdx = item.steps.findIndex(s => s.status === 'pending' || s.status === 'changes_requested');
         const updatedSteps = [...item.steps];
 
@@ -547,7 +612,6 @@ export const ApprovalView: React.FC = () => {
             completedAt: nowIso
           };
 
-          // Check if there are further pending steps
           if (stepIdx + 1 < updatedSteps.length) {
             isFinalStep = false;
             updatedSteps[stepIdx + 1] = {
@@ -600,9 +664,15 @@ export const ApprovalView: React.FC = () => {
     showToast('success', `Approval saved.`);
   };
 
-  const handleReject = (postId: string, reason: string) => {
-    const actor = currentUser || { id: 'u-1', name: 'Muthukumar', role: 'Social Lead' as const, avatar: '' };
+  const handleReject = async (postId: string, reason: string) => {
+    const actor = currentUser || { id: 'u-3', name: 'Karthik', role: 'Approver' as const, avatar: '' };
     const nowIso = new Date().toISOString();
+
+    try {
+      await approvalService.submitDecision(postId, 'reject', actor, reason);
+    } catch (e) {
+      console.warn('Backend submitDecision reject failed', e);
+    }
 
     setItems(prev => prev.map(item => {
       if (item.id === postId) {
@@ -653,9 +723,15 @@ export const ApprovalView: React.FC = () => {
     showToast('error', `Post ${postId} rejected.`);
   };
 
-  const handleRequestChanges = (postId: string, feedback: string) => {
-    const actor = currentUser || { id: 'u-1', name: 'Muthukumar', role: 'Social Lead' as const, avatar: '' };
+  const handleRequestChanges = async (postId: string, feedback: string) => {
+    const actor = currentUser || { id: 'u-3', name: 'Karthik', role: 'Approver' as const, avatar: '' };
     const nowIso = new Date().toISOString();
+
+    try {
+      await approvalService.submitDecision(postId, 'changes_requested', actor, feedback);
+    } catch (e) {
+      console.warn('Backend submitDecision changes_requested failed', e);
+    }
 
     setItems(prev => prev.map(item => {
       if (item.id === postId) {
@@ -705,14 +781,19 @@ export const ApprovalView: React.FC = () => {
     showToast('warning', `Changes requested for post ${postId}.`);
   };
 
-  const handleResubmit = (postId: string, newCaption?: string) => {
+  const handleResubmit = async (postId: string, newCaption?: string) => {
     const actor = currentUser || { id: 'u-2', name: 'Priya', role: 'Content Creator' as const, avatar: '' };
     const nowIso = new Date().toISOString();
+
+    try {
+      await approvalService.resubmit(postId, actor, newCaption);
+    } catch (e) {
+      console.warn('Backend resubmit failed', e);
+    }
 
     setItems(prev => prev.map(item => {
       if (item.id === postId) {
         const newVersion = item.version + 1;
-        // Reset steps to pending for re-evaluation
         const updatedSteps = item.steps.map(s => ({ ...s, status: 'pending' as const }));
 
         const historyEvent: ApprovalHistoryEvent = {
@@ -761,7 +842,6 @@ export const ApprovalView: React.FC = () => {
 
     setItems(prev => prev.map(item => {
       if (item.id === postId) {
-        // Also update current pending step's approver
         const updatedSteps = item.steps.map(s => 
           (s.status === 'pending' || s.status === 'changes_requested')
             ? { ...s, assignedApproverName: user.name, assignedRole: user.role }
@@ -790,9 +870,15 @@ export const ApprovalView: React.FC = () => {
     showToast('info', `Assigned approver updated to ${user.name}.`);
   };
 
-  const handleAddComment = (postId: string, commentText: string, mentions: string[]) => {
+  const handleAddComment = async (postId: string, commentText: string, mentions: string[]) => {
     const actor = currentUser || { id: 'u-1', name: 'Muthukumar', role: 'Social Lead' as const, avatar: '' };
     const nowIso = new Date().toISOString();
+
+    try {
+      await approvalService.addComment(postId, actor, commentText, mentions);
+    } catch (e) {
+      console.warn('Backend addComment failed', e);
+    }
 
     setItems(prev => prev.map(item => {
       if (item.id === postId) {

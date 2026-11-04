@@ -1,0 +1,379 @@
+[
+  {
+    "id": "APP-501",
+    "brandId": "brand-nexus",
+    "organizationId": "org-crinoid",
+    "caption": "✨ Launching our new high-performance activewear line this Friday! Breathable, sustainable, and designed to move with you everywhere. Pre-order link in bio! #NexusLife #Activewear",
+    "mediaUrls": [
+      "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=600&auto=format&fit=crop&q=80"
+    ],
+    "mediaType": "image",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=600&auto=format&fit=crop&q=80",
+    "platforms": [
+      "instagram",
+      "facebook"
+    ],
+    "author": {
+      "id": "u-2",
+      "name": "Priya",
+      "role": "Content Creator",
+      "avatar": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&auto=format&fit=crop&q=80"
+    },
+    "assignedApprover": {
+      "id": "u-3",
+      "name": "Karthik",
+      "role": "Approver",
+      "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80"
+    },
+    "status": "in_review",
+    "submittedAt": "2026-11-04T04:39:30.698Z",
+    "reviewedAt": "2026-11-04T05:39:30.698Z",
+    "scheduledAt": "2026-11-06T07:39:30.698Z",
+    "campaign": "Spring Active 2026",
+    "version": 1,
+    "requiresClientApproval": false,
+    "steps": [
+      {
+        "stepNumber": 1,
+        "title": "Review & Sign-Off",
+        "assignedRole": "Approver",
+        "assignedApproverName": "Karthik",
+        "status": "pending"
+      }
+    ],
+    "history": [
+      {
+        "id": "hist-501-1",
+        "type": "submission",
+        "action": "Submitted for Approval",
+        "user": {
+          "id": "u-2",
+          "name": "Priya",
+          "role": "Content Creator"
+        },
+        "timestamp": "2026-11-04T04:39:30.698Z",
+        "note": "Submitted post copy and high-res apparel media for campaign review."
+      }
+    ],
+    "comments": [
+      {
+        "id": "comm-1",
+        "authorId": "u-2",
+        "authorName": "Priya",
+        "authorRole": "Content Creator",
+        "content": "Submitted post copy and high-res apparel media for campaign review. @Karthik",
+        "timestamp": "2026-11-04T04:39:30.698Z",
+        "type": "comment"
+      }
+    ]
+  },
+  {
+    "id": "APP-502",
+    "brandId": "brand-nexus",
+    "organizationId": "org-crinoid",
+    "caption": "💡 5 Quick Tips for high-converting social media creatives in 2026. Bookmark this carousel for your marketing team!",
+    "mediaUrls": [
+      "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&auto=format&fit=crop&q=80"
+    ],
+    "mediaType": "image",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&auto=format&fit=crop&q=80",
+    "platforms": [
+      "instagram",
+      "facebook",
+      "linkedin"
+    ],
+    "author": {
+      "id": "u-2",
+      "name": "Priya",
+      "role": "Content Creator",
+      "avatar": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&auto=format&fit=crop&q=80"
+    },
+    "assignedApprover": {
+      "id": "u-3",
+      "name": "Karthik",
+      "role": "Approver",
+      "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80"
+    },
+    "status": "in_review",
+    "submittedAt": "2026-11-04T06:39:30.698Z",
+    "scheduledAt": "2026-11-07T07:39:30.698Z",
+    "campaign": "Tech Highlights",
+    "version": 1,
+    "requiresClientApproval": false,
+    "steps": [
+      {
+        "stepNumber": 1,
+        "title": "Peer Review",
+        "assignedRole": "Approver",
+        "assignedApproverName": "Karthik",
+        "status": "pending"
+      }
+    ],
+    "history": [
+      {
+        "id": "hist-502-1",
+        "type": "submission",
+        "action": "Submitted for Approval",
+        "user": {
+          "id": "u-2",
+          "name": "Priya",
+          "role": "Content Creator"
+        },
+        "timestamp": "2026-11-04T06:39:30.698Z",
+        "note": "Carousel slides and copy ready for review."
+      }
+    ],
+    "comments": [
+      {
+        "id": "comm-3",
+        "authorId": "u-2",
+        "authorName": "Priya",
+        "authorRole": "Content Creator",
+        "content": "Carousel slides and copy ready for review. @Karthik",
+        "timestamp": "2026-11-04T06:39:30.698Z",
+        "type": "comment"
+      }
+    ]
+  },
+  {
+    "id": "APP-503",
+    "brandId": "brand-nexus",
+    "organizationId": "org-crinoid",
+    "caption": "🌿 Weekend special: Explore our mindful wellness collection with free express shipping across all regions.",
+    "mediaUrls": [
+      "https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=600&auto=format&fit=crop&q=80"
+    ],
+    "mediaType": "image",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=600&auto=format&fit=crop&q=80",
+    "platforms": [
+      "instagram"
+    ],
+    "author": {
+      "id": "u-2",
+      "name": "Priya",
+      "role": "Content Creator",
+      "avatar": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&auto=format&fit=crop&q=80"
+    },
+    "assignedApprover": {
+      "id": "u-3",
+      "name": "Karthik",
+      "role": "Approver",
+      "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80"
+    },
+    "status": "changes_requested",
+    "submittedAt": "2026-11-03T19:39:30.698Z",
+    "reviewedAt": "2026-11-03T21:39:30.698Z",
+    "campaign": "Weekend Drops",
+    "version": 1,
+    "requiresClientApproval": false,
+    "steps": [
+      {
+        "stepNumber": 1,
+        "title": "Brand Tone Review",
+        "assignedRole": "Approver",
+        "assignedApproverName": "Karthik",
+        "status": "changes_requested"
+      }
+    ],
+    "history": [
+      {
+        "id": "hist-503-1",
+        "type": "submission",
+        "action": "Submitted for Approval",
+        "user": {
+          "id": "u-2",
+          "name": "Priya",
+          "role": "Content Creator"
+        },
+        "timestamp": "2026-11-03T19:39:30.698Z",
+        "note": "Weekend promo post submitted."
+      },
+      {
+        "id": "hist-503-2",
+        "type": "changes_requested",
+        "action": "Changes Requested",
+        "user": {
+          "id": "u-3",
+          "name": "Karthik",
+          "role": "Approver"
+        },
+        "timestamp": "2026-11-03T21:39:30.698Z",
+        "note": "Please update the free shipping terms and highlight eco-friendly packaging."
+      }
+    ],
+    "comments": [
+      {
+        "id": "comm-4",
+        "authorId": "u-3",
+        "authorName": "Karthik",
+        "authorRole": "Approver",
+        "content": "Please update the free shipping terms and highlight eco-friendly packaging.",
+        "timestamp": "2026-11-03T21:39:30.698Z",
+        "type": "decision",
+        "decision": "changes_requested"
+      }
+    ]
+  },
+  {
+    "id": "APP-504",
+    "brandId": "brand-nexus",
+    "organizationId": "org-crinoid",
+    "caption": "🚀 Excited to announce our next-generation social suite! Multi-platform publishing is finally here.",
+    "mediaUrls": [
+      "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=80"
+    ],
+    "mediaType": "image",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=80",
+    "platforms": [
+      "instagram",
+      "facebook"
+    ],
+    "author": {
+      "id": "u-1",
+      "name": "Muthukumar",
+      "role": "Social Lead",
+      "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
+    },
+    "assignedApprover": {
+      "id": "u-3",
+      "name": "Karthik",
+      "role": "Approver",
+      "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80"
+    },
+    "status": "approved",
+    "submittedAt": "2026-11-03T07:39:30.698Z",
+    "reviewedAt": "2026-11-03T11:39:30.698Z",
+    "scheduledAt": "2026-11-03T13:39:30.698Z",
+    "campaign": "Product Launch 2026",
+    "version": 1,
+    "requiresClientApproval": false,
+    "steps": [
+      {
+        "stepNumber": 1,
+        "title": "Internal Review",
+        "assignedRole": "Approver",
+        "assignedApproverName": "Karthik",
+        "status": "approved",
+        "completedAt": "2026-11-03T11:39:30.698Z"
+      }
+    ],
+    "history": [
+      {
+        "id": "hist-504-1",
+        "type": "submission",
+        "action": "Submitted for Approval",
+        "user": {
+          "id": "u-1",
+          "name": "Muthukumar",
+          "role": "Social Lead"
+        },
+        "timestamp": "2026-11-03T07:39:30.698Z",
+        "note": "Product launch announcement copy submitted."
+      },
+      {
+        "id": "hist-504-2",
+        "type": "decision",
+        "action": "Approved (Final Sign-off)",
+        "user": {
+          "id": "u-3",
+          "name": "Karthik",
+          "role": "Approver"
+        },
+        "timestamp": "2026-11-03T11:39:30.698Z",
+        "note": "Looks great! Approved for automated distribution."
+      }
+    ],
+    "comments": [
+      {
+        "id": "comm-5",
+        "authorId": "u-3",
+        "authorName": "Karthik",
+        "authorRole": "Approver",
+        "content": "Looks great! Approved for automated distribution.",
+        "timestamp": "2026-11-03T11:39:30.698Z",
+        "type": "decision",
+        "decision": "approved"
+      }
+    ]
+  },
+  {
+    "id": "APP-505",
+    "brandId": "brand-nexus",
+    "organizationId": "org-crinoid",
+    "caption": "🔥 Massive 70% flash discount on all accessories this afternoon only! Use promo code FLASH70.",
+    "mediaUrls": [
+      "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&auto=format&fit=crop&q=80"
+    ],
+    "mediaType": "image",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&auto=format&fit=crop&q=80",
+    "platforms": [
+      "facebook"
+    ],
+    "author": {
+      "id": "u-2",
+      "name": "Priya",
+      "role": "Content Creator",
+      "avatar": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&auto=format&fit=crop&q=80"
+    },
+    "assignedApprover": {
+      "id": "u-3",
+      "name": "Karthik",
+      "role": "Approver",
+      "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80"
+    },
+    "status": "rejected",
+    "submittedAt": "2026-11-03T01:39:30.698Z",
+    "reviewedAt": "2026-11-03T03:39:30.698Z",
+    "campaign": "Promotions",
+    "version": 1,
+    "requiresClientApproval": false,
+    "steps": [
+      {
+        "stepNumber": 1,
+        "title": "Compliance Check",
+        "assignedRole": "Social Lead",
+        "assignedApproverName": "Muthukumar",
+        "status": "rejected",
+        "completedAt": "2026-11-03T03:39:30.698Z"
+      }
+    ],
+    "history": [
+      {
+        "id": "hist-505-1",
+        "type": "submission",
+        "action": "Submitted for Approval",
+        "user": {
+          "id": "u-2",
+          "name": "Priya",
+          "role": "Content Creator"
+        },
+        "timestamp": "2026-11-03T01:39:30.698Z",
+        "note": "Flash sale copy submitted for compliance check."
+      },
+      {
+        "id": "hist-505-2",
+        "type": "decision",
+        "action": "Rejected",
+        "user": {
+          "id": "u-1",
+          "name": "Muthukumar",
+          "role": "Social Lead"
+        },
+        "timestamp": "2026-11-03T03:39:30.698Z",
+        "note": "Discount codes above 50% violate marketing guidelines without finance sign-off."
+      }
+    ],
+    "comments": [
+      {
+        "id": "comm-6",
+        "authorId": "u-1",
+        "authorName": "Muthukumar",
+        "authorRole": "Social Lead",
+        "content": "Rejected: Discount codes above 50% violate marketing guidelines without finance sign-off.",
+        "timestamp": "2026-11-03T03:39:30.698Z",
+        "type": "decision",
+        "decision": "rejected"
+      }
+    ]
+  }
+]

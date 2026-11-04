@@ -1,6 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PostRecord } from './types';
 import { X, Send, UserCheck, AlertCircle } from 'lucide-react';
+import { useApp } from '../../context/AppContext';
+import { approvalService } from '../../services/approvalService';
+import { BrandUser } from '../../types';
 
 interface SubmitApprovalModalProps {
   post: PostRecord | null;
@@ -15,18 +18,35 @@ export const SubmitApprovalModal: React.FC<SubmitApprovalModalProps> = ({
   onClose,
   onSubmit
 }) => {
-  if (!isOpen || !post) return null;
+  const { currentBrand } = useApp();
 
-  const reviewers = [
-    { id: 'u-3', name: 'Karthik', role: 'Approver' },
-    { id: 'u-1', name: 'Muthukumar', role: 'Social Lead' }
-  ];
-
-  const [selectedReviewerId, setSelectedReviewerId] = useState(reviewers[0].id);
+  const initialApprovers = currentBrand.users.filter(u => u.role.toLowerCase() === 'approver');
+  const [reviewers, setReviewers] = useState<BrandUser[]>(initialApprovers);
+  const [selectedReviewerId, setSelectedReviewerId] = useState(initialApprovers[0]?.id || 'u-3');
   const [note, setNote] = useState('Please review this post copy and media before scheduled publishing.');
+
+  useEffect(() => {
+    let isMounted = true;
+    approvalService.getBrandApprovers(currentBrand.id).then(approverList => {
+      if (!isMounted) return;
+      if (approverList && approverList.length > 0) {
+        setReviewers(approverList);
+        if (!selectedReviewerId || !approverList.some(r => r.id === selectedReviewerId)) {
+          setSelectedReviewerId(approverList[0].id);
+        }
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [currentBrand.id]);
+
+  if (!isOpen || !post) return null;
 
   const handleSubmit = () => {
     const reviewer = reviewers.find(r => r.id === selectedReviewerId) || reviewers[0];
+    if (!reviewer) return;
     onSubmit(post.id, reviewer.id, reviewer.name, note);
     onClose();
   };
@@ -88,101 +108,95 @@ export const SubmitApprovalModal: React.FC<SubmitApprovalModalProps> = ({
 
           <div style={{ marginBottom: '16px' }}>
             <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
-              Select Approver / Reviewer
+              Select Approver / Reviewer ({currentBrand.name})
             </label>
-            <select
-              value={selectedReviewerId}
-              onChange={(e) => setSelectedReviewerId(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '8px 10px',
-                borderRadius: '6px',
-                border: '1px solid var(--border-subtle)',
-                fontSize: '13px'
-              }}
-            >
-              {reviewers.map(r => (
-                <option key={r.id} value={r.id}>{r.name} ({r.role})</option>
-              ))}
-            </select>
+            {reviewers.length === 0 ? (
+              <div style={{ padding: '10px', borderRadius: '6px', backgroundColor: '#fff7ed', border: '1px solid #ffedd5', color: '#c2410c', fontSize: '12px' }}>
+                No authorized approver found for {currentBrand.name}.
+              </div>
+            ) : (
+              <select
+                value={selectedReviewerId}
+                onChange={(e) => setSelectedReviewerId(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '8px 10px',
+                  borderRadius: '6px',
+                  border: '1px solid var(--border-subtle)',
+                  fontSize: '13.5px',
+                  backgroundColor: '#ffffff',
+                  color: 'var(--text-primary)',
+                  outline: 'none'
+                }}
+              >
+                {reviewers.map(r => (
+                  <option key={r.id} value={r.id}>
+                    {r.name} — {r.role} ({r.email})
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
 
-          <div style={{ marginBottom: '16px' }}>
+          <div style={{ marginBottom: '20px' }}>
             <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
-              Review Note for Approver
+              Review Instructions / Note
             </label>
             <textarea
-              rows={3}
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              placeholder="Add any specific context or review instructions..."
+              rows={3}
               style={{
                 width: '100%',
                 padding: '8px 10px',
                 borderRadius: '6px',
                 border: '1px solid var(--border-subtle)',
                 fontSize: '13px',
-                resize: 'none'
+                color: 'var(--text-primary)',
+                resize: 'none',
+                fontFamily: 'inherit',
+                outline: 'none',
+                boxSizing: 'border-box'
               }}
             />
           </div>
 
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '8px 12px',
-            backgroundColor: 'var(--color-primary-light)',
-            borderRadius: '6px',
-            color: 'var(--color-primary)',
-            fontSize: '12px'
-          }}>
-            <AlertCircle size={14} style={{ flexShrink: 0 }} />
-            <span>The approver will be notified and this post status will update to <strong>Awaiting Approval</strong>.</span>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+            <button
+              onClick={onClose}
+              style={{
+                padding: '7px 14px',
+                borderRadius: '6px',
+                border: '1px solid var(--border-subtle)',
+                background: 'transparent',
+                fontSize: '13px',
+                color: 'var(--text-secondary)',
+                cursor: 'pointer'
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={reviewers.length === 0}
+              style={{
+                padding: '7px 16px',
+                borderRadius: '6px',
+                border: 'none',
+                backgroundColor: reviewers.length === 0 ? 'var(--text-light)' : 'var(--color-primary)',
+                color: '#ffffff',
+                fontSize: '13px',
+                fontWeight: 600,
+                cursor: reviewers.length === 0 ? 'not-allowed' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+            >
+              <Send size={13} />
+              Submit
+            </button>
           </div>
-        </div>
-
-        <div style={{
-          padding: '12px 20px',
-          borderTop: '1px solid var(--border-subtle)',
-          backgroundColor: 'var(--bg-subtle)',
-          display: 'flex',
-          justifyContent: 'flex-end',
-          gap: '8px'
-        }}>
-          <button
-            type="button"
-            onClick={onClose}
-            style={{
-              padding: '7px 14px',
-              fontSize: '13px',
-              borderRadius: '6px',
-              border: '1px solid var(--border-subtle)',
-              backgroundColor: '#ffffff',
-              cursor: 'pointer'
-            }}
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={handleSubmit}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '7px 16px',
-              fontSize: '13px',
-              borderRadius: '6px',
-              border: 'none',
-              backgroundColor: 'var(--color-primary)',
-              color: '#ffffff',
-              fontWeight: 600,
-              cursor: 'pointer'
-            }}
-          >
-            <Send size={13} /> Submit for Approval
-          </button>
         </div>
       </div>
     </div>
