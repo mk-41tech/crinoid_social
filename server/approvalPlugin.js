@@ -379,6 +379,84 @@ async function handleApiRequests(req, res, next) {
   }
 
   try {
+    // 0. POST /api/schedule/validate
+    if (pathname === '/api/schedule/validate' && req.method === 'POST') {
+      const body = await parseBody(req);
+      const { date, time, timezone, scheduledAt } = body;
+      
+      let targetDateStr = date;
+      let targetTimeStr = time;
+      const tz = timezone || 'UTC+05:30 (IST)';
+
+      if (scheduledAt && (!targetDateStr || !targetTimeStr)) {
+        if (scheduledAt.includes('T')) {
+          const parts = scheduledAt.split('T');
+          targetDateStr = parts[0];
+          targetTimeStr = parts[1].substring(0, 5);
+        }
+      }
+
+      if (!targetDateStr || !targetTimeStr) {
+        return sendJson(res, 400, {
+          valid: false,
+          error: 'Both schedule date and time are required'
+        });
+      }
+
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(targetDateStr) || !/^\d{2}:\d{2}$/.test(targetTimeStr)) {
+        return sendJson(res, 400, {
+          valid: false,
+          error: 'Invalid date or time format. Expected YYYY-MM-DD and HH:MM'
+        });
+      }
+
+      let tzOffsetMinutes = 330; // default IST (+05:30)
+      const tzMatch = tz.match(/UTC([+-]\d{2}):(\d{2})/);
+      if (tzMatch) {
+        const sign = tzMatch[1].startsWith('-') ? -1 : 1;
+        const hours = parseInt(tzMatch[1].replace(/[+-]/, ''), 10);
+        const mins = parseInt(tzMatch[2], 10);
+        tzOffsetMinutes = sign * (hours * 60 + mins);
+      }
+
+      const nowUtcMs = Date.now();
+      const zonedEpochMs = nowUtcMs + tzOffsetMinutes * 60000;
+      const zonedDate = new Date(zonedEpochMs);
+      const yyyy = zonedDate.getUTCFullYear();
+      const mm = String(zonedDate.getUTCMonth() + 1).padStart(2, '0');
+      const dd = String(zonedDate.getUTCDate()).padStart(2, '0');
+      const hh = String(zonedDate.getUTCHours()).padStart(2, '0');
+      const min = String(zonedDate.getUTCMinutes()).padStart(2, '0');
+      const todayDateStr = `${yyyy}-${mm}-${dd}`;
+      const currentMinutes = parseInt(hh, 10) * 60 + parseInt(min, 10);
+
+      const [sH, sM] = targetTimeStr.split(':').map(Number);
+      const scheduleMinutes = sH * 60 + sM;
+
+      if (targetDateStr < todayDateStr) {
+        return sendJson(res, 400, {
+          valid: false,
+          error: 'Cannot schedule post for a past date. Please select today or a future date.',
+          isDatePast: true
+        });
+      }
+
+      if (targetDateStr === todayDateStr && scheduleMinutes <= currentMinutes) {
+        return sendJson(res, 400, {
+          valid: false,
+          error: 'Cannot schedule post for a current or past time. Please select an upcoming time slot.',
+          isTimePast: true
+        });
+      }
+
+      return sendJson(res, 200, {
+        valid: true,
+        scheduledAt: `${targetDateStr}T${targetTimeStr}:00`,
+        timezone: tz,
+        message: 'Schedule date and time are valid and in the future.'
+      });
+    }
+
     // 1. GET /api/brands/:brandId/approvers
     const approversMatch = pathname.match(/^\/api\/brands\/([^/]+)\/approvers$/);
     if (approversMatch && req.method === 'GET') {
@@ -403,6 +481,16 @@ async function handleApiRequests(req, res, next) {
       // Validation
       if (!body.caption && (!body.mediaUrls || body.mediaUrls.length === 0)) {
         return sendJson(res, 400, { error: 'Post must have a caption or media' });
+      }
+
+      // Backend Scheduled Time Validation
+      if (body.scheduledAt) {
+        const schedTime = new Date(body.scheduledAt).getTime();
+        if (!isNaN(schedTime) && schedTime < Date.now() - 60000) {
+          return sendJson(res, 400, { 
+            error: 'Cannot schedule post with a past date and time. Scheduled time must be in the future.' 
+          });
+        }
       }
 
       // Backend Approver Role Validation:
