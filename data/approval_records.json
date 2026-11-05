@@ -1,5 +1,360 @@
 [
   {
+    "id": "APP-107",
+    "brandId": "brand-nexus",
+    "organizationId": "org-crinoid",
+    "caption": "Hello Everyone - testing - priya",
+    "platforms": [
+      "instagram",
+      "facebook"
+    ],
+    "mediaUrls": [],
+    "mediaType": "image",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=400&auto=format&fit=crop&q=80",
+    "author": {
+      "id": "u-2",
+      "name": "Priya",
+      "role": "Content Creator",
+      "avatar": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=120&auto=format&fit=crop&q=80"
+    },
+    "assignedApprover": {
+      "id": "u-3",
+      "name": "Karthik",
+      "role": "Approver",
+      "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80"
+    },
+    "status": "approved",
+    "submittedAt": "2026-11-04T16:08:34.303Z",
+    "campaign": "General",
+    "version": 1,
+    "requiresClientApproval": true,
+    "steps": [
+      {
+        "stepNumber": 1,
+        "title": "Copy & Media Verification",
+        "assignedRole": "Approver",
+        "assignedApproverName": "Karthik",
+        "status": "approved",
+        "completedAt": "2026-11-04T16:09:15.247Z"
+      },
+      {
+        "stepNumber": 2,
+        "title": "Client Sign-Off",
+        "assignedRole": "Brand Client",
+        "assignedApproverName": "Nexus Lifestyle Brand Director",
+        "status": "approved",
+        "isClientStep": true,
+        "completedAt": "2026-11-04T16:09:15.247Z"
+      }
+    ],
+    "history": [
+      {
+        "id": "hist-1793808514289",
+        "type": "submission",
+        "action": "Submitted for Approval",
+        "user": {
+          "id": "u-2",
+          "name": "Priya",
+          "role": "Content Creator",
+          "avatar": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=120&auto=format&fit=crop&q=80"
+        },
+        "timestamp": "2026-11-04T16:08:34.288Z",
+        "note": "Submitted post for approval review."
+      },
+      {
+        "id": "hist-1793808555247",
+        "type": "decision",
+        "action": "Approved (Final Sign-off)",
+        "user": {
+          "id": "u-3",
+          "name": "Karthik (Internal Approver)",
+          "role": "Approver",
+          "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80"
+        },
+        "timestamp": "2026-11-04T16:09:15.247Z",
+        "note": "Approved post for scheduling and publishing."
+      }
+    ],
+    "comments": [
+      {
+        "id": "comm-1793808555247",
+        "authorId": "u-3",
+        "authorName": "Karthik (Internal Approver)",
+        "authorRole": "Approver",
+        "authorAvatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80",
+        "content": "Approved post for scheduling and publishing.",
+        "timestamp": "2026-11-04T16:09:15.247Z",
+        "type": "decision",
+        "decision": "approved"
+      }
+    ],
+    "reviewedAt": "2026-11-04T16:09:15.247Z"
+  },
+  {
+    "id": "APP-445",
+    "brandId": "brand-nexus",
+    "organizationId": "org-crinoid",
+    "caption": "Hello Everyone - testing",
+    "platforms": [
+      "instagram",
+      "facebook"
+    ],
+    "mediaUrls": [],
+    "mediaType": "image",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=400&auto=format&fit=crop&q=80",
+    "author": {
+      "id": "u-1",
+      "name": "Muthukumar",
+      "role": "Social Lead",
+      "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80"
+    },
+    "assignedApprover": {
+      "id": "u-3",
+      "name": "Karthik",
+      "role": "Approver",
+      "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80"
+    },
+    "status": "approved",
+    "submittedAt": "2026-11-04T16:06:19.994Z",
+    "campaign": "General",
+    "version": 1,
+    "requiresClientApproval": true,
+    "steps": [
+      {
+        "stepNumber": 1,
+        "title": "Copy & Media Verification",
+        "assignedRole": "Approver",
+        "assignedApproverName": "Karthik",
+        "status": "approved",
+        "completedAt": "2026-11-04T16:09:21.507Z"
+      },
+      {
+        "stepNumber": 2,
+        "title": "Client Sign-Off",
+        "assignedRole": "Brand Client",
+        "assignedApproverName": "Nexus Lifestyle Brand Director",
+        "status": "approved",
+        "isClientStep": true,
+        "completedAt": "2026-11-04T16:09:21.507Z"
+      }
+    ],
+    "history": [
+      {
+        "id": "hist-1793808379988",
+        "type": "submission",
+        "action": "Submitted for Approval",
+        "user": {
+          "id": "u-1",
+          "name": "Muthukumar",
+          "role": "Social Lead",
+          "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80"
+        },
+        "timestamp": "2026-11-04T16:06:19.988Z",
+        "note": "Submitted post for approval review."
+      },
+      {
+        "id": "hist-1793808561507",
+        "type": "decision",
+        "action": "Approved (Final Sign-off)",
+        "user": {
+          "id": "u-3",
+          "name": "Karthik (Internal Approver)",
+          "role": "Approver",
+          "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80"
+        },
+        "timestamp": "2026-11-04T16:09:21.507Z",
+        "note": "Approved post for scheduling and publishing."
+      }
+    ],
+    "comments": [
+      {
+        "id": "comm-1793808561507",
+        "authorId": "u-3",
+        "authorName": "Karthik (Internal Approver)",
+        "authorRole": "Approver",
+        "authorAvatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80",
+        "content": "Approved post for scheduling and publishing.",
+        "timestamp": "2026-11-04T16:09:21.507Z",
+        "type": "decision",
+        "decision": "approved"
+      }
+    ],
+    "reviewedAt": "2026-11-04T16:09:21.507Z"
+  },
+  {
+    "id": "APP-184",
+    "brandId": "brand-nexus",
+    "organizationId": "org-crinoid",
+    "caption": "Hello Everyone",
+    "platforms": [
+      "instagram",
+      "facebook"
+    ],
+    "mediaUrls": [],
+    "mediaType": "image",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=400&auto=format&fit=crop&q=80",
+    "author": {
+      "id": "u-1",
+      "name": "Muthukumar",
+      "role": "Social Lead",
+      "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80"
+    },
+    "assignedApprover": {
+      "id": "u-3",
+      "name": "Karthik",
+      "role": "Approver",
+      "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80"
+    },
+    "status": "approved",
+    "submittedAt": "2026-11-04T15:44:00.169Z",
+    "campaign": "General",
+    "version": 1,
+    "requiresClientApproval": true,
+    "steps": [
+      {
+        "stepNumber": 1,
+        "title": "Copy & Media Verification",
+        "assignedRole": "Approver",
+        "assignedApproverName": "Karthik",
+        "status": "approved",
+        "completedAt": "2026-11-04T15:45:03.719Z"
+      },
+      {
+        "stepNumber": 2,
+        "title": "Client Sign-Off",
+        "assignedRole": "Brand Client",
+        "assignedApproverName": "Nexus Lifestyle Brand Director",
+        "status": "approved",
+        "isClientStep": true,
+        "completedAt": "2026-11-04T15:45:03.719Z"
+      }
+    ],
+    "history": [
+      {
+        "id": "hist-1793807040166",
+        "type": "submission",
+        "action": "Submitted for Approval",
+        "user": {
+          "id": "u-1",
+          "name": "Muthukumar",
+          "role": "Social Lead",
+          "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80"
+        },
+        "timestamp": "2026-11-04T15:44:00.166Z",
+        "note": "Submitted post for approval review."
+      },
+      {
+        "id": "hist-1793807103720",
+        "type": "decision",
+        "action": "Approved (Final Sign-off)",
+        "user": {
+          "id": "u-3",
+          "name": "Karthik",
+          "role": "Approver",
+          "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&auto=format&fit=crop&q=80"
+        },
+        "timestamp": "2026-11-04T15:45:03.719Z",
+        "note": "Approved post for scheduling and publishing."
+      }
+    ],
+    "comments": [
+      {
+        "id": "comm-1793807103720",
+        "authorId": "u-3",
+        "authorName": "Karthik",
+        "authorRole": "Approver",
+        "authorAvatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&auto=format&fit=crop&q=80",
+        "content": "Approved post for scheduling and publishing.",
+        "timestamp": "2026-11-04T15:45:03.719Z",
+        "type": "decision",
+        "decision": "approved"
+      }
+    ],
+    "reviewedAt": "2026-11-04T15:45:03.719Z"
+  },
+  {
+    "id": "APP-627",
+    "brandId": "brand-nexus",
+    "organizationId": "org-crinoid",
+    "caption": "Hello Everyone",
+    "platforms": [
+      "instagram",
+      "facebook"
+    ],
+    "mediaUrls": [],
+    "mediaType": "image",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=400&auto=format&fit=crop&q=80",
+    "author": {
+      "id": "u-1",
+      "name": "Muthukumar",
+      "role": "Social Lead",
+      "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80"
+    },
+    "assignedApprover": {
+      "id": "u-3",
+      "name": "Karthik",
+      "role": "Approver",
+      "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80"
+    },
+    "status": "changes_requested",
+    "submittedAt": "2026-11-04T14:53:43.309Z",
+    "campaign": "General",
+    "version": 1,
+    "requiresClientApproval": false,
+    "steps": [
+      {
+        "stepNumber": 1,
+        "title": "Review & Sign-Off",
+        "assignedRole": "Approver",
+        "assignedApproverName": "Karthik",
+        "status": "changes_requested",
+        "completedAt": "2026-11-04T14:54:40.733Z"
+      }
+    ],
+    "history": [
+      {
+        "id": "hist-1793804023304",
+        "type": "submission",
+        "action": "Submitted for Approval",
+        "user": {
+          "id": "u-1",
+          "name": "Muthukumar",
+          "role": "Social Lead",
+          "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80"
+        },
+        "timestamp": "2026-11-04T14:53:43.304Z",
+        "note": "Submitted post for approval review."
+      },
+      {
+        "id": "hist-1793804080733",
+        "type": "changes_requested",
+        "action": "Changes Requested",
+        "user": {
+          "id": "u-3",
+          "name": "Karthik",
+          "role": "Approver",
+          "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&auto=format&fit=crop&q=80"
+        },
+        "timestamp": "2026-11-04T14:54:40.733Z",
+        "note": "Fix some changes"
+      }
+    ],
+    "comments": [
+      {
+        "id": "comm-1793804080733",
+        "authorId": "u-3",
+        "authorName": "Karthik",
+        "authorRole": "Approver",
+        "authorAvatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&auto=format&fit=crop&q=80",
+        "content": "Fix some changes",
+        "timestamp": "2026-11-04T14:54:40.733Z",
+        "type": "decision",
+        "decision": "changes_requested"
+      }
+    ],
+    "reviewedAt": "2026-11-04T14:54:40.733Z"
+  },
+  {
     "id": "APP-501",
     "brandId": "brand-nexus",
     "organizationId": "org-crinoid",

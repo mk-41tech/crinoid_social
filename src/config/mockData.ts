@@ -18,8 +18,22 @@ export const DUMMY_LOGIN_ACCOUNTS = [
   {
     email: 'karthik@crinoid.social',
     password: 'crinoid2025',
-    name: 'Karthik',
+    name: 'Karthik (Internal Approver)',
     role: 'Approver',
+    brandName: 'Crinoid Tech'
+  },
+  {
+    email: 'kavitha@nexuslife.io',
+    password: 'crinoid2025',
+    name: 'Kavitha (Brand Approver)',
+    role: 'Brand Approver',
+    brandName: 'Nexus Lifestyle'
+  },
+  {
+    email: 'compliance@crinoid.social',
+    password: 'crinoid2025',
+    name: 'Suresh (Compliance Lead)',
+    role: 'Compliance Lead',
     brandName: 'Crinoid Tech'
   }
 ];
@@ -54,6 +68,22 @@ export const MOCK_BRANDS: Brand[] = [
         email: 'karthik@crinoid.social',
         role: 'Approver',
         avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80',
+        brandId: 'brand-crinoid'
+      },
+      {
+        id: 'u-4',
+        name: 'Kavitha (Brand Approver)',
+        email: 'kavitha@nexuslife.io',
+        role: 'Brand Approver' as any,
+        avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&auto=format&fit=crop&q=80',
+        brandId: 'brand-crinoid'
+      },
+      {
+        id: 'u-6',
+        name: 'Suresh (Compliance Lead)',
+        email: 'compliance@crinoid.social',
+        role: 'Compliance Lead' as any,
+        avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&auto=format&fit=crop&q=80',
         brandId: 'brand-crinoid'
       }
     ],

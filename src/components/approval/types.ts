@@ -35,14 +35,15 @@ export interface ApprovalStep {
   title: string;
   assignedRole: string;
   assignedApproverName: string;
-  status: 'pending' | 'approved' | 'rejected' | 'changes_requested';
+  status: 'pending' | 'in_progress' | 'approved' | 'rejected' | 'changes_requested';
   completedAt?: string;
   isClientStep?: boolean;
+  note?: string;
 }
 
 export interface ApprovalHistoryEvent {
   id: string;
-  type: 'submission' | 'in_review' | 'decision' | 'changes_requested' | 'resubmission' | 'comment' | 'assignment';
+  type: 'submission' | 'in_review' | 'decision' | 'changes_requested' | 'resubmission' | 'comment' | 'assignment' | 'version_update';
   action: string;
   user: {
     id: string;
@@ -56,6 +57,19 @@ export interface ApprovalHistoryEvent {
   stepTitle?: string;
   isClientApproval?: boolean;
   version?: number;
+}
+
+export interface PostVersion {
+  version: number;
+  caption: string;
+  mediaUrls: string[];
+  changedAt: string;
+  changedBy: {
+    id: string;
+    name: string;
+    role: string;
+  };
+  changeNote?: string;
 }
 
 export interface ApprovalPostItem {
@@ -86,11 +100,14 @@ export interface ApprovalPostItem {
   campaign?: string;
   comments: ApprovalComment[];
   steps: ApprovalStep[];
+  currentStepIndex?: number;
   history: ApprovalHistoryEvent[];
   requiresClientApproval: boolean;
   clientApprovalStatus?: 'pending' | 'approved' | 'rejected';
   clientName?: string;
   version: number;
+  versions?: PostVersion[];
+  workflowType?: 'standard' | 'agency_client' | 'enterprise_multi';
 }
 
 export interface ApprovalRule {
@@ -100,10 +117,13 @@ export interface ApprovalRule {
   enabled: boolean;
   requiresClient: boolean;
   autoPublishOnApproval: boolean;
+  workflowType: 'standard' | 'agency_client' | 'enterprise_multi';
   steps: {
     order: number;
+    title: string;
     role: string;
     approverName: string;
+    isClientStep?: boolean;
   }[];
   appliesTo: 'all' | 'campaigns' | 'videos';
 }

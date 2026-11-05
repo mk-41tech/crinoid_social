@@ -1,13 +1,13 @@
 import React, { useState, useMemo } from 'react';
 import { CalendarPost } from './types';
-import { Calendar as CalendarIcon, Clock, X, AlertCircle, Check } from 'lucide-react';
+import { Calendar as CalendarIcon, Globe, X, AlertCircle } from 'lucide-react';
 import { 
   getZonedNow, 
   validateScheduleDateTime, 
-  generateTimeSlotOptions,
   format12Hour,
   timeToMinutes
 } from '../../utils/dateValidation';
+import { CustomTimePicker } from '../common/CustomTimePicker';
 
 interface RescheduleModalProps {
   post: CalendarPost | null;
@@ -24,6 +24,7 @@ export const RescheduleModal: React.FC<RescheduleModalProps> = ({
 }) => {
   if (!isOpen || !post) return null;
 
+  // Fixed strictly to Indian Standard Time (IST)
   const timezone = 'UTC+05:30 (IST)';
   const zonedNow = getZonedNow(timezone);
 
@@ -44,7 +45,7 @@ export const RescheduleModal: React.FC<RescheduleModalProps> = ({
       if (parsedDate > zonedNow.todayDateStr) {
         return parsedTime;
       }
-      if (parsedDate === zonedNow.todayDateStr && timeToMinutes(parsedTime) > zonedNow.currentMinutes) {
+      if (parsedDate === zonedNow.todayDateStr && timeToMinutes(parsedTime) >= zonedNow.currentMinutes + 30) {
         return parsedTime;
       }
     }
@@ -60,9 +61,16 @@ export const RescheduleModal: React.FC<RescheduleModalProps> = ({
   }, [date, time, timezone]);
 
   const isToday = date === zonedNow.todayDateStr;
-  const timeSlots = useMemo(() => {
-    return generateTimeSlotOptions(date, timezone);
-  }, [date, timezone]);
+
+  const handleDateChange = (newDate: string) => {
+    setDate(newDate);
+    const zoned = getZonedNow(timezone);
+    if (newDate === zoned.todayDateStr) {
+      if (timeToMinutes(time) < zoned.currentMinutes + 30) {
+        setTime(zoned.nextSuggestedTime);
+      }
+    }
+  };
 
   const handleSave = () => {
     const currentValidation = validateScheduleDateTime(date, time, timezone);
@@ -136,13 +144,13 @@ export const RescheduleModal: React.FC<RescheduleModalProps> = ({
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '14px' }}>
             <div>
               <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
-                New Date (Upcoming Only)
+                New Date
               </label>
               <input
                 type="date"
                 value={date}
                 min={zonedNow.todayDateStr}
-                onChange={(e) => setDate(e.target.value)}
+                onChange={(e) => handleDateChange(e.target.value)}
                 style={{
                   width: '100%',
                   padding: '8px 10px',
@@ -152,25 +160,24 @@ export const RescheduleModal: React.FC<RescheduleModalProps> = ({
                   backgroundColor: validation.isDatePast ? '#fef2f2' : '#ffffff'
                 }}
               />
+              <div style={{ fontSize: '10.5px', color: 'var(--text-muted)', marginTop: '3px' }}>
+                {isToday ? "Today (Upcoming only)" : "Future Date"}
+              </div>
             </div>
             <div>
               <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
-                New Time {isToday && '(Upcoming Only)'}
+                New Time
               </label>
-              <input
-                type="time"
+              <CustomTimePicker
                 value={time}
-                min={isToday ? zonedNow.minTimeForToday : undefined}
-                onChange={(e) => setTime(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '8px 10px',
-                  borderRadius: '6px',
-                  border: `1px solid ${validation.isTimePast ? '#dc2626' : 'var(--border-subtle)'}`,
-                  fontSize: '13px',
-                  backgroundColor: validation.isTimePast ? '#fef2f2' : '#ffffff'
-                }}
+                onChange={(newTime) => setTime(newTime)}
+                isToday={isToday}
+                minTimeStr={zonedNow.minTimeForToday}
+                hasError={validation.isTimePast}
               />
+              <div style={{ fontSize: '10.5px', color: 'var(--text-muted)', marginTop: '3px' }}>
+                {isToday ? `Min. 30m advance (${format12Hour(zonedNow.minTimeForToday)})` : 'Upcoming timing'}
+              </div>
             </div>
           </div>
 
@@ -196,52 +203,27 @@ export const RescheduleModal: React.FC<RescheduleModalProps> = ({
             </div>
           )}
 
-          {/* Quick Hourly Time Slots */}
+          {/* Timezone (Fixed to Indian Standard Time) */}
           <div style={{ marginBottom: '14px' }}>
-            <span style={{ display: 'block', fontSize: '11.5px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
-              {isToday ? "Available Time Slots (Past slots disabled)" : "Time Slots (All available)"}
-            </span>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(4, 1fr)',
-              gap: '6px',
-              maxHeight: '96px',
-              overflowY: 'auto',
-              padding: '2px'
-            }}>
-              {timeSlots.map(slot => {
-                const isSelected = time === slot.timeStr;
-                return (
-                  <button
-                    key={slot.timeStr}
-                    type="button"
-                    disabled={slot.isPast}
-                    onClick={() => setTime(slot.timeStr)}
-                    title={slot.isPast ? `${slot.label} (Past time)` : `Select ${slot.label}`}
-                    style={{
-                      padding: '5px 4px',
-                      fontSize: '11px',
-                      borderRadius: '6px',
-                      border: `1px solid ${isSelected ? 'var(--color-primary)' : 'var(--border-subtle)'}`,
-                      backgroundColor: isSelected
-                        ? 'var(--color-primary)'
-                        : slot.isPast
-                        ? '#f1f5f9'
-                        : '#ffffff',
-                      color: isSelected
-                        ? '#ffffff'
-                        : slot.isPast
-                        ? '#94a3b8'
-                        : 'var(--text-primary)',
-                      cursor: slot.isPast ? 'not-allowed' : 'pointer',
-                      textDecoration: slot.isPast ? 'line-through' : 'none',
-                      fontWeight: isSelected ? 600 : 500
-                    }}
-                  >
-                    {slot.label}
-                  </button>
-                );
-              })}
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '6px' }}>
+              Timezone
+            </label>
+            <div
+              style={{
+                width: '100%',
+                padding: '8px 10px',
+                borderRadius: '6px',
+                border: '1px solid var(--border-subtle)',
+                fontSize: '12.5px',
+                backgroundColor: 'var(--bg-subtle)',
+                color: 'var(--text-primary)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+            >
+              <Globe size={14} color="var(--color-primary)" />
+              <span style={{ fontWeight: 500 }}>UTC+05:30 (India Standard Time)</span>
             </div>
           </div>
 

@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { CheckSquare, X, Send, UserCheck, AlertCircle } from 'lucide-react';
+import { CheckSquare, X, Send, UserCheck, AlertCircle, ShieldCheck, Layers } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { Avatar } from '../common/Avatar';
 import { BrandUser } from '../../types';
 import { approvalService } from '../../services/approvalService';
 
 interface ApprovalModalProps {
-  onSubmitApproval: (reviewerId: string, note: string) => void;
+  onSubmitApproval: (reviewerId: string, note: string, workflowType?: string) => void;
   onClose: () => void;
 }
 
@@ -20,6 +20,7 @@ export const ApprovalModal: React.FC<ApprovalModalProps> = ({
   const initialApprovers = currentBrand.users.filter(u => u.role.toLowerCase() === 'approver');
   const [approvers, setApprovers] = useState<BrandUser[]>(initialApprovers);
   const [selectedReviewerId, setSelectedReviewerId] = useState(initialApprovers[0]?.id || '');
+  const [workflowType, setWorkflowType] = useState<'agency_client' | 'standard' | 'enterprise_multi'>('agency_client');
   const [note, setNote] = useState('');
 
   // Synchronize with authoritative backend approver list
@@ -46,7 +47,7 @@ export const ApprovalModal: React.FC<ApprovalModalProps> = ({
       showToast('error', 'Please select an authorized brand approver.');
       return;
     }
-    onSubmitApproval(selectedReviewerId, note);
+    onSubmitApproval(selectedReviewerId, note, workflowType);
     onClose();
   };
 
@@ -66,10 +67,10 @@ export const ApprovalModal: React.FC<ApprovalModalProps> = ({
       <div
         style={{
           width: '100%',
-          maxWidth: '480px',
+          maxWidth: '520px',
           backgroundColor: '#ffffff',
-          borderRadius: 'var(--radius-xl)',
-          boxShadow: 'var(--shadow-xl)',
+          borderRadius: 'var(--radius-xl, 14px)',
+          boxShadow: 'var(--shadow-xl, 0 20px 25px -5px rgba(0, 0, 0, 0.1))',
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column'
@@ -78,35 +79,69 @@ export const ApprovalModal: React.FC<ApprovalModalProps> = ({
         <div
           style={{
             padding: '16px 20px',
-            borderBottom: '1px solid var(--border-subtle)',
+            borderBottom: '1px solid var(--border-subtle, #e2e8f0)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between'
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <CheckSquare size={18} color="var(--color-primary)" />
-            <span style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>
+            <CheckSquare size={18} color="var(--color-primary, #2563eb)" />
+            <span style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary, #0f172a)' }}>
               Submit for Approval
             </span>
           </div>
           <button
             type="button"
             onClick={onClose}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}
           >
             <X size={18} />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {/* Approval Workflow Type Selector */}
           <div>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '8px' }}>
-              Assign Brand Approver ({currentBrand.name})
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
+              Approval Workflow Chain
+            </label>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+              {[
+                { id: 'agency_client', title: 'Agency + Client', desc: 'Internal ➔ Client Sign-Off' },
+                { id: 'standard', title: '1-Step Standard', desc: 'Direct Lead Review' },
+                { id: 'enterprise_multi', title: 'Enterprise 3-Step', desc: 'Editor ➔ Legal ➔ Exec' }
+              ].map(t => (
+                <div
+                  key={t.id}
+                  onClick={() => setWorkflowType(t.id as any)}
+                  style={{
+                    padding: '8px',
+                    borderRadius: '6px',
+                    border: `1px solid ${workflowType === t.id ? '#2563eb' : '#cbd5e1'}`,
+                    backgroundColor: workflowType === t.id ? '#eff6ff' : '#ffffff',
+                    cursor: 'pointer',
+                    textAlign: 'center'
+                  }}
+                >
+                  <div style={{ fontSize: '11.5px', fontWeight: 700, color: workflowType === t.id ? '#1d4ed8' : '#0f172a' }}>
+                    {t.title}
+                  </div>
+                  <div style={{ fontSize: '10px', color: '#64748b', marginTop: '2px' }}>
+                    {t.desc}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-primary, #0f172a)', marginBottom: '8px' }}>
+              Assign Primary Lead Reviewer ({currentBrand.name})
             </label>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               {approvers.length === 0 ? (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px', borderRadius: 'var(--radius-md)', backgroundColor: '#fff7ed', border: '1px solid #ffedd5', color: '#c2410c', fontSize: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px', borderRadius: '6px', backgroundColor: '#fff7ed', border: '1px solid #ffedd5', color: '#c2410c', fontSize: '12px' }}>
                   <AlertCircle size={16} />
                   <span>No authorized approver found for {currentBrand.name}.</span>
                 </div>
@@ -123,9 +158,9 @@ export const ApprovalModal: React.FC<ApprovalModalProps> = ({
                         alignItems: 'center',
                         justifyContent: 'space-between',
                         padding: '10px 14px',
-                        borderRadius: 'var(--radius-md)',
-                        border: isSelected ? '2px solid var(--color-primary)' : '1px solid var(--border-subtle)',
-                        backgroundColor: isSelected ? 'var(--color-primary-light)' : '#ffffff',
+                        borderRadius: '6px',
+                        border: isSelected ? '2px solid var(--color-primary, #2563eb)' : '1px solid var(--border-subtle, #cbd5e1)',
+                        backgroundColor: isSelected ? 'var(--color-primary-light, #eff6ff)' : '#ffffff',
                         cursor: 'pointer',
                         transition: 'all 0.15s ease'
                       }}
@@ -133,11 +168,11 @@ export const ApprovalModal: React.FC<ApprovalModalProps> = ({
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <Avatar src={user.avatar} name={user.name} size={32} />
                         <div>
-                          <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>{user.name}</div>
-                          <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{user.role} &bull; {user.email}</div>
+                          <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary, #0f172a)' }}>{user.name}</div>
+                          <div style={{ fontSize: '11px', color: 'var(--text-muted, #64748b)' }}>{user.role} &bull; {user.email}</div>
                         </div>
                       </div>
-                      {isSelected && <UserCheck size={16} color="var(--color-primary)" />}
+                      {isSelected && <UserCheck size={16} color="var(--color-primary, #2563eb)" />}
                     </div>
                   );
                 })
@@ -146,22 +181,23 @@ export const ApprovalModal: React.FC<ApprovalModalProps> = ({
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-primary, #0f172a)', marginBottom: '4px' }}>
               Editorial Note or Instructions (Optional)
             </label>
             <textarea
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              placeholder="e.g. Please verify product pricing copy before approving for Instagram Reel..."
+              placeholder="e.g. Please verify product pricing copy before client review..."
               rows={3}
               style={{
                 width: '100%',
                 padding: '8px 10px',
-                borderRadius: 'var(--radius-md)',
-                border: '1px solid var(--border-subtle)',
+                borderRadius: '6px',
+                border: '1px solid var(--border-subtle, #cbd5e1)',
                 fontSize: '13px',
                 resize: 'none',
-                fontFamily: 'inherit'
+                fontFamily: 'inherit',
+                outline: 'none'
               }}
             />
           </div>
@@ -169,7 +205,7 @@ export const ApprovalModal: React.FC<ApprovalModalProps> = ({
           <div
             style={{
               paddingTop: '12px',
-              borderTop: '1px solid var(--border-subtle)',
+              borderTop: '1px solid var(--border-subtle, #e2e8f0)',
               display: 'flex',
               justifyContent: 'flex-end',
               gap: '10px'

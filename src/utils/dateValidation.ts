@@ -1,6 +1,7 @@
 /**
  * Timezone and Date/Time Scheduling Validation Utility
  * Enforces strictly upcoming date and time selection across all timezones.
+ * Restricts scheduling to at least 30 minutes in advance from current time.
  */
 
 export interface ZonedTimeInfo {
@@ -8,14 +9,14 @@ export interface ZonedTimeInfo {
   todayDateStr: string;      // YYYY-MM-DD in selected timezone
   currentTimeStr: string;    // HH:MM (24-hour) in selected timezone
   currentMinutes: number;    // Minutes from midnight (0..1439)
-  minTimeForToday: string;   // HH:MM strictly upcoming time for today (current + 1 min)
-  nextSuggestedTime: string; // HH:MM rounded to next hour or +30 min
+  minTimeForToday: string;   // HH:MM strictly upcoming time for today (current + 30 min)
+  nextSuggestedTime: string; // HH:MM rounded to next 15-min slot after +30 min
 }
 
 export interface TimeSlotOption {
   timeStr: string;      // "10:00"
   label: string;        // "10:00 AM"
-  isPast: boolean;      // Whether it is earlier than or equal to current time on today
+  isPast: boolean;      // Whether it is earlier than minimum allowed time
   isAvailable: boolean; // Whether user can select it
 }
 
@@ -61,20 +62,18 @@ export function getZonedNow(tzString: string): ZonedTimeInfo {
   const currentTimeStr = `${String(curH).padStart(2, '0')}:${String(curM).padStart(2, '0')}`;
   const currentMinutes = curH * 60 + curM;
 
-  // Strict minimum time for today: current time + 1 minute
-  let minH = curH;
-  let minM = curM + 1;
-  if (minM >= 60) {
-    minH += 1;
-    minM = 0;
-  }
-  const minTimeForToday = minH < 24
+  // Strict minimum time for today: at least 30 minutes in advance
+  const minRequiredMinutes = currentMinutes + 30;
+  const minH = Math.floor(minRequiredMinutes / 60);
+  const minM = minRequiredMinutes % 60;
+  const minTimeForToday = minRequiredMinutes < 1440
     ? `${String(minH).padStart(2, '0')}:${String(minM).padStart(2, '0')}`
     : '23:59';
 
-  // Suggested default time: next round hour or +30 mins
-  let sugH = curH + 1;
-  let sugM = 0;
+  // Suggested default time: rounded to next 15-minute slot at or after minimum 30 minutes
+  const roundedMins = Math.min(1439, Math.ceil(minRequiredMinutes / 15) * 15);
+  let sugH = Math.floor(roundedMins / 60);
+  let sugM = roundedMins % 60;
   if (sugH >= 24) {
     sugH = 23;
     sugM = 59;
@@ -151,10 +150,11 @@ export function validateScheduleDateTime(
 
   if (isToday) {
     const selMinutes = timeToMinutes(timeStr);
-    if (selMinutes <= zoned.currentMinutes) {
+    const minAllowedMinutes = zoned.currentMinutes + 30;
+    if (selMinutes < minAllowedMinutes) {
       return {
         isValid: false,
-        error: `Selected time (${format12Hour(timeStr)}) has already passed. Please select an upcoming time slot.`,
+        error: `Schedule time must be at least 30 minutes in advance (minimum: ${format12Hour(zoned.minTimeForToday)}). Previous timings cannot be scheduled.`,
         isDatePast: false,
         isTimePast: true,
         isToday: true
@@ -172,16 +172,20 @@ export function validateScheduleDateTime(
 
 /**
  * Generates sample hourly time slots from 08:00 to 22:00
- * indicating whether each slot is available or disabled for the selected date.
+ * Previous timings are completely filtered out so they are not shown.
  */
 export function generateTimeSlotOptions(dateStr: string, tzString: string): TimeSlotOption[] {
   const zoned = getZonedNow(tzString);
   const isToday = dateStr === zoned.todayDateStr;
   const isDatePast = dateStr < zoned.todayDateStr;
 
+  if (isDatePast) {
+    return [];
+  }
+
   const hours = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22];
 
-  return hours.map(h => {
+  const slots = hours.map(h => {
     const timeStr = `${String(h).padStart(2, '0')}:00`;
     const label = format12Hour(timeStr);
     const slotMinutes = h * 60;
@@ -189,11 +193,9 @@ export function generateTimeSlotOptions(dateStr: string, tzString: string): Time
     let isPast = false;
     let isAvailable = true;
 
-    if (isDatePast) {
-      isPast = true;
-      isAvailable = false;
-    } else if (isToday) {
-      if (slotMinutes <= zoned.currentMinutes) {
+    if (isToday) {
+      // Slot must be at least 30 minutes after current time
+      if (slotMinutes < zoned.currentMinutes + 30) {
         isPast = true;
         isAvailable = false;
       }
@@ -206,5 +208,11 @@ export function generateTimeSlotOptions(dateStr: string, tzString: string): Time
       isAvailable
     };
   });
-}
 
+  // When date is today, previous timings will not be shown
+  if (isToday) {
+    return slots.filter(slot => slot.isAvailable);
+  }
+
+  return slots;
+}

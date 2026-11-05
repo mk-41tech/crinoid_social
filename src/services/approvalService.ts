@@ -21,8 +21,7 @@ export class ApprovalService {
       console.warn('Failed to fetch brand approvers from API, using authoritative fallback', e);
     }
 
-    // Authoritative fallback matching the backend role configuration:
-    // Only Karthik has the Approver role for Nexus Lifestyle and Crinoid Tech
+    // Authoritative approvers for Crinoid Tech & Nexus Lifestyle across all multi-stage steps:
     return [
       {
         id: 'u-3',
@@ -30,6 +29,22 @@ export class ApprovalService {
         email: 'karthik@crinoid.social',
         role: 'Approver',
         avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80',
+        brandId
+      },
+      {
+        id: 'u-4',
+        name: 'Kavitha (Brand Client)',
+        email: 'kavitha@nexuslife.io',
+        role: 'Brand Approver' as any,
+        avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&auto=format&fit=crop&q=80',
+        brandId
+      },
+      {
+        id: 'u-5',
+        name: 'Suresh (Compliance Lead)',
+        email: 'compliance@crinoid.social',
+        role: 'Compliance Lead' as any,
+        avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&auto=format&fit=crop&q=80',
         brandId
       }
     ];

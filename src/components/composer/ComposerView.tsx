@@ -444,7 +444,7 @@ export const ComposerView: React.FC<ComposerViewProps> = ({
     showToast('success', `Demo post scheduled for ${scheduledDateTime} (${tz}).`);
   };
 
-  const handleApprovalSubmit = async (reviewerId: string, note: string) => {
+  const handleApprovalSubmit = async (reviewerId: string, note: string, workflowType = 'agency_client') => {
     updateDraft({
       status: 'pending_approval',
       assignedReviewerId: reviewerId
@@ -469,6 +469,68 @@ export const ComposerView: React.FC<ComposerViewProps> = ({
       createdAt: nowIso
     };
 
+    let steps: any[] = [
+      {
+        stepNumber: 1,
+        title: 'Review & Sign-Off',
+        assignedRole: reviewer.role,
+        assignedApproverName: reviewer.name,
+        status: 'in_progress'
+      }
+    ];
+
+    let requiresClient = false;
+    let clientName: string | undefined = undefined;
+
+    if (workflowType === 'agency_client') {
+      requiresClient = true;
+      clientName = `${currentBrand.name} Brand Director`;
+      steps = [
+        {
+          stepNumber: 1,
+          title: 'Copy & Media Verification',
+          assignedRole: reviewer.role,
+          assignedApproverName: reviewer.name,
+          status: 'in_progress'
+        },
+        {
+          stepNumber: 2,
+          title: 'Client Sign-Off',
+          assignedRole: 'Brand Client',
+          assignedApproverName: clientName,
+          status: 'pending',
+          isClientStep: true
+        }
+      ];
+    } else if (workflowType === 'enterprise_multi') {
+      requiresClient = true;
+      clientName = `${currentBrand.name} Executive Sign-Off`;
+      steps = [
+        {
+          stepNumber: 1,
+          title: 'Copy & Content Review',
+          assignedRole: 'Content Editor',
+          assignedApproverName: 'Priya',
+          status: 'in_progress'
+        },
+        {
+          stepNumber: 2,
+          title: 'Compliance & Brand Guidelines',
+          assignedRole: reviewer.role,
+          assignedApproverName: reviewer.name,
+          status: 'pending'
+        },
+        {
+          stepNumber: 3,
+          title: 'Client / Executive Approval',
+          assignedRole: 'Brand Client',
+          assignedApproverName: clientName,
+          status: 'pending',
+          isClientStep: true
+        }
+      ];
+    }
+
     const newAppItem: any = {
       id: `APP-${Math.floor(100 + Math.random() * 900)}`,
       brandId: currentBrand.id,
@@ -492,16 +554,11 @@ export const ComposerView: React.FC<ComposerViewProps> = ({
       status: 'in_review',
       submittedAt: nowIso,
       version: 1,
-      requiresClientApproval: false,
-      steps: [
-        {
-          stepNumber: 1,
-          title: 'Review & Sign-Off',
-          assignedRole: reviewer.role,
-          assignedApproverName: reviewer.name,
-          status: 'pending'
-        }
-      ],
+      currentStepIndex: 0,
+      workflowType,
+      requiresClientApproval: requiresClient,
+      clientName,
+      steps,
       history: [
         {
           id: `hist-${Date.now()}`,

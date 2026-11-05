@@ -6,7 +6,8 @@ import {
   ApprovalPostItem, 
   ApprovalRule, 
   ApprovalComment,
-  ApprovalHistoryEvent 
+  ApprovalHistoryEvent,
+  PostVersion 
 } from './types';
 import { ApprovalReviewModal } from './ApprovalReviewModal';
 import { ApprovalRulesTab } from './ApprovalRulesTab';
@@ -65,6 +66,7 @@ const getInitialApprovalItems = (brandId: string): ApprovalPostItem[] => {
       version: 1,
       requiresClientApproval: true,
       clientName: 'Nexus Brand Director',
+      currentStepIndex: 1,
       steps: [
         {
           stepNumber: 1,
@@ -79,7 +81,7 @@ const getInitialApprovalItems = (brandId: string): ApprovalPostItem[] => {
           title: 'Client Sign-Off',
           assignedRole: 'Brand Client',
           assignedApproverName: 'Nexus Brand Director',
-          status: 'pending',
+          status: 'in_progress',
           isClientStep: true
         }
       ],
@@ -202,8 +204,19 @@ const getInitialApprovalItems = (brandId: string): ApprovalPostItem[] => {
       submittedAt: formatISO(-12),
       reviewedAt: formatISO(-10),
       campaign: 'Weekend Drops',
-      version: 1,
+      version: 2,
+      currentStepIndex: 0,
       requiresClientApproval: false,
+      versions: [
+        {
+          version: 1,
+          caption: '🌿 Weekend special: Explore our mindful wellness collection with free express shipping across all regions.',
+          mediaUrls: ['https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=600&auto=format&fit=crop&q=80'],
+          changedAt: formatISO(-12),
+          changedBy: { id: 'u-2', name: 'Priya', role: 'Content Creator' },
+          changeNote: 'Initial post submission'
+        }
+      ],
       steps: [
         {
           stepNumber: 1,
@@ -381,28 +394,44 @@ const getInitialApprovalItems = (brandId: string): ApprovalPostItem[] => {
 const getInitialApprovalRules = (): ApprovalRule[] => [
   {
     id: 'rule-standard',
-    name: 'Standard Two-Step Publishing Approval',
-    description: 'Requires Content Creator draft verification by Social Lead before scheduling.',
+    name: 'Standard Team Review Workflow',
+    description: 'Creator drafts post -> Assigned brand approver reviews and approves before scheduling.',
     enabled: true,
     requiresClient: false,
     autoPublishOnApproval: true,
+    workflowType: 'standard',
     appliesTo: 'all',
     steps: [
-      { order: 1, role: 'Content Creator', approverName: 'Priya' },
-      { order: 2, role: 'Social Lead', approverName: 'Muthukumar' }
+      { order: 1, title: 'Editorial & Quality Check', role: 'Social Lead', approverName: 'Muthukumar' }
     ]
   },
   {
     id: 'rule-client',
-    name: 'External Brand Client Sign-Off',
-    description: 'Mandatory client review for sponsored content and official brand product campaigns.',
+    name: 'Agency & Client Sign-Off Workflow',
+    description: 'Two-stage sign-off: Internal copy verification followed by external client approval portal.',
     enabled: true,
     requiresClient: true,
-    autoPublishOnApproval: false,
+    autoPublishOnApproval: true,
+    workflowType: 'agency_client',
     appliesTo: 'campaigns',
     steps: [
-      { order: 1, role: 'Social Lead', approverName: 'Muthukumar' },
-      { order: 2, role: 'Brand Client', approverName: 'Nexus Brand Director' }
+      { order: 1, title: 'Internal Copy & Hashtags', role: 'Social Lead', approverName: 'Muthukumar' },
+      { order: 2, title: 'Client Sign-Off', role: 'Brand Director', approverName: 'Nexus Brand Director', isClientStep: true }
+    ]
+  },
+  {
+    id: 'rule-enterprise',
+    name: 'Enterprise Regulated Workflow (3-Stage)',
+    description: 'Multi-stage governance: Content Editor review -> Legal & Compliance sign-off -> Executive final sign-off.',
+    enabled: false,
+    requiresClient: true,
+    autoPublishOnApproval: false,
+    workflowType: 'enterprise_multi',
+    appliesTo: 'all',
+    steps: [
+      { order: 1, title: 'Copy & Media Verification', role: 'Content Editor', approverName: 'Priya' },
+      { order: 2, title: 'Legal & Guidelines Check', role: 'Compliance Lead', approverName: 'Karthik' },
+      { order: 3, title: 'Executive Approval', role: 'Social Lead', approverName: 'Muthukumar', isClientStep: true }
     ]
   }
 ];
@@ -492,18 +521,26 @@ export const ApprovalView: React.FC = () => {
   // Role-based visibility logic across tabs
   const isPostVisibleInTab = (item: ApprovalPostItem, tab: ApprovalTab) => {
     const userRole = (currentUser?.role || '').toLowerCase();
-    const isApprover = userRole === 'approver';
-    const isCreator = userRole === 'content creator';
+    const isApprover = userRole === 'approver' || userRole === 'brand approver' || userRole === 'compliance lead' || userRole === 'brand manager' || userRole === 'social lead';
+    const isCreator = userRole === 'content creator' || userRole === 'copywriter';
 
     if (tab === 'pending') {
       if (item.status !== 'in_review' && item.status !== 'resubmitted' && item.status !== 'submitted' && item.status !== 'draft') {
         return false;
       }
-      if (isApprover) {
+      if (userRole === 'brand approver' || userRole === 'brand manager' || userRole === 'client approver') {
+        // Brand / Client approvers see posts requiring client approval or brand sign-off
+        return item.requiresClientApproval || item.steps.some(s => s.isClientStep || s.assignedRole?.toLowerCase().includes('client') || s.assignedRole?.toLowerCase().includes('brand'));
+      }
+      if (userRole === 'compliance lead') {
+        return item.steps.some(s => s.assignedRole?.toLowerCase().includes('compliance') || s.assignedRole?.toLowerCase().includes('legal'));
+      }
+      if (userRole === 'approver') {
         return (
           item.assignedApprover?.id === currentUser?.id ||
           item.assignedApprover?.name?.toLowerCase() === currentUser?.name?.toLowerCase() ||
-          !item.assignedApprover
+          !item.assignedApprover ||
+          item.steps.some(s => s.assignedApproverName?.toLowerCase().includes('karthik'))
         );
       }
       if (isCreator) {
@@ -601,6 +638,7 @@ export const ApprovalView: React.FC = () => {
         let approvedStepTitle = 'Final Approval';
         let isClient = false;
 
+        let nextIndex = item.currentStepIndex || 0;
         if (stepIdx !== -1) {
           const currentStep = updatedSteps[stepIdx];
           approvedStepTitle = currentStep.title;
@@ -614,9 +652,10 @@ export const ApprovalView: React.FC = () => {
 
           if (stepIdx + 1 < updatedSteps.length) {
             isFinalStep = false;
+            nextIndex = stepIdx + 1;
             updatedSteps[stepIdx + 1] = {
               ...updatedSteps[stepIdx + 1],
-              status: 'pending'
+              status: 'in_progress'
             };
           }
         }
@@ -651,6 +690,7 @@ export const ApprovalView: React.FC = () => {
         return {
           ...item,
           status: newStatus,
+          currentStepIndex: nextIndex,
           reviewedAt: nowIso,
           clientApprovalStatus: newClientStatus,
           steps: updatedSteps,
@@ -794,7 +834,19 @@ export const ApprovalView: React.FC = () => {
     setItems(prev => prev.map(item => {
       if (item.id === postId) {
         const newVersion = item.version + 1;
-        const updatedSteps = item.steps.map(s => ({ ...s, status: 'pending' as const }));
+        const archivedVersion: PostVersion = {
+          version: item.version,
+          caption: item.caption,
+          mediaUrls: item.mediaUrls,
+          changedAt: nowIso,
+          changedBy: { id: actor.id, name: actor.name, role: actor.role },
+          changeNote: 'Updated caption addressing review feedback'
+        };
+        const prevVersions = item.versions || [];
+        const updatedSteps = item.steps.map((s, idx) => ({
+          ...s,
+          status: (idx === 0 ? 'in_progress' : 'pending') as any
+        }));
 
         const historyEvent: ApprovalHistoryEvent = {
           id: `hist-${Date.now()}`,
@@ -811,6 +863,8 @@ export const ApprovalView: React.FC = () => {
           caption: newCaption || item.caption,
           status: 'resubmitted',
           version: newVersion,
+          versions: [archivedVersion, ...prevVersions],
+          currentStepIndex: 0,
           resubmittedAt: nowIso,
           steps: updatedSteps,
           history: [...(item.history || []), historyEvent],
@@ -1089,6 +1143,10 @@ export const ApprovalView: React.FC = () => {
           onToggleRule={handleToggleRule}
           onUpdateRule={(updated) => {
             setRules(prev => prev.map(r => r.id === updated.id ? updated : r));
+          }}
+          onAddRule={(newRule) => {
+            setRules(prev => [newRule, ...prev]);
+            showToast('success', `Approval rule "${newRule.name}" created.`);
           }}
         />
       )}

@@ -19,7 +19,7 @@ export interface BrandUser {
   id: string;
   name: string;
   email: string;
-  role: 'Social Lead' | 'Content Creator' | 'Copywriter' | 'Approver' | 'Brand Manager';
+  role: 'Social Lead' | 'Content Creator' | 'Copywriter' | 'Approver' | 'Brand Manager' | 'Brand Approver' | 'Compliance Lead' | 'Brand Director';
   avatar: string;
   brandId: string;
 }

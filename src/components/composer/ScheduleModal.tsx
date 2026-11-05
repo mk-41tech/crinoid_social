@@ -1,14 +1,14 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { Calendar, Clock, Globe, X, Check, AlertCircle, Sparkles } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Calendar, Globe, X, Check, AlertCircle } from 'lucide-react';
 import { SocialPlatform } from '../../types';
 import { PLATFORM_CONFIG } from '../../config/platformsConfig';
 import { 
   getZonedNow, 
   validateScheduleDateTime, 
-  generateTimeSlotOptions,
   format12Hour,
   timeToMinutes
 } from '../../utils/dateValidation';
+import { CustomTimePicker } from '../common/CustomTimePicker';
 
 interface ScheduleModalProps {
   selectedPlatforms: SocialPlatform[];
@@ -23,12 +23,13 @@ export const ScheduleModal: React.FC<ScheduleModalProps> = ({
   onClose,
   initialScheduledAt
 }) => {
-  const [timezone, setTimezone] = useState('UTC+05:30 (IST)');
+  // Fixed strictly to Indian Standard Time (IST)
+  const timezone = 'UTC+05:30 (IST)';
 
-  // Get current zoned time for the active timezone
+  // Get current zoned time for IST
   const zonedNow = useMemo(() => getZonedNow(timezone), [timezone]);
 
-  // Default date: must strictly default to today's date in the selected timezone
+  // Default date: strictly defaults to today's date or upcoming date
   const getInitialDate = () => {
     const today = getZonedNow(timezone).todayDateStr;
     if (initialScheduledAt) {
@@ -42,7 +43,7 @@ export const ScheduleModal: React.FC<ScheduleModalProps> = ({
     return today;
   };
 
-  // Default time: next upcoming slot in the selected timezone
+  // Default time: strictly at least 30 minutes in advance
   const getInitialTime = () => {
     const zoned = getZonedNow(timezone);
     if (initialScheduledAt && initialScheduledAt.includes('T')) {
@@ -50,10 +51,9 @@ export const ScheduleModal: React.FC<ScheduleModalProps> = ({
       const match = timePart.match(/^\d{2}:\d{2}/);
       if (match) {
         const parsedTime = match[0];
-        // If initial date is today, check if time is strictly future
         const initialDate = initialScheduledAt.split('T')[0];
         if (initialDate === zoned.todayDateStr) {
-          if (timeToMinutes(parsedTime) > zoned.currentMinutes) {
+          if (timeToMinutes(parsedTime) >= zoned.currentMinutes + 30) {
             return parsedTime;
           }
         } else if (initialDate > zoned.todayDateStr) {
@@ -72,29 +72,15 @@ export const ScheduleModal: React.FC<ScheduleModalProps> = ({
     return validateScheduleDateTime(date, time, timezone);
   }, [date, time, timezone]);
 
-  // Available hourly time slot options
-  const timeSlots = useMemo(() => {
-    return generateTimeSlotOptions(date, timezone);
-  }, [date, timezone]);
-
-  // When date changes: if user switches back to today and currently selected time is past,
-  // show error and keep user informed
+  // When date changes: if user switches to today and time is < 30 mins, update to nextSuggestedTime
   const handleDateChange = (newDate: string) => {
     setDate(newDate);
-  };
-
-  // Quick helper to offset time by minutes
-  const handleQuickOffset = (minutesToAdd: number) => {
-    const now = getZonedNow(timezone);
-    const targetZoned = new Date(now.nowZoned.getTime() + minutesToAdd * 60000);
-    const yyyy = targetZoned.getFullYear();
-    const mm = String(targetZoned.getMonth() + 1).padStart(2, '0');
-    const dd = String(targetZoned.getDate()).padStart(2, '0');
-    const hh = String(targetZoned.getHours()).padStart(2, '0');
-    const min = String(targetZoned.getMinutes()).padStart(2, '0');
-
-    setDate(`${yyyy}-${mm}-${dd}`);
-    setTime(`${hh}:${min}`);
+    const zoned = getZonedNow(timezone);
+    if (newDate === zoned.todayDateStr) {
+      if (timeToMinutes(time) < zoned.currentMinutes + 30) {
+        setTime(zoned.nextSuggestedTime);
+      }
+    }
   };
 
   // Handle scheduling submission
@@ -128,7 +114,7 @@ export const ScheduleModal: React.FC<ScheduleModalProps> = ({
       <div
         style={{
           width: '100%',
-          maxWidth: '500px',
+          maxWidth: '480px',
           backgroundColor: '#ffffff',
           borderRadius: 'var(--radius-xl)',
           boxShadow: 'var(--shadow-xl)',
@@ -218,37 +204,25 @@ export const ScheduleModal: React.FC<ScheduleModalProps> = ({
               </div>
             </div>
 
-            {/* Schedule Time */}
+            {/* Schedule Time (Custom time picker - previous timings not shown) */}
             <div>
               <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
                 Schedule Time
               </label>
-              <div style={{ position: 'relative' }}>
-                <input
-                  type="time"
-                  value={time}
-                  min={isToday ? zonedNow.minTimeForToday : undefined}
-                  onChange={(e) => setTime(e.target.value)}
-                  required
-                  style={{
-                    width: '100%',
-                    padding: '8px 10px',
-                    borderRadius: 'var(--radius-md)',
-                    border: `1px solid ${validation.isTimePast ? '#ef4444' : 'var(--border-subtle)'}`,
-                    backgroundColor: validation.isTimePast ? '#fff5f5' : '#ffffff',
-                    fontSize: '13px',
-                    outline: 'none',
-                    transition: 'border-color 0.15s ease'
-                  }}
-                />
-              </div>
+              <CustomTimePicker
+                value={time}
+                onChange={(newTime) => setTime(newTime)}
+                isToday={isToday}
+                minTimeStr={zonedNow.minTimeForToday}
+                hasError={validation.isTimePast}
+              />
               <div style={{ fontSize: '10.5px', color: 'var(--text-muted)', marginTop: '3px' }}>
-                {time ? format12Hour(time) : '--:--'}
+                {isToday ? `Min. 30 min in advance (${format12Hour(zonedNow.minTimeForToday)})` : 'Upcoming timing'}
               </div>
             </div>
           </div>
 
-          {/* Validation Error Banner (When user picks or enters a past date or time) */}
+          {/* Validation Error Banner */}
           {!validation.isValid && validation.error && (
             <div
               style={{
@@ -269,184 +243,28 @@ export const ScheduleModal: React.FC<ScheduleModalProps> = ({
             </div>
           )}
 
-          {/* Quick Preset Buttons */}
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-              <span style={{ fontSize: '11.5px', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                Quick Upcoming Slots
-              </span>
-              <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                Current: {format12Hour(zonedNow.currentTimeStr)}
-              </span>
-            </div>
-            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-              <button
-                type="button"
-                onClick={() => handleQuickOffset(15)}
-                style={{
-                  fontSize: '11px',
-                  fontWeight: 600,
-                  padding: '4px 8px',
-                  borderRadius: 'var(--radius-sm)',
-                  border: '1px solid var(--border-subtle)',
-                  backgroundColor: 'var(--bg-subtle)',
-                  cursor: 'pointer',
-                  color: 'var(--text-primary)'
-                }}
-              >
-                +15 mins
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickOffset(30)}
-                style={{
-                  fontSize: '11px',
-                  fontWeight: 600,
-                  padding: '4px 8px',
-                  borderRadius: 'var(--radius-sm)',
-                  border: '1px solid var(--border-subtle)',
-                  backgroundColor: 'var(--bg-subtle)',
-                  cursor: 'pointer',
-                  color: 'var(--text-primary)'
-                }}
-              >
-                +30 mins
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickOffset(60)}
-                style={{
-                  fontSize: '11px',
-                  fontWeight: 600,
-                  padding: '4px 8px',
-                  borderRadius: 'var(--radius-sm)',
-                  border: '1px solid var(--border-subtle)',
-                  backgroundColor: 'var(--bg-subtle)',
-                  cursor: 'pointer',
-                  color: 'var(--text-primary)'
-                }}
-              >
-                +1 hour
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickOffset(120)}
-                style={{
-                  fontSize: '11px',
-                  fontWeight: 600,
-                  padding: '4px 8px',
-                  borderRadius: 'var(--radius-sm)',
-                  border: '1px solid var(--border-subtle)',
-                  backgroundColor: 'var(--bg-subtle)',
-                  cursor: 'pointer',
-                  color: 'var(--text-primary)'
-                }}
-              >
-                +2 hours
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  const tomorrow = new Date(zonedNow.nowZoned.getTime() + 24 * 3600000);
-                  const y = tomorrow.getFullYear();
-                  const m = String(tomorrow.getMonth() + 1).padStart(2, '0');
-                  const d = String(tomorrow.getDate()).padStart(2, '0');
-                  setDate(`${y}-${m}-${d}`);
-                  setTime('10:00');
-                }}
-                style={{
-                  fontSize: '11px',
-                  fontWeight: 600,
-                  padding: '4px 8px',
-                  borderRadius: 'var(--radius-sm)',
-                  border: '1px solid var(--border-subtle)',
-                  backgroundColor: 'var(--bg-subtle)',
-                  cursor: 'pointer',
-                  color: 'var(--text-primary)'
-                }}
-              >
-                Tomorrow 10 AM
-              </button>
-            </div>
-          </div>
-
-          {/* Time Slots Selector (Hourly Slots showing Disabled vs Available) */}
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-              <span style={{ fontSize: '11.5px', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                {isToday ? "Today's Time Slots (Past slots disabled)" : "Time Slots (All available)"}
-              </span>
-            </div>
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(4, 1fr)',
-                gap: '6px',
-                maxHeight: '112px',
-                overflowY: 'auto',
-                padding: '4px 2px'
-              }}
-            >
-              {timeSlots.map(slot => {
-                const isSelected = time === slot.timeStr;
-                return (
-                  <button
-                    key={slot.timeStr}
-                    type="button"
-                    disabled={slot.isPast}
-                    onClick={() => setTime(slot.timeStr)}
-                    title={slot.isPast ? `${slot.label} — Disabled (Past time)` : `Select ${slot.label}`}
-                    style={{
-                      padding: '6px 4px',
-                      fontSize: '11px',
-                      borderRadius: 'var(--radius-sm)',
-                      border: `1px solid ${isSelected ? 'var(--color-primary)' : 'var(--border-subtle)'}`,
-                      backgroundColor: isSelected
-                        ? 'var(--color-primary)'
-                        : slot.isPast
-                        ? '#f1f5f9'
-                        : '#ffffff',
-                      color: isSelected
-                        ? '#ffffff'
-                        : slot.isPast
-                        ? '#94a3b8'
-                        : 'var(--text-primary)',
-                      cursor: slot.isPast ? 'not-allowed' : 'pointer',
-                      textDecoration: slot.isPast ? 'line-through' : 'none',
-                      fontWeight: isSelected ? 700 : 500,
-                      transition: 'all 0.15s ease'
-                    }}
-                  >
-                    {slot.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Timezone Selection */}
+          {/* Timezone (Fixed to Indian Standard Time) */}
           <div>
             <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
               Timezone
             </label>
-            <select
-              value={timezone}
-              onChange={(e) => setTimezone(e.target.value)}
+            <div
               style={{
                 width: '100%',
-                padding: '8px 10px',
+                padding: '9px 12px',
                 borderRadius: 'var(--radius-md)',
                 border: '1px solid var(--border-subtle)',
                 fontSize: '13px',
-                backgroundColor: '#ffffff'
+                backgroundColor: '#f8fafc',
+                color: 'var(--text-primary)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
               }}
             >
-              <option value="UTC+05:30 (IST)">UTC+05:30 (India Standard Time)</option>
-              <option value="UTC+00:00 (GMT)">UTC+00:00 (Greenwich Mean Time)</option>
-              <option value="UTC-05:00 (EST)">UTC-05:00 (Eastern Standard Time)</option>
-              <option value="UTC-08:00 (PST)">UTC-08:00 (Pacific Standard Time)</option>
-              <option value="UTC+01:00 (CET)">UTC+01:00 (Central European Time)</option>
-            </select>
+              <Globe size={15} color="var(--color-primary)" />
+              <span style={{ fontWeight: 500 }}>UTC+05:30 (India Standard Time)</span>
+            </div>
           </div>
 
           {/* Actions Footer */}
