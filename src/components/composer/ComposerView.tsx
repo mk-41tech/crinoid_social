@@ -12,7 +12,7 @@ import { ScheduleModal } from './ScheduleModal';
 import { ApprovalModal } from './ApprovalModal';
 import { PublishResultModal } from './PublishResultModal';
 import { approvalService } from '../../services/approvalService';
-import { uploadVideoToYoutube, connectYoutubeWithPopup } from '../../services/youtube';
+import { uploadVideoToYoutube, connectYoutubeWithPopup, extractYoutubeVideoId } from '../../services/youtube';
 import { publishToFacebookPage, publishToInstagram } from '../../services/meta';
 import { 
   Upload, 
@@ -460,13 +460,18 @@ export const ComposerView: React.FC<ComposerViewProps> = ({
 
         // Save to published posts database so it immediately appears under Published with metrics
         try {
+          const ytId = finalPublishedUrl ? extractYoutubeVideoId(finalPublishedUrl) : null;
+          const cleanThumbnail = ytId 
+            ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`
+            : (draft.thumbnailUrl && !draft.thumbnailUrl.startsWith('blob:') ? draft.thumbnailUrl : (draft.mediaUrls[0] && !draft.mediaUrls[0].startsWith('blob:') ? draft.mediaUrls[0] : (selectedPlatforms.includes('youtube') ? 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80' : '')));
+
           const publishedPostRecord = {
             id: `CRN-${Math.floor(1000 + Math.random() * 9000)}`,
             brandId: currentBrand.id,
             caption: draft.commonCaption,
             mediaUrls: draft.mediaUrls,
             mediaType: draft.mediaType || (uploadedVideoFile || selectedPlatforms.includes('youtube') ? 'video' : 'image'),
-            thumbnailUrl: draft.thumbnailUrl || (draft.mediaUrls && draft.mediaUrls[0]) || (selectedPlatforms.includes('youtube') ? 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80' : ''),
+            thumbnailUrl: cleanThumbnail,
             platforms: [...selectedPlatforms],
             author: {
               id: currentUser?.id || 'u-1',
@@ -489,12 +494,12 @@ export const ComposerView: React.FC<ComposerViewProps> = ({
               endpoint: p === 'youtube' ? 'POST /upload/youtube/v3/videos' : 'POST /v18.0/publish'
             })),
             performanceData: {
-              likes: selectedPlatforms.includes('youtube') ? 14 : 0,
-              comments: selectedPlatforms.includes('youtube') ? 3 : 0,
+              likes: 0,
+              comments: 0,
               shares: 0,
-              reach: selectedPlatforms.includes('youtube') ? 120 : 0,
-              impressions: selectedPlatforms.includes('youtube') ? 250 : 0,
-              engagementRate: '4.8%'
+              reach: 0,
+              impressions: 0,
+              engagementRate: '0.0%'
             }
           };
 
@@ -515,13 +520,19 @@ export const ComposerView: React.FC<ComposerViewProps> = ({
     }
 
     // Simulated publish fallback
+    const simulatedYtUrl = selectedPlatforms.includes('youtube') ? 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' : undefined;
+    const simYtId = simulatedYtUrl ? extractYoutubeVideoId(simulatedYtUrl) : null;
+    const simCleanThumbnail = simYtId
+      ? `https://img.youtube.com/vi/${simYtId}/hqdefault.jpg`
+      : (draft.thumbnailUrl && !draft.thumbnailUrl.startsWith('blob:') ? draft.thumbnailUrl : (draft.mediaUrls[0] && !draft.mediaUrls[0].startsWith('blob:') ? draft.mediaUrls[0] : (selectedPlatforms.includes('youtube') ? 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80' : '')));
+
     const simulatedPostRecord = {
       id: `CRN-${Math.floor(1000 + Math.random() * 9000)}`,
       brandId: currentBrand.id,
       caption: draft.commonCaption,
       mediaUrls: draft.mediaUrls,
       mediaType: draft.mediaType || (uploadedVideoFile || selectedPlatforms.includes('youtube') ? 'video' : 'image'),
-      thumbnailUrl: draft.thumbnailUrl || (draft.mediaUrls && draft.mediaUrls[0]) || (selectedPlatforms.includes('youtube') ? 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80' : ''),
+      thumbnailUrl: simCleanThumbnail,
       platforms: [...selectedPlatforms],
       author: {
         id: currentUser?.id || 'u-1',
@@ -532,7 +543,7 @@ export const ComposerView: React.FC<ComposerViewProps> = ({
       createdDate: new Date().toISOString(),
       publishedDate: new Date().toISOString(),
       status: 'published' as const,
-      publishedUrl: selectedPlatforms.includes('youtube') ? 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' : undefined,
+      publishedUrl: simulatedYtUrl,
       approvalHistory: [],
       publishingLogs: selectedPlatforms.map(p => ({
         id: `log-${Date.now()}-${p}`,
@@ -544,12 +555,12 @@ export const ComposerView: React.FC<ComposerViewProps> = ({
         endpoint: 'CRINOID_LOCAL_DISPATCH'
       })),
       performanceData: {
-        likes: selectedPlatforms.includes('youtube') ? 14 : 0,
-        comments: selectedPlatforms.includes('youtube') ? 3 : 0,
+        likes: 0,
+        comments: 0,
         shares: 0,
-        reach: selectedPlatforms.includes('youtube') ? 120 : 0,
-        impressions: selectedPlatforms.includes('youtube') ? 250 : 0,
-        engagementRate: '4.8%'
+        reach: 0,
+        impressions: 0,
+        engagementRate: '0.0%'
       }
     };
 

@@ -6,7 +6,8 @@ import { PublishingLogsModal } from './PublishingLogsModal';
 import { SubmitApprovalModal } from './SubmitApprovalModal';
 import { DeleteConfirmModal } from './DeleteConfirmModal';
 import { RescheduleModal } from '../calendar/RescheduleModal';
-import { InstagramIcon, FacebookIcon } from '../common/SocialIcons';
+import { InstagramIcon, FacebookIcon, YoutubeIcon, LinkedinIcon } from '../common/SocialIcons';
+import { extractYoutubeVideoId, fetchYoutubeVideoStats } from '../../services/youtube';
 import '../../styles/posts.css';
 import {
   Search,
@@ -30,7 +31,11 @@ import {
   FileSpreadsheet,
   AlertCircle,
   TrendingUp,
-  Share2
+  Share2,
+  ThumbsUp,
+  MessageCircle,
+  BarChart3,
+  Play
 } from 'lucide-react';
 
 const STORAGE_POSTS_DATABASE = 'crinoid_posts_database_v1';
@@ -347,6 +352,96 @@ export const PostsView: React.FC = () => {
     }
   }, [posts]);
 
+  // Clean up legacy dummy stats (likes: 14, comments: 3) and broken blob thumbnails
+  const ytAccessToken = currentBrand?.accounts?.find(a => a.platform === 'youtube')?.accessToken;
+
+  useEffect(() => {
+    let changed = false;
+    const updated = posts.map(p => {
+      const isYt = p.platforms?.includes('youtube') || Boolean(p.publishedUrl && extractYoutubeVideoId(p.publishedUrl));
+      if (!isYt) return p;
+
+      let postChanged = false;
+      const newPost = { ...p };
+
+      // Fix broken blob thumbnail by extracting real YouTube thumbnail
+      if (newPost.thumbnailUrl?.startsWith('blob:') || !newPost.thumbnailUrl) {
+        const vidId = newPost.publishedUrl ? extractYoutubeVideoId(newPost.publishedUrl) : null;
+        if (vidId) {
+          newPost.thumbnailUrl = `https://img.youtube.com/vi/${vidId}/hqdefault.jpg`;
+          postChanged = true;
+        }
+      }
+
+      // Reset old dummy hardcoded numbers (14 likes, 3 comments, 4.8%) to clean zero values
+      if (
+        newPost.performanceData?.likes === 14 &&
+        newPost.performanceData?.comments === 3 &&
+        newPost.performanceData?.engagementRate === '4.8%'
+      ) {
+        newPost.performanceData = {
+          likes: 0,
+          comments: 0,
+          shares: 0,
+          reach: 0,
+          impressions: 0,
+          engagementRate: '0.0%'
+        };
+        postChanged = true;
+      }
+
+      if (postChanged) changed = true;
+      return newPost;
+    });
+
+    if (changed) {
+      setPosts(updated);
+    }
+  }, [currentBrand?.id]);
+
+  // Auto-sync real live statistics from YouTube Data API for published videos
+  useEffect(() => {
+    const syncLiveYoutube = async () => {
+      const ytPosts = posts.filter(
+        p => p.status === 'published' && (p.platforms?.includes('youtube') || p.publishedUrl?.includes('youtube') || p.publishedUrl?.includes('youtu.be'))
+      );
+
+      for (const p of ytPosts) {
+        const vidId = p.publishedUrl ? extractYoutubeVideoId(p.publishedUrl) : null;
+        if (!vidId || vidId === 'dQw4w9WgXcQ') continue;
+        try {
+          const stats = await fetchYoutubeVideoStats(vidId, ytAccessToken);
+          if (stats && stats.isRealLive) {
+            setPosts(prev =>
+              prev.map(item =>
+                item.id === p.id
+                  ? {
+                      ...item,
+                      thumbnailUrl: stats.thumbnailUrl || `https://img.youtube.com/vi/${vidId}/hqdefault.jpg`,
+                      performanceData: {
+                        likes: stats.likeCount,
+                        comments: stats.commentCount,
+                        shares: item.performanceData?.shares || 0,
+                        reach: stats.viewCount * 2,
+                        impressions: stats.viewCount,
+                        engagementRate: stats.engagementRate
+                      }
+                    }
+                  : item
+              )
+            );
+          }
+        } catch (err) {
+          console.warn('Live sync failed for post', p.id, err);
+        }
+      }
+    };
+
+    if (posts.length > 0) {
+      syncLiveYoutube();
+    }
+  }, [posts.length, ytAccessToken]);
+
   // Modal Targets
   const [viewModalPost, setViewModalPost] = useState<PostRecord | null>(null);
   const [sidePanelMode, setSidePanelMode] = useState<'view' | 'edit'>('view');
@@ -604,11 +699,27 @@ export const PostsView: React.FC = () => {
     showToast('success', `Post submitted for approval to ${reviewerName}`);
   };
 
+  const getPostThumbnail = (post: PostRecord): string | null => {
+    const ytId = post.publishedUrl ? extractYoutubeVideoId(post.publishedUrl) : null;
+    if (ytId) {
+      return `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+    }
+    if (post.thumbnailUrl && !post.thumbnailUrl.startsWith('blob:')) {
+      return post.thumbnailUrl;
+    }
+    if (post.mediaUrls && post.mediaUrls.length > 0 && !post.mediaUrls[0].startsWith('blob:')) {
+      return post.mediaUrls[0];
+    }
+    return null;
+  };
+
   const renderPlatformIcons = (platforms: string[]) => (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
       {platforms.map(p => {
         if (p === 'instagram') return <InstagramIcon key={p} size={13} color="#E4405F" />;
         if (p === 'facebook') return <FacebookIcon key={p} size={13} color="#1877F2" />;
+        if (p === 'youtube') return <YoutubeIcon key={p} size={13} color="#FF0000" />;
+        if (p === 'linkedin') return <LinkedinIcon key={p} size={13} color="#0A66C2" />;
         return (
           <span key={p} style={{ fontSize: '9px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)' }}>
             {p[0]}
@@ -797,140 +908,237 @@ export const PostsView: React.FC = () => {
       {/* 5. Grid View */}
       {filteredPosts.length > 0 && viewStyle === 'grid' && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '16px' }}>
-          {filteredPosts.map(post => (
-            <div key={post.id} className="post-grid-card">
-              {/* Top thumbnail or placeholder */}
-              {post.thumbnailUrl ? (
-                <img src={post.thumbnailUrl} alt="post media" className="post-grid-thumb" />
-              ) : (
-                <div style={{
-                  height: '80px',
-                  backgroundColor: 'var(--bg-subtle)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  borderBottom: '1px solid var(--border-subtle)',
-                  color: 'var(--text-light)'
-                }}>
-                  <Share2 size={24} />
-                </div>
-              )}
+          {filteredPosts.map(post => {
+            const isYoutube = post.platforms?.includes('youtube') || Boolean(post.publishedUrl && extractYoutubeVideoId(post.publishedUrl));
+            const thumbUrl = getPostThumbnail(post);
 
-              <div className="post-grid-content">
-                {/* Meta Bar: ID, Platforms, Status */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', backgroundColor: 'var(--bg-muted)', padding: '1px 5px', borderRadius: '4px' }}>
-                      {post.id}
-                    </span>
-                    {renderPlatformIcons(post.platforms)}
-                  </div>
-                  <span className={`status-badge ${post.status}`}>
-                    ● {post.status.replace('_', ' ')}
-                  </span>
-                </div>
-
-                {/* Caption */}
-                <p style={{
-                  margin: '0 0 12px',
-                  fontSize: '12.5px',
-                  color: 'var(--text-primary)',
-                  lineHeight: '1.4',
-                  overflow: 'hidden',
-                  display: '-webkit-box',
-                  WebkitLineClamp: 3,
-                  WebkitBoxOrient: 'vertical'
-                }}>
-                  {post.caption}
-                </p>
-
-                {/* Performance or Date info */}
-                {post.performanceData ? (
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '6px 8px',
-                    borderRadius: '6px',
-                    backgroundColor: 'var(--bg-subtle)',
-                    fontSize: '11px',
-                    color: 'var(--text-secondary)',
-                    marginBottom: '10px'
-                  }}>
-                    <span>❤️ {post.performanceData.likes}</span>
-                    <span>💬 {post.performanceData.comments}</span>
-                    <span>🔄 {post.performanceData.shares}</span>
-                    <span style={{ fontWeight: 600, color: 'var(--color-primary)' }}>
-                      📈 {post.performanceData.engagementRate}
-                    </span>
+            return (
+              <div
+                key={post.id}
+                className="post-grid-card"
+                onClick={() => handleView(post)}
+                style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column' }}
+              >
+                {/* Top thumbnail or placeholder */}
+                {thumbUrl ? (
+                  <div style={{ position: 'relative', width: '100%', height: '140px', backgroundColor: '#0f172a', overflow: 'hidden', borderTopLeftRadius: 'var(--radius-lg)', borderTopRightRadius: 'var(--radius-lg)' }}>
+                    <img
+                      src={thumbUrl}
+                      alt="post media"
+                      className="post-grid-thumb"
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                      onError={(e) => {
+                        (e.currentTarget as HTMLElement).style.display = 'none';
+                        const fallback = e.currentTarget.parentElement?.querySelector('.post-grid-thumb-fallback') as HTMLElement;
+                        if (fallback) fallback.style.display = 'flex';
+                      }}
+                    />
+                    <div
+                      className="post-grid-thumb-fallback"
+                      style={{
+                        display: 'none',
+                        position: 'absolute',
+                        inset: 0,
+                        backgroundColor: '#0f172a',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexDirection: 'column',
+                        gap: '6px'
+                      }}
+                    >
+                      {isYoutube ? <YoutubeIcon size={32} color="#FF0000" /> : <Share2 size={24} color="#94a3b8" />}
+                    </div>
+                    {isYoutube && (
+                      <div style={{
+                        position: 'absolute',
+                        bottom: '8px',
+                        left: '8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        backgroundColor: 'rgba(0,0,0,0.75)',
+                        color: '#fff',
+                        padding: '3px 7px',
+                        borderRadius: '4px',
+                        fontSize: '10.5px',
+                        fontWeight: 600
+                      }}>
+                        <Play size={10} fill="#fff" />
+                        <span>YouTube Video</span>
+                      </div>
+                    )}
                   </div>
                 ) : (
-                  <div style={{ fontSize: '11.5px', color: 'var(--text-light)', marginBottom: '10px' }}>
-                    {post.scheduledDate ? (
-                      <span>Scheduled for {new Date(post.scheduledDate).toLocaleDateString()}</span>
-                    ) : (
-                      <span>Created {new Date(post.createdDate).toLocaleDateString()}</span>
-                    )}
+                  <div style={{
+                    height: '110px',
+                    backgroundColor: '#0f172a',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                    borderBottom: '1px solid var(--border-subtle)',
+                    color: '#94a3b8'
+                  }}>
+                    {isYoutube ? <YoutubeIcon size={32} color="#FF0000" /> : <Share2 size={24} />}
+                    {isYoutube && <span style={{ fontSize: '11px', color: '#cbd5e1' }}>YouTube Video</span>}
                   </div>
                 )}
 
-                {/* Author & Campaign */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '12px' }}>
-                  <span>{post.author.name}</span>
-                  {post.campaign && <span>{post.campaign}</span>}
-                </div>
-
-                {/* Action Toolbar */}
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  paddingTop: '10px',
-                  borderTop: '1px solid var(--border-subtle)',
-                  marginTop: 'auto'
-                }}>
-                  <div style={{ display: 'flex', gap: '4px' }}>
-                    <button
-                      title="View Post Details"
-                      onClick={() => handleView(post)}
-                      style={{ padding: '5px', border: '1px solid var(--border-subtle)', borderRadius: '4px', background: '#fff', cursor: 'pointer', color: 'var(--text-secondary)' }}
-                    >
-                      <Eye size={13} />
-                    </button>
-                    <button
-                      title="Edit Post"
-                      onClick={() => handleEdit(post)}
-                      style={{ padding: '5px', border: '1px solid var(--border-subtle)', borderRadius: '4px', background: '#fff', cursor: 'pointer', color: 'var(--text-secondary)' }}
-                    >
-                      <Edit3 size={13} />
-                    </button>
-                    <button
-                      title="Duplicate"
-                      onClick={() => handleDuplicate(post)}
-                      style={{ padding: '5px', border: '1px solid var(--border-subtle)', borderRadius: '4px', background: '#fff', cursor: 'pointer', color: 'var(--text-secondary)' }}
-                    >
-                      <Copy size={13} />
-                    </button>
-                    <button
-                      title="View Publishing Logs"
-                      onClick={() => setLogsModalPost(post)}
-                      style={{ padding: '5px', border: '1px solid var(--border-subtle)', borderRadius: '4px', background: '#fff', cursor: 'pointer', color: 'var(--text-secondary)' }}
-                    >
-                      <Terminal size={13} />
-                    </button>
+                <div className="post-grid-content" style={{ display: 'flex', flexDirection: 'column', flex: 1, padding: '14px' }}>
+                  {/* Meta Bar: ID, Platforms, Status */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', backgroundColor: 'var(--bg-muted)', padding: '1px 5px', borderRadius: '4px' }}>
+                        {post.id}
+                      </span>
+                      {renderPlatformIcons(post.platforms)}
+                    </div>
+                    <span className={`status-badge ${post.status}`}>
+                      ● {post.status.replace('_', ' ')}
+                    </span>
                   </div>
 
-                  <div style={{ display: 'flex', gap: '4px' }}>
-                    {post.status === 'scheduled' && (
+                  {/* Caption */}
+                  <p style={{
+                    margin: '0 0 12px',
+                    fontSize: '12.5px',
+                    color: 'var(--text-primary)',
+                    lineHeight: '1.4',
+                    overflow: 'hidden',
+                    display: '-webkit-box',
+                    WebkitLineClamp: 3,
+                    WebkitBoxOrient: 'vertical'
+                  }}>
+                    {post.caption}
+                  </p>
+
+                  {/* Performance Metrics */}
+                  {post.performanceData ? (
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '6px 8px',
+                      borderRadius: '6px',
+                      backgroundColor: 'var(--bg-subtle)',
+                      fontSize: '11px',
+                      color: 'var(--text-secondary)',
+                      marginBottom: '8px'
+                    }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }} title="Likes">
+                        <ThumbsUp size={11} color="#ef4444" /> {post.performanceData.likes}
+                      </span>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }} title="Comments">
+                        <MessageCircle size={11} color="#3b82f6" /> {post.performanceData.comments}
+                      </span>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }} title="Shares">
+                        <Share2 size={11} color="#10b981" /> {post.performanceData.shares}
+                      </span>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '3px', fontWeight: 600, color: 'var(--color-primary)' }} title="Engagement Rate">
+                        <TrendingUp size={11} /> {post.performanceData.engagementRate}
+                      </span>
+                    </div>
+                  ) : (
+                    <div style={{ fontSize: '11.5px', color: 'var(--text-light)', marginBottom: '8px' }}>
+                      {post.scheduledDate ? (
+                        <span>Scheduled for {new Date(post.scheduledDate).toLocaleDateString()}</span>
+                      ) : (
+                        <span>Created {new Date(post.createdDate).toLocaleDateString()}</span>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Prominent Button to open YouTube Studio & Charts */}
+                  {isYoutube && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleView(post);
+                      }}
+                      style={{
+                        width: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px',
+                        padding: '7px 10px',
+                        marginBottom: '10px',
+                        backgroundColor: '#FEF2F2',
+                        color: '#DC2626',
+                        border: '1px solid #FECACA',
+                        borderRadius: '6px',
+                        fontSize: '11.5px',
+                        fontWeight: 600,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <BarChart3 size={13} />
+                      <span>View YouTube Studio & Graphs</span>
+                    </button>
+                  )}
+
+                  {/* Author & Campaign */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '12px' }}>
+                    <span>{post.author.name}</span>
+                    {post.campaign && <span>{post.campaign}</span>}
+                  </div>
+
+                  {/* Action Toolbar */}
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      paddingTop: '10px',
+                      borderTop: '1px solid var(--border-subtle)',
+                      marginTop: 'auto'
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div style={{ display: 'flex', gap: '4px' }}>
                       <button
-                        title="Reschedule"
-                        onClick={() => setRescheduleModalPost(post)}
-                        style={{ padding: '5px 8px', fontSize: '11px', border: '1px solid var(--border-subtle)', borderRadius: '4px', background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                        title="View Post Details & Charts"
+                        onClick={() => handleView(post)}
+                        style={{ padding: '5px', border: '1px solid var(--border-subtle)', borderRadius: '4px', background: '#fff', cursor: 'pointer', color: 'var(--text-secondary)' }}
                       >
-                        <Clock size={12} /> Reschedule
+                        <Eye size={13} />
                       </button>
-                    )}
-                    {post.status === 'failed' && (
+                      <button
+                        title="Edit Post"
+                        onClick={() => handleEdit(post)}
+                        style={{ padding: '5px', border: '1px solid var(--border-subtle)', borderRadius: '4px', background: '#fff', cursor: 'pointer', color: 'var(--text-secondary)' }}
+                      >
+                        <Edit3 size={13} />
+                      </button>
+                      <button
+                        title="Duplicate"
+                        onClick={() => handleDuplicate(post)}
+                        style={{ padding: '5px', border: '1px solid var(--border-subtle)', borderRadius: '4px', background: '#fff', cursor: 'pointer', color: 'var(--text-secondary)' }}
+                      >
+                        <Copy size={13} />
+                      </button>
+                      <button
+                        title="View Publishing Logs"
+                        onClick={() => setLogsModalPost(post)}
+                        style={{ padding: '5px', border: '1px solid var(--border-subtle)', borderRadius: '4px', background: '#fff', cursor: 'pointer', color: 'var(--text-secondary)' }}
+                      >
+                        <Terminal size={13} />
+                      </button>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '4px' }}>
+                      {post.status === 'scheduled' && (
+                        <button
+                          title="Reschedule"
+                          onClick={() => setRescheduleModalPost(post)}
+                          style={{ padding: '5px 8px', fontSize: '11px', border: '1px solid var(--border-subtle)', borderRadius: '4px', background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                        >
+                          <Clock size={12} /> Reschedule
+                        </button>
+                      )}
+                      {post.status === 'failed' && (
                       <button
                         title="Retry Publishing"
                         onClick={() => handleRetry(post)}
@@ -959,9 +1167,10 @@ export const PostsView: React.FC = () => {
                 </div>
               </div>
             </div>
-          ))}
-        </div>
-      )}
+          );
+        })}
+      </div>
+    )}
 
       {/* 6. Table View */}
       {filteredPosts.length > 0 && viewStyle === 'table' && (
@@ -990,8 +1199,13 @@ export const PostsView: React.FC = () => {
               <div>{renderPlatformIcons(post.platforms)}</div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingRight: '12px' }}>
-                {post.thumbnailUrl && (
-                  <img src={post.thumbnailUrl} alt="thumb" style={{ width: '30px', height: '30px', borderRadius: '4px', objectFit: 'cover' }} />
+                {getPostThumbnail(post) && (
+                  <img
+                    src={getPostThumbnail(post)!}
+                    alt="thumb"
+                    style={{ width: '30px', height: '30px', borderRadius: '4px', objectFit: 'cover' }}
+                    onError={(e) => { (e.currentTarget as HTMLElement).style.display = 'none'; }}
+                  />
                 )}
                 <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {post.caption}

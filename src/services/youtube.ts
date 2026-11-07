@@ -452,35 +452,49 @@ export const formatYoutubeDuration = (durationStr?: string): string => {
 };
 
 /**
- * Generates deterministic fallback statistics for testing or offline demonstration
+ * Generates fallback statistics.
+ * For the sample demo video (dQw4w9WgXcQ), provides sample demonstration data.
+ * For user videos, provides clean, real initial counts (0 views, 0 likes, 0 comments)
+ * so fake dummy numbers are never displayed.
  */
 export const getFallbackVideoStats = (videoId: string): YoutubeVideoStats => {
-  let seed = 0;
-  for (let i = 0; i < videoId.length; i++) {
-    seed = (seed * 31 + videoId.charCodeAt(i)) % 10000;
+  if (videoId === 'dQw4w9WgXcQ') {
+    return {
+      id: videoId,
+      title: 'Crinoid Social 2.0 Feature Walkthrough & Unified Social Publishing',
+      description: 'Learn how to schedule across multiple brands, configure granular approval workflows, and publish videos directly to YouTube and social channels.',
+      publishedAt: new Date(Date.now() - 48 * 3600 * 1000).toISOString(),
+      thumbnailUrl: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
+      channelTitle: 'Crinoid Technologies Official',
+      channelId: 'UC_crinoid_official_demo',
+      duration: 'PT4M5S',
+      durationFormatted: '4:05',
+      viewCount: 1420,
+      likeCount: 88,
+      commentCount: 16,
+      estimatedWatchTimeHours: 54.2,
+      engagementRate: '7.3%',
+      url: `https://www.youtube.com/watch?v=${videoId}`,
+      embedUrl: `https://www.youtube.com/embed/${videoId}`,
+      isRealLive: false
+    };
   }
-  const viewCount = 1420 + (seed % 3400);
-  const likeCount = Math.round(viewCount * 0.068) + 14;
-  const commentCount = Math.round(likeCount * 0.22) + 6;
-  const avgDurationSeconds = 245;
-  const estimatedHours = parseFloat(((viewCount * avgDurationSeconds * 0.58) / 3600).toFixed(1));
-  const engagementRate = `${(((likeCount + commentCount) / viewCount) * 100).toFixed(1)}%`;
 
   return {
     id: videoId,
-    title: 'Crinoid Social 2.0 Feature Walkthrough & Unified Social Publishing',
-    description: 'Learn how to schedule across multiple brands, configure granular approval workflows, and publish videos directly to YouTube and social channels.',
-    publishedAt: new Date(Date.now() - 48 * 3600 * 1000).toISOString(),
-    thumbnailUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80',
-    channelTitle: 'Crinoid Technologies Official',
-    channelId: 'UC_crinoid_official_demo',
-    duration: 'PT4M5S',
-    durationFormatted: '4:05',
-    viewCount,
-    likeCount,
-    commentCount,
-    estimatedWatchTimeHours: estimatedHours,
-    engagementRate,
+    title: 'Live YouTube Video',
+    description: '',
+    publishedAt: new Date().toISOString(),
+    thumbnailUrl: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,
+    channelTitle: 'Connected Channel',
+    channelId: '',
+    duration: 'PT0S',
+    durationFormatted: '0:00',
+    viewCount: 0,
+    likeCount: 0,
+    commentCount: 0,
+    estimatedWatchTimeHours: 0,
+    engagementRate: '0.0%',
     url: `https://www.youtube.com/watch?v=${videoId}`,
     embedUrl: `https://www.youtube.com/embed/${videoId}`,
     isRealLive: false
@@ -488,9 +502,15 @@ export const getFallbackVideoStats = (videoId: string): YoutubeVideoStats => {
 };
 
 /**
- * Generates realistic fallback comments for testing or offline demonstration
+ * Generates fallback comments for testing or offline demonstration.
+ * For the demo video (dQw4w9WgXcQ), provides sample comments.
+ * For user videos, returns an empty list so fake user comments are never fabricated.
  */
 export const getFallbackVideoComments = (videoId: string): YoutubeCommentThread[] => {
+  if (videoId !== 'dQw4w9WgXcQ') {
+    return [];
+  }
+
   const now = Date.now();
   return [
     {
