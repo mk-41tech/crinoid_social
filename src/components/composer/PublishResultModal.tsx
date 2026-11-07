@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { CheckCircle2, X, ExternalLink, Sparkles, ShieldCheck, RefreshCw } from 'lucide-react';
+import { CheckCircle2, X, ExternalLink, Sparkles, ShieldCheck, RefreshCw, BarChart3 } from 'lucide-react';
 import { SocialPlatform, PostDraft } from '../../types';
 import { PLATFORM_CONFIG } from '../../config/platformsConfig';
+import { useApp } from '../../context/AppContext';
 
 interface PublishResultModalProps {
   draft: PostDraft;
@@ -18,6 +19,7 @@ export const PublishResultModal: React.FC<PublishResultModalProps> = ({
   isRealPublish = false,
   onClose
 }) => {
+  const { setCurrentView } = useApp();
   const [step, setStep] = useState<number>(isRealPublish ? 4 : 1);
 
   useEffect(() => {
@@ -223,9 +225,36 @@ export const PublishResultModal: React.FC<PublishResultModalProps> = ({
             borderTop: '1px solid var(--border-subtle)',
             backgroundColor: 'var(--bg-subtle)',
             display: 'flex',
-            justifyContent: 'flex-end'
+            justifyContent: 'flex-end',
+            gap: '10px'
           }}
         >
+          {step === 4 && (
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                setCurrentView('posts');
+              }}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '8px 14px',
+                fontSize: '13px',
+                fontWeight: 600,
+                color: '#dc2626',
+                backgroundColor: '#fee2e2',
+                border: '1px solid #fecaca',
+                borderRadius: 'var(--radius-md)',
+                cursor: 'pointer'
+              }}
+            >
+              <BarChart3 size={15} />
+              <span>View in Published Posts & Analytics</span>
+            </button>
+          )}
+
           <button
             type="button"
             onClick={onClose}

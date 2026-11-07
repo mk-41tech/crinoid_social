@@ -254,6 +254,55 @@ const getInitialMockPostRecords = (brandId: string): PostRecord[] => {
       campaign: 'Community Spotlight',
       approvalHistory: [],
       publishingLogs: []
+    },
+    {
+      id: 'CRN-1007',
+      brandId,
+      caption: '🎬 Crinoid Social 2.0 Feature Walkthrough: Learn how our multi-brand social scheduling, unified analytics, and live comment management works in action! Drop your questions and feedback in the comments.',
+      mediaUrls: ['https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80'],
+      mediaType: 'video',
+      thumbnailUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80',
+      platforms: ['youtube'],
+      author: {
+        id: 'u-1',
+        name: 'Muthukumar',
+        role: 'Social Lead',
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80'
+      },
+      createdDate: formatISO(-2, 10, 0),
+      publishedDate: formatISO(-2, 11, 30),
+      status: 'published',
+      publishedUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+      performanceData: {
+        likes: 1280,
+        comments: 94,
+        shares: 412,
+        reach: 18450,
+        impressions: 24300,
+        engagementRate: '6.4%'
+      },
+      campaign: 'Product Launch 2026',
+      approvalHistory: [
+        {
+          id: 'appr-yt-1',
+          approverName: 'Kumar',
+          approverRole: 'Brand Admin',
+          status: 'approved',
+          note: 'YouTube video upload approved for public release.',
+          timestamp: formatISO(-2, 11, 0)
+        }
+      ],
+      publishingLogs: [
+        {
+          id: 'log-yt-1',
+          timestamp: formatISO(-2, 11, 30),
+          platform: 'youtube',
+          status: 'success',
+          statusCode: 200,
+          message: 'Video upload completed via YouTube Data API v3 Resumable protocol. Status: public.',
+          endpoint: 'POST /upload/youtube/v3/videos'
+        }
+      ]
     }
   ];
 };
@@ -271,7 +320,19 @@ export const PostsView: React.FC = () => {
   const [posts, setPosts] = useState<PostRecord[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_POSTS_DATABASE);
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed: PostRecord[] = JSON.parse(saved);
+        const hasYoutube = parsed.some(p => p.platforms?.includes('youtube') && p.status === 'published');
+        if (!hasYoutube) {
+          const ytMock = getInitialMockPostRecords(currentBrand.id).find(p => p.id === 'CRN-1007');
+          if (ytMock) {
+            const merged = [ytMock, ...parsed];
+            localStorage.setItem(STORAGE_POSTS_DATABASE, JSON.stringify(merged));
+            return merged;
+          }
+        }
+        return parsed;
+      }
     } catch (e) {
       console.warn('Failed to parse cached posts database', e);
     }

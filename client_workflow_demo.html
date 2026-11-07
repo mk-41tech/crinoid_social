@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple Workflow Simulation — Organization to Brand to Channels</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen py-10 px-4">
+
+  <div class="max-w-3xl mx-auto space-y-6">
+
+    <!-- Header -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-xl font-bold text-slate-900">SMM SaaS — Client Workflow Demo</h1>
+          <p class="text-sm text-slate-500 mt-1">Simple step-by-step setup: Org Admin ➔ Create Brand ➔ Assign Brand Admin ➔ Add Members & Granular Channel Permissions</p>
+        </div>
+        <button onclick="resetAll()" class="text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-100">
+          Reset Demo
+        </button>
+      </div>
+    </div>
+
+    <!-- STEP 1: ORG ADMIN CREATES BRAND -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="w-7 h-7 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center">1</span>
+        <div>
+          <h2 class="text-base font-bold text-slate-900">Organization Admin (Person A)</h2>
+          <p class="text-xs text-slate-500">Person A has global access across all brands. First, they create a new brand.</p>
+        </div>
+      </div>
+
+      <div class="space-y-3 pl-10">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Brand / Client Name</label>
+          <div class="flex gap-2">
+            <input type="text" id="brandInput" value="Crinoid Technologies" placeholder="e.g. Nike Social, Crinoid Tech..." class="flex-1 border border-slate-300 rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <button onclick="createBrand()" id="btnCreateBrand" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl shadow-sm transition">
+              Create Brand
+            </button>
+          </div>
+        </div>
+
+        <div id="brandCreatedBadge" class="hidden flex items-center gap-2 p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium">
+          <span>✅</span>
+          <span>Brand <strong id="lblBrandName" class="font-bold"></strong> created successfully by Org Admin (Person A)!</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2: ASSIGN BRAND ADMIN -->
+    <div id="step2Card" class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm opacity-50 pointer-events-none transition-all duration-300">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="w-7 h-7 rounded-full bg-purple-600 text-white font-bold text-xs flex items-center justify-center">2</span>
+        <div>
+          <h2 class="text-base font-bold text-slate-900">Assign Brand Admin (Person B)</h2>
+          <p class="text-xs text-slate-500">Person B can ONLY manage this specific brand. They cannot touch other brands.</p>
+        </div>
+      </div>
+
+      <div class="space-y-3 pl-10">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Brand Admin Name</label>
+            <input type="text" id="brandAdminName" value="Kumar" placeholder="e.g. Kumar" class="w-full border border-slate-300 rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Email Address</label>
+            <input type="email" id="brandAdminEmail" value="kumar@brand.com" placeholder="kumar@brand.com" class="w-full border border-slate-300 rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+          </div>
+        </div>
+
+        <button onclick="assignBrandAdmin()" id="btnAssignAdmin" class="px-5 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold rounded-xl shadow-sm transition">
+          Assign as Brand Admin
+        </button>
+
+        <div id="adminAssignedBadge" class="hidden flex items-center gap-2 p-2.5 rounded-xl bg-purple-50 border border-purple-200 text-purple-800 text-xs font-medium">
+          <span>🛡️</span>
+          <span><strong id="lblAdminName" class="font-bold"></strong> assigned as Admin for this brand only.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3: ADD MEMBERS & SET CHANNEL PERMISSIONS -->
+    <div id="step3Card" class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm opacity-50 pointer-events-none transition-all duration-300">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="w-7 h-7 rounded-full bg-pink-600 text-white font-bold text-xs flex items-center justify-center">3</span>
+        <div>
+          <h2 class="text-base font-bold text-slate-900">Add Brand Members & Set Channel Access</h2>
+          <p class="text-xs text-slate-500">Choose All Channels, Single Channel, or Multi-Channel selection with exact enterprise permissions.</p>
+        </div>
+      </div>
+
+      <div class="space-y-4 pl-10">
+        <!-- Member Name & Role -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Member Name</label>
+            <input type="text" id="memberName" value="Tamil" placeholder="e.g. Tamil" class="w-full border border-slate-300 rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Role Title</label>
+            <input type="text" id="memberRole" value="Editor" placeholder="e.g. Editor, Contributor, Community Mgr, Analyst" class="w-full border border-slate-300 rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500">
+          </div>
+        </div>
+
+        <!-- Channel Scope: 3 Options (All, Single, Multi) -->
+        <div class="border-t border-slate-100 pt-3">
+          <label class="block text-xs font-semibold text-slate-700 mb-2">Channel Scope:</label>
+          <div class="flex flex-wrap gap-4 text-xs font-medium text-slate-700">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="radio" name="channelOption" value="all" checked onchange="handleScopeChange('all')" class="text-pink-600 focus:ring-pink-500">
+              <span>All Channels (All 5)</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="radio" name="channelOption" value="single" onchange="handleScopeChange('single')" class="text-pink-600 focus:ring-pink-500">
+              <span>Single Channel Only</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="radio" name="channelOption" value="multi" onchange="handleScopeChange('multi')" class="text-pink-600 focus:ring-pink-500">
+              <span>Multi-Channel (Select 2 or more)</span>
+            </label>
+          </div>
+
+          <!-- Single Channel Dropdown -->
+          <div id="singleChannelWrap" class="hidden mt-2.5">
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Choose the single channel:</label>
+            <select id="singleChannelSelect" class="border border-slate-300 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-pink-500">
+              <option value="Instagram">📸 Instagram Only</option>
+              <option value="Facebook">📘 Facebook Pages Only</option>
+              <option value="YouTube">▶️ YouTube Only</option>
+              <option value="LinkedIn">💼 LinkedIn Only</option>
+              <option value="X / Twitter">✖️ X / Twitter Only</option>
+            </select>
+          </div>
+
+          <!-- Multi-Channel Checkboxes -->
+          <div id="multiChannelWrap" class="hidden mt-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200">
+            <label class="block text-xs font-semibold text-slate-700 mb-2">Check the allowed channels for this member:</label>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" name="multiChan" value="Instagram" checked class="rounded border-slate-300 text-pink-600 focus:ring-pink-500">
+                <span>📸 Instagram</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" name="multiChan" value="Facebook" checked class="rounded border-slate-300 text-pink-600 focus:ring-pink-500">
+                <span>📘 Facebook Pages</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" name="multiChan" value="YouTube" class="rounded border-slate-300 text-pink-600 focus:ring-pink-500">
+                <span>▶️ YouTube</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" name="multiChan" value="LinkedIn" class="rounded border-slate-300 text-pink-600 focus:ring-pink-500">
+                <span>💼 LinkedIn</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" name="multiChan" value="X / Twitter" class="rounded border-slate-300 text-pink-600 focus:ring-pink-500">
+                <span>✖️ X / Twitter</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- COMPLETE ENTERPRISE PERMISSIONS (Grouped Clearly) -->
+        <div class="border-t border-slate-100 pt-3">
+          <label class="block text-xs font-bold text-slate-800 mb-2.5">Permissions & Capability Checklist:</label>
+
+          <div class="space-y-3">
+            <!-- Group 1: Content, Publishing & Scheduling -->
+            <div>
+              <span class="text-[11px] font-bold text-indigo-600 uppercase tracking-wider block mb-1.5">1. Publishing & Scheduling</span>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                <label class="flex items-center gap-2 bg-slate-50 border border-slate-200 p-2 rounded-xl cursor-pointer hover:bg-slate-100">
+                  <input type="checkbox" id="chk_publish" checked class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+                  <span class="font-medium text-slate-800">🚀 Direct Publish</span>
+                </label>
+                <label class="flex items-center gap-2 bg-slate-50 border border-slate-200 p-2 rounded-xl cursor-pointer hover:bg-slate-100">
+                  <input type="checkbox" id="chk_schedule" checked class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+                  <span class="font-medium text-slate-800">⏰ Schedule & Calendar</span>
+                </label>
+                <label class="flex items-center gap-2 bg-slate-50 border border-slate-200 p-2 rounded-xl cursor-pointer hover:bg-slate-100">
+                  <input type="checkbox" id="chk_approval" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+                  <span class="font-medium text-slate-800">✅ Approval Authority</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Group 2: Community & Engagement -->
+            <div>
+              <span class="text-[11px] font-bold text-purple-600 uppercase tracking-wider block mb-1.5">2. Community & Engagement</span>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                <label class="flex items-center gap-2 bg-slate-50 border border-slate-200 p-2 rounded-xl cursor-pointer hover:bg-slate-100">
+                  <input type="checkbox" id="chk_inbox" class="rounded border-slate-300 text-purple-600 focus:ring-purple-500">
+                  <span class="font-medium text-slate-800">📥 Social Inbox (DMs & Mentions)</span>
+                </label>
+                <label class="flex items-center gap-2 bg-slate-50 border border-slate-200 p-2 rounded-xl cursor-pointer hover:bg-slate-100">
+                  <input type="checkbox" id="chk_comments" checked class="rounded border-slate-300 text-purple-600 focus:ring-purple-500">
+                  <span class="font-medium text-slate-800">❤️ Manage Comment & Like</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Group 3: Channel Connections & Assets -->
+            <div>
+              <span class="text-[11px] font-bold text-pink-600 uppercase tracking-wider block mb-1.5">3. Channel Setup & Media Assets</span>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                <label class="flex items-center gap-2 bg-slate-50 border border-slate-200 p-2 rounded-xl cursor-pointer hover:bg-slate-100">
+                  <input type="checkbox" id="chk_integrate" class="rounded border-slate-300 text-pink-600 focus:ring-pink-500">
+                  <span class="font-medium text-slate-800">🔗 Integrated (Connect Tokens)</span>
+                </label>
+                <label class="flex items-center gap-2 bg-slate-50 border border-slate-200 p-2 rounded-xl cursor-pointer hover:bg-slate-100">
+                  <input type="checkbox" id="chk_medialib" checked class="rounded border-slate-300 text-pink-600 focus:ring-pink-500">
+                  <span class="font-medium text-slate-800">📁 Manage Media Library</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Group 4: Analytics & Client Reports -->
+            <div>
+              <span class="text-[11px] font-bold text-emerald-600 uppercase tracking-wider block mb-1.5">4. Analytics & Client Reporting</span>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                <label class="flex items-center gap-2 bg-slate-50 border border-slate-200 p-2 rounded-xl cursor-pointer hover:bg-slate-100">
+                  <input type="checkbox" id="chk_analytics" checked class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
+                  <span class="font-medium text-slate-800">📊 View Analytics Dashboard</span>
+                </label>
+                <label class="flex items-center gap-2 bg-slate-50 border border-slate-200 p-2 rounded-xl cursor-pointer hover:bg-slate-100">
+                  <input type="checkbox" id="chk_reports" class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500">
+                  <span class="font-medium text-slate-800">📑 Export Reports (PDF/CSV)</span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button onclick="addMember()" class="w-full sm:w-auto px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold rounded-xl shadow-sm transition">
+          + Add Member to Brand
+        </button>
+      </div>
+    </div>
+
+    <!-- SUMMARY CARD: THE FINAL RESULT -->
+    <div id="summaryCard" class="hidden bg-slate-900 text-white rounded-2xl p-6 shadow-xl border border-slate-800 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <span>📋</span> Configured Structure Summary (Client Review)
+        </h3>
+        <span class="text-[11px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full font-semibold">
+          Active Workflow
+        </span>
+      </div>
+
+      <!-- Tree structure view -->
+      <div class="space-y-3 text-xs">
+        <div class="bg-slate-800/80 p-3 rounded-xl border border-slate-700 flex items-center justify-between">
+          <div>
+            <span class="text-[10px] text-indigo-400 font-bold uppercase tracking-wider block">Organization Level</span>
+            <span class="font-bold text-sm text-white">Organization Admin: Person A</span>
+          </div>
+          <span class="text-[11px] bg-indigo-500/20 text-indigo-300 px-2 py-1 rounded-lg">Full Access Across All Brands</span>
+        </div>
+
+        <div class="pl-4 border-l-2 border-indigo-500/50 space-y-3">
+          <div class="bg-slate-800/80 p-3 rounded-xl border border-slate-700">
+            <span class="text-[10px] text-purple-400 font-bold uppercase tracking-wider block">Brand Workspace</span>
+            <div class="text-sm font-bold text-white mt-0.5" id="sumBrandName">Crinoid Technologies</div>
+            <div class="text-slate-300 mt-1">
+              Brand Admin: <strong class="text-white" id="sumAdminName">Kumar</strong> <span class="text-slate-400">(Scoped only to this brand)</span>
+            </div>
+          </div>
+
+          <!-- Members Table -->
+          <div class="bg-slate-800/60 p-3 rounded-xl border border-slate-700">
+            <span class="text-[10px] text-pink-400 font-bold uppercase tracking-wider block mb-2">Brand Team Members & Granular Permissions</span>
+            <div id="membersList" class="space-y-2">
+              <!-- Dynamically added -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    let activeBrand = '';
+    let activeAdmin = '';
+    let members = [];
+
+    function createBrand() {
+      const val = document.getElementById('brandInput').value.trim();
+      if (!val) {
+        alert('Please enter a Brand Name.');
+        return;
+      }
+      activeBrand = val;
+      document.getElementById('lblBrandName').textContent = val;
+      document.getElementById('brandCreatedBadge').classList.remove('hidden');
+
+      // Unlock Step 2
+      const step2 = document.getElementById('step2Card');
+      step2.classList.remove('opacity-50', 'pointer-events-none');
+    }
+
+    function assignBrandAdmin() {
+      const name = document.getElementById('brandAdminName').value.trim();
+      if (!name) {
+        alert('Please enter Brand Admin name.');
+        return;
+      }
+      activeAdmin = name;
+      document.getElementById('lblAdminName').textContent = name;
+      document.getElementById('adminAssignedBadge').classList.remove('hidden');
+
+      // Unlock Step 3
+      const step3 = document.getElementById('step3Card');
+      step3.classList.remove('opacity-50', 'pointer-events-none');
+    }
+
+    function handleScopeChange(val) {
+      const singleWrap = document.getElementById('singleChannelWrap');
+      const multiWrap = document.getElementById('multiChannelWrap');
+
+      if (val === 'single') {
+        singleWrap.classList.remove('hidden');
+        multiWrap.classList.add('hidden');
+      } else if (val === 'multi') {
+        singleWrap.classList.add('hidden');
+        multiWrap.classList.remove('hidden');
+      } else {
+        singleWrap.classList.add('hidden');
+        multiWrap.classList.add('hidden');
+      }
+    }
+
+    function addMember() {
+      const name = document.getElementById('memberName').value.trim();
+      const role = document.getElementById('memberRole').value.trim() || 'Member';
+      if (!name) {
+        alert('Please enter member name.');
+        return;
+      }
+
+      const scope = document.querySelector('input[name="channelOption"]:checked').value;
+      let channelText = '';
+
+      if (scope === 'all') {
+        channelText = 'All Channels';
+      } else if (scope === 'single') {
+        channelText = 'Single: ' + document.getElementById('singleChannelSelect').value;
+      } else if (scope === 'multi') {
+        const checkedBoxes = Array.from(document.querySelectorAll('input[name="multiChan"]:checked')).map(cb => cb.value);
+        if (checkedBoxes.length === 0) {
+          alert('Please select at least one channel for Multi-Channel access.');
+          return;
+        }
+        channelText = 'Multi: ' + checkedBoxes.join(', ');
+      }
+
+      // Collect all 9 granular permissions
+      const perms = [];
+      if (document.getElementById('chk_publish').checked) perms.push('Direct Publish');
+      if (document.getElementById('chk_schedule').checked) perms.push('Schedule/Calendar');
+      if (document.getElementById('chk_approval').checked) perms.push('Approval Authority');
+      if (document.getElementById('chk_inbox').checked) perms.push('Social Inbox');
+      if (document.getElementById('chk_comments').checked) perms.push('Comment & Like');
+      if (document.getElementById('chk_integrate').checked) perms.push('Integrated (Connect)');
+      if (document.getElementById('chk_medialib').checked) perms.push('Media Library');
+      if (document.getElementById('chk_analytics').checked) perms.push('View Analytics');
+      if (document.getElementById('chk_reports').checked) perms.push('Export Reports');
+
+      members.push({
+        name,
+        role,
+        channelText,
+        perms: perms.length > 0 ? perms.join(' • ') : 'No permissions selected'
+      });
+
+      renderSummary();
+
+      // Clear for next member
+      document.getElementById('memberName').value = '';
+      document.getElementById('memberRole').value = 'Editor';
+    }
+
+    function renderSummary() {
+      const sumCard = document.getElementById('summaryCard');
+      sumCard.classList.remove('hidden');
+
+      document.getElementById('sumBrandName').textContent = activeBrand;
+      document.getElementById('sumAdminName').textContent = activeAdmin;
+
+      const list = document.getElementById('membersList');
+      list.innerHTML = '';
+
+      members.forEach((m, idx) => {
+        list.innerHTML += `
+          <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-700/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="font-bold text-white text-xs">${m.name}</span>
+                <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 font-medium">Role: ${m.role}</span>
+                <span class="text-[10px] px-2 py-0.5 rounded font-bold ${m.channelText.includes('All') ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30' : 'bg-pink-500/20 text-pink-300 border border-pink-500/30'}">
+                  ${m.channelText}
+                </span>
+              </div>
+              <div class="text-[11px] text-slate-400 mt-1">
+                <strong>Granted Options:</strong> <span class="text-emerald-400 font-medium">${m.perms}</span>
+              </div>
+            </div>
+            <button onclick="removeMember(${idx})" class="text-[11px] text-red-400 hover:text-red-300 self-end sm:self-center">
+              Remove
+            </button>
+          </div>
+        `;
+      });
+    }
+
+    function removeMember(idx) {
+      members.splice(idx, 1);
+      renderSummary();
+    }
+
+    function resetAll() {
+      document.getElementById('brandInput').value = 'Crinoid Technologies';
+      document.getElementById('brandCreatedBadge').classList.add('hidden');
+      document.getElementById('step2Card').classList.add('opacity-50', 'pointer-events-none');
+      document.getElementById('adminAssignedBadge').classList.add('hidden');
+      document.getElementById('step3Card').classList.add('opacity-50', 'pointer-events-none');
+      document.getElementById('summaryCard').classList.add('hidden');
+      members = [];
+    }
+  </script>
+
+</body>
+</html>

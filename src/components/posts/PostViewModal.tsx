@@ -35,6 +35,9 @@ import {
 } from 'lucide-react';
 import { EmojiPicker } from '../composer/EmojiPicker';
 import { InstagramIcon, FacebookIcon, LinkedinIcon, YoutubeIcon, XIcon } from '../common/SocialIcons';
+import { useApp } from '../../context/AppContext';
+import { YoutubePostAnalytics } from './YoutubePostAnalytics';
+import { extractYoutubeVideoId } from '../../services/youtube';
 
 export interface PostViewModalProps {
   post: PostRecord | null;
@@ -106,7 +109,22 @@ export const PostViewModal: React.FC<PostViewModalProps> = ({
   onSubmitApproval,
   onViewLogs
 }) => {
+  const { currentBrand } = useApp();
+  const ytAccessToken = currentBrand?.accounts?.find(a => a.platform === 'youtube')?.accessToken;
+
   const [mode, setMode] = useState<'view' | 'edit'>(initialMode);
+  const [viewSubTab, setViewSubTab] = useState<'youtube_analytics' | 'post_details'>('youtube_analytics');
+
+  const isYoutubePost = Boolean(
+    post?.platforms?.includes('youtube') || 
+    (post?.publishedUrl && extractYoutubeVideoId(post.publishedUrl))
+  );
+
+  useEffect(() => {
+    if (isYoutubePost) {
+      setViewSubTab('youtube_analytics');
+    }
+  }, [post?.id, isYoutubePost]);
 
   // Form states for Edit Mode
   const [caption, setCaption] = useState('');
@@ -413,6 +431,76 @@ export const PostViewModal: React.FC<PostViewModalProps> = ({
           {/* ========================================================== */}
           {mode === 'view' && (
             <>
+              {/* YouTube Sub-Tab Switcher (when YouTube is involved) */}
+              {isYoutubePost && (
+                <div style={{
+                  display: 'flex',
+                  gap: '6px',
+                  marginBottom: '16px',
+                  padding: '4px',
+                  backgroundColor: 'var(--bg-subtle)',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border-subtle)'
+                }}>
+                  <button
+                    type="button"
+                    onClick={() => setViewSubTab('youtube_analytics')}
+                    style={{
+                      flex: 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px',
+                      padding: '7px 12px',
+                      fontSize: '12.5px',
+                      fontWeight: viewSubTab === 'youtube_analytics' ? 700 : 500,
+                      backgroundColor: viewSubTab === 'youtube_analytics' ? '#ffffff' : 'transparent',
+                      color: viewSubTab === 'youtube_analytics' ? '#dc2626' : 'var(--text-muted)',
+                      borderRadius: '6px',
+                      border: 'none',
+                      boxShadow: viewSubTab === 'youtube_analytics' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <YoutubeIcon size={16} color="#FF0000" />
+                    <span>YouTube Studio & Analytics</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewSubTab('post_details')}
+                    style={{
+                      flex: 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px',
+                      padding: '7px 12px',
+                      fontSize: '12.5px',
+                      fontWeight: viewSubTab === 'post_details' ? 700 : 500,
+                      backgroundColor: viewSubTab === 'post_details' ? '#ffffff' : 'transparent',
+                      color: viewSubTab === 'post_details' ? 'var(--color-primary)' : 'var(--text-muted)',
+                      borderRadius: '6px',
+                      border: 'none',
+                      boxShadow: viewSubTab === 'post_details' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <FileText size={15} />
+                    <span>Post Details & Logs</span>
+                  </button>
+                </div>
+              )}
+
+              {isYoutubePost && viewSubTab === 'youtube_analytics' ? (
+                <YoutubePostAnalytics
+                  post={post}
+                  accessToken={ytAccessToken}
+                  onPostUpdated={(updated) => {
+                    if (onSave) onSave(updated);
+                  }}
+                />
+              ) : (
+                <>
               {/* Published URL Link Banner (when available) */}
               {post.publishedUrl && (
                 <div style={{
@@ -697,6 +785,8 @@ export const PostViewModal: React.FC<PostViewModalProps> = ({
                   <div>&gt; Status: {post.status.toUpperCase()}</div>
                 </div>
               </div>
+                </>
+              )}
             </>
           )}
 
