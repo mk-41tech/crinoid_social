@@ -305,6 +305,9 @@ export const uploadVideoToYoutube = async (params: UploadVideoParams): Promise<U
   if (!initRes.ok) {
     const errorJson = await initRes.json().catch(() => ({}));
     const message = errorJson.error?.message || `Failed to initiate upload session (HTTP ${initRes.status})`;
+    if (initRes.status === 401 || message.includes('authentication credentials') || message.includes('OAuth')) {
+      throw new Error('YouTube access token expired or invalid (Google tokens expire after 1 hour). Please reconnect your YouTube channel in Connected Channels.');
+    }
     throw new Error(message);
   }
 

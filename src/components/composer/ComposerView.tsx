@@ -12,7 +12,7 @@ import { ScheduleModal } from './ScheduleModal';
 import { ApprovalModal } from './ApprovalModal';
 import { PublishResultModal } from './PublishResultModal';
 import { approvalService } from '../../services/approvalService';
-import { uploadVideoToYoutube } from '../../services/youtube';
+import { uploadVideoToYoutube, connectYoutubeWithPopup } from '../../services/youtube';
 import { publishToFacebookPage, publishToInstagram } from '../../services/meta';
 import { 
   Upload, 
@@ -61,7 +61,8 @@ export const ComposerView: React.FC<ComposerViewProps> = ({
     lastSavedTime,
     showToast,
     setCurrentView,
-    setShowConnectModal
+    setShowConnectModal,
+    connectAccount
   } = useApp();
 
   const [selectedPlatforms, setSelectedPlatforms] = useState<SocialPlatform[]>(draft.platforms || []);
@@ -368,16 +369,45 @@ export const ComposerView: React.FC<ComposerViewProps> = ({
             const ytDesc = draft.platformVariants?.youtube?.caption || draft.commonCaption || '';
 
             showToast('info', 'Uploading video to YouTube Data API...');
-            const ytResult = await uploadVideoToYoutube({
-              accessToken: ytAccount!.accessToken!,
-              file: videoFile,
-              title: ytTitle,
-              description: ytDesc,
-              privacyStatus: 'public',
-              onProgress: (pct) => setUploadProgressPercent(pct)
-            });
-            urls.youtube = ytResult.url;
-            showToast('success', `Live on YouTube: ${ytResult.url}`);
+            let ytToken = ytAccount!.accessToken!;
+
+            try {
+              const ytResult = await uploadVideoToYoutube({
+                accessToken: ytToken,
+                file: videoFile,
+                title: ytTitle,
+                description: ytDesc,
+                privacyStatus: 'public',
+                onProgress: (pct) => setUploadProgressPercent(pct)
+              });
+              urls.youtube = ytResult.url;
+              showToast('success', `Live on YouTube: ${ytResult.url}`);
+            } catch (ytErr: any) {
+              const isAuthErr = ytErr.message?.includes('authentication credentials') || 
+                                ytErr.message?.includes('401') || 
+                                ytErr.message?.includes('token expired') ||
+                                ytErr.message?.includes('OAuth');
+
+              if (isAuthErr) {
+                showToast('info', 'YouTube token expired (Google tokens expire after 1 hr). Re-authenticating...');
+                const freshToken = await connectYoutubeWithPopup(currentBrand.id);
+                await connectAccount(currentBrand.id, 'youtube', { accessToken: freshToken });
+
+                showToast('info', 'Session refreshed! Uploading video to YouTube...');
+                const retryResult = await uploadVideoToYoutube({
+                  accessToken: freshToken,
+                  file: videoFile,
+                  title: ytTitle,
+                  description: ytDesc,
+                  privacyStatus: 'public',
+                  onProgress: (pct) => setUploadProgressPercent(pct)
+                });
+                urls.youtube = retryResult.url;
+                showToast('success', `Live on YouTube: ${retryResult.url}`);
+              } else {
+                throw ytErr;
+              }
+            }
           }
         }
 
