@@ -368,46 +368,31 @@ export const ComposerView: React.FC<ComposerViewProps> = ({
             const ytTitle = draft.platformVariants?.youtube?.title || draft.commonCaption.slice(0, 100) || 'Untitled Video';
             const ytDesc = draft.platformVariants?.youtube?.caption || draft.commonCaption || '';
 
-            showToast('info', 'Uploading video to YouTube Data API...');
-            let ytToken = ytAccount!.accessToken!;
-
+            // Google GIS access tokens expire every 1 hour and are session-bound.
+            // Always silently re-request a fresh token before uploading.
+            showToast('info', 'Refreshing YouTube session (Google tokens expire every hour)...');
+            let ytToken: string;
             try {
-              const ytResult = await uploadVideoToYoutube({
-                accessToken: ytToken,
-                file: videoFile,
-                title: ytTitle,
-                description: ytDesc,
-                privacyStatus: 'public',
-                onProgress: (pct) => setUploadProgressPercent(pct)
+              ytToken = await connectYoutubeWithPopup(currentBrand.id);
+              await connectAccount(currentBrand.id, 'youtube', {
+                ...ytAccount,
+                accessToken: ytToken
               });
-              urls.youtube = ytResult.url;
-              showToast('success', `Live on YouTube: ${ytResult.url}`);
-            } catch (ytErr: any) {
-              const isAuthErr = ytErr.message?.includes('authentication credentials') || 
-                                ytErr.message?.includes('401') || 
-                                ytErr.message?.includes('token expired') ||
-                                ytErr.message?.includes('OAuth');
-
-              if (isAuthErr) {
-                showToast('info', 'YouTube token expired (Google tokens expire after 1 hr). Re-authenticating...');
-                const freshToken = await connectYoutubeWithPopup(currentBrand.id);
-                await connectAccount(currentBrand.id, 'youtube', { accessToken: freshToken });
-
-                showToast('info', 'Session refreshed! Uploading video to YouTube...');
-                const retryResult = await uploadVideoToYoutube({
-                  accessToken: freshToken,
-                  file: videoFile,
-                  title: ytTitle,
-                  description: ytDesc,
-                  privacyStatus: 'public',
-                  onProgress: (pct) => setUploadProgressPercent(pct)
-                });
-                urls.youtube = retryResult.url;
-                showToast('success', `Live on YouTube: ${retryResult.url}`);
-              } else {
-                throw ytErr;
-              }
+            } catch (tokenErr: any) {
+              throw new Error(`YouTube sign-in was cancelled or failed: ${tokenErr.message}`);
             }
+
+            showToast('info', 'Uploading video to YouTube Data API...');
+            const ytResult = await uploadVideoToYoutube({
+              accessToken: ytToken,
+              file: videoFile,
+              title: ytTitle,
+              description: ytDesc,
+              privacyStatus: 'public',
+              onProgress: (pct) => setUploadProgressPercent(pct)
+            });
+            urls.youtube = ytResult.url;
+            showToast('success', `Live on YouTube: ${ytResult.url}`);
           }
         }
 

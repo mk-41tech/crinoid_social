@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { ALL_PLATFORMS, PLATFORM_CONFIG } from '../../config/platformsConfig';
 import { BRAND_CHANNELS_CATALOG } from '../../config/mockData';
@@ -18,9 +18,11 @@ import {
   RotateCcw, 
   ShieldCheck, 
   ExternalLink,
-  PenSquare
+  PenSquare,
+  RefreshCw,
+  Loader2
 } from 'lucide-react';
-import { isYoutubeConfigured } from '../../services/youtube';
+import { isYoutubeConfigured, connectYoutubeWithPopup, fetchMyYoutubeChannel } from '../../services/youtube';
 import { isMetaConfigured } from '../../services/meta';
 
 export const ConnectedChannelsView: React.FC = () => {
@@ -31,8 +33,11 @@ export const ConnectedChannelsView: React.FC = () => {
     openSimulatedAuth, 
     resetBrandAccounts, 
     setCurrentView, 
-    showToast 
+    showToast,
+    connectAccount
   } = useApp();
+
+  const [reconnectingPlatform, setReconnectingPlatform] = useState<SocialPlatform | null>(null);
 
   const getPlatformIcon = (platform: SocialPlatform, size = 20) => {
     switch (platform) {
@@ -45,6 +50,32 @@ export const ConnectedChannelsView: React.FC = () => {
 
   const handleConnect = (platform: SocialPlatform) => {
     openSimulatedAuth(platform, 'channels');
+  };
+
+  const handleReconnectYoutube = async () => {
+    if (!isYoutubeConfigured()) {
+      openSimulatedAuth('youtube', 'channels');
+      return;
+    }
+    setReconnectingPlatform('youtube');
+    try {
+      showToast('info', 'Opening Google sign-in to refresh your YouTube session...');
+      const accessToken = await connectYoutubeWithPopup(currentBrand.id);
+      const channel = await fetchMyYoutubeChannel(accessToken);
+      await connectAccount(currentBrand.id, 'youtube', {
+        username: channel.customUrl || `@${channel.title.toLowerCase().replace(/\s+/g, '')}`,
+        name: channel.title,
+        avatar: channel.avatarUrl,
+        accessToken,
+        channelId: channel.id,
+        followers: channel.subscriberCount
+      });
+      showToast('success', `YouTube reconnected: "${channel.title}" — fresh session active for 1 hour.`);
+    } catch (err: any) {
+      showToast('error', err.message || 'YouTube reconnection failed. Please try again.');
+    } finally {
+      setReconnectingPlatform(null);
+    }
   };
 
   const handleDisconnect = (platform: SocialPlatform) => {
@@ -331,26 +362,56 @@ export const ConnectedChannelsView: React.FC = () => {
               </div>
 
               {/* Card Action */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingTop: '4px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px', paddingTop: '4px' }}>
                 {isConnected ? (
-                  <button
-                    type="button"
-                    onClick={() => handleDisconnect(platform)}
-                    className="btn btn-secondary btn-sm"
-                    style={{
-                      cursor: 'pointer',
-                      fontSize: '12px',
-                      padding: '6px 14px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      color: '#dc2626',
-                      borderColor: '#fecaca'
-                    }}
-                  >
-                    <Trash2 size={13} />
-                    <span>Disconnect</span>
-                  </button>
+                  <>
+                    {/* Reconnect button for YouTube (tokens expire every 1 hour) */}
+                    {platform === 'youtube' && isYoutubeConfigured() && (
+                      <button
+                        type="button"
+                        onClick={handleReconnectYoutube}
+                        disabled={reconnectingPlatform === 'youtube'}
+                        className="btn btn-secondary btn-sm"
+                        style={{
+                          cursor: reconnectingPlatform === 'youtube' ? 'wait' : 'pointer',
+                          fontSize: '12px',
+                          padding: '6px 12px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '5px',
+                          color: '#dc2626',
+                          borderColor: '#fecaca',
+                          backgroundColor: '#fff5f5'
+                        }}
+                        title="Google OAuth tokens expire every 1 hour. Click to get a fresh token before publishing."
+                      >
+                        {reconnectingPlatform === 'youtube' ? (
+                          <Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} />
+                        ) : (
+                          <RefreshCw size={12} />
+                        )}
+                        <span>{reconnectingPlatform === 'youtube' ? 'Refreshing...' : 'Refresh Token'}</span>
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => handleDisconnect(platform)}
+                      className="btn btn-secondary btn-sm"
+                      style={{
+                        cursor: 'pointer',
+                        fontSize: '12px',
+                        padding: '6px 14px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        color: '#dc2626',
+                        borderColor: '#fecaca'
+                      }}
+                    >
+                      <Trash2 size={13} />
+                      <span>Disconnect</span>
+                    </button>
+                  </>
                 ) : (
                   <button
                     type="button"
