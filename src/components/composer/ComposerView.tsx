@@ -368,29 +368,46 @@ export const ComposerView: React.FC<ComposerViewProps> = ({
             const ytTitle = draft.platformVariants?.youtube?.title || draft.commonCaption.slice(0, 100) || 'Untitled Video';
             const ytDesc = draft.platformVariants?.youtube?.caption || draft.commonCaption || '';
 
-            // Google GIS access tokens expire every 1 hour and are session-bound.
-            // Always silently re-request a fresh token before uploading.
-            showToast('info', 'Refreshing YouTube session (Google tokens expire every hour)...');
-            let ytToken: string;
-            try {
-              ytToken = await connectYoutubeWithPopup(currentBrand.id);
-              await connectAccount(currentBrand.id, 'youtube', {
-                ...ytAccount,
-                accessToken: ytToken
-              });
-            } catch (tokenErr: any) {
-              throw new Error(`YouTube sign-in was cancelled or failed: ${tokenErr.message}`);
-            }
+            // Use the stored access token first. Only re-prompt for a new token if we
+            // get a 401 (token expired). This avoids forcing a login popup every publish.
+            let ytToken: string = ytAccount?.accessToken || '';
 
-            showToast('info', 'Uploading video to YouTube Data API...');
-            const ytResult = await uploadVideoToYoutube({
-              accessToken: ytToken,
-              file: videoFile,
-              title: ytTitle,
-              description: ytDesc,
-              privacyStatus: 'public',
-              onProgress: (pct) => setUploadProgressPercent(pct)
-            });
+            const attemptYtUpload = async (token: string) => {
+              return uploadVideoToYoutube({
+                accessToken: token,
+                file: videoFile!,
+                title: ytTitle,
+                description: ytDesc,
+                privacyStatus: 'public',
+                onProgress: (pct) => setUploadProgressPercent(pct)
+              });
+            };
+
+            showToast('info', 'Uploading video to YouTube...');
+            let ytResult: Awaited<ReturnType<typeof uploadVideoToYoutube>>;
+            try {
+              ytResult = await attemptYtUpload(ytToken);
+            } catch (firstErr: any) {
+              const errMsg: string = firstErr?.message || '';
+              const is401 = errMsg.includes('401') || errMsg.toLowerCase().includes('unauthorized') || errMsg.toLowerCase().includes('invalid authentication');
+              if (is401) {
+                // Token expired — open Google sign-in popup once and retry
+                showToast('warning', 'YouTube session expired. Please sign in again to continue...');
+                try {
+                  ytToken = await connectYoutubeWithPopup(currentBrand.id);
+                  await connectAccount(currentBrand.id, 'youtube', {
+                    ...ytAccount,
+                    accessToken: ytToken
+                  });
+                } catch (tokenErr: any) {
+                  throw new Error(`YouTube sign-in was cancelled or failed: ${tokenErr.message}`);
+                }
+                showToast('info', 'Re-uploading to YouTube with fresh credentials...');
+                ytResult = await attemptYtUpload(ytToken);
+              } else {
+                throw firstErr;
+              }
+            }
             urls.youtube = ytResult.url;
             showToast('success', `Live on YouTube: ${ytResult.url}`);
           }
