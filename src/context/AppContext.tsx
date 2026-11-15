@@ -134,7 +134,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const saved = localStorage.getItem(STORAGE_KEY_AUTH);
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        // Only restore if user id is a valid Supabase UUID
+        if (parsed?.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(parsed.id)) {
+          return parsed;
+        } else {
+          localStorage.removeItem(STORAGE_KEY_AUTH);
+          localStorage.removeItem(STORAGE_KEY_BRAND);
+          return null;
+        }
       } catch {
         return null;
       }
@@ -575,6 +583,17 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   useEffect(() => {
     const loadUserBrandsFromDb = async () => {
       if (!currentUser?.id) {
+        setBrands([]);
+        return;
+      }
+
+      // Check if user ID is a valid Supabase UUID
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(currentUser.id);
+      if (!isUuid) {
+        console.warn('Stale non-UUID session detected, resetting:', currentUser.id);
+        setCurrentUser(null);
+        localStorage.removeItem(STORAGE_KEY_AUTH);
+        localStorage.removeItem(STORAGE_KEY_BRAND);
         setBrands([]);
         return;
       }

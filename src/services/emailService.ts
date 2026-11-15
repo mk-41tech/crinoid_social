@@ -80,11 +80,15 @@ export const sendBrandInviteEmail = async ({
       </div>
     `;
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+
     const res = await fetch('/api/send-email', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
+      signal: controller.signal,
       body: JSON.stringify({
         from: 'Crinoid Social <onboarding@resend.dev>',
         reply_to: inviterEmail || undefined,
@@ -93,6 +97,7 @@ export const sendBrandInviteEmail = async ({
         html: htmlContent
       })
     });
+    clearTimeout(timeoutId);
 
     const data = await res.json();
     if (!res.ok || !data.success) {
@@ -150,11 +155,15 @@ export const sendJoinRequestNotificationEmail = async ({
       </div>
     `;
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+
     const res = await fetch('/api/send-email', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
+      signal: controller.signal,
       body: JSON.stringify({
         from: 'Crinoid Social <onboarding@resend.dev>',
         reply_to: requesterEmail || undefined,
@@ -163,6 +172,7 @@ export const sendJoinRequestNotificationEmail = async ({
         html: htmlContent
       })
     });
+    clearTimeout(timeoutId);
 
     const data = await res.json();
     if (!res.ok || !data.success) {
