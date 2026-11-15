@@ -10,7 +10,7 @@ export interface SendInviteEmailParams {
 }
 
 export interface SendJoinRequestEmailParams {
-  toAdminEmail: string;
+  toAdminEmail: string | string[];
   requesterName: string;
   requesterEmail: string;
   brandName: string;
@@ -158,6 +158,8 @@ export const sendJoinRequestNotificationEmail = async ({
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 15000);
 
+    const recipients = Array.isArray(toAdminEmail) ? toAdminEmail : [toAdminEmail];
+
     const res = await fetch('/api/send-email', {
       method: 'POST',
       headers: {
@@ -167,7 +169,7 @@ export const sendJoinRequestNotificationEmail = async ({
       body: JSON.stringify({
         from: 'Crinoid Social <onboarding@resend.dev>',
         reply_to: requesterEmail || undefined,
-        to: [toAdminEmail],
+        to: recipients,
         subject: `[Join Request] ${requesterName} wants to join ${brandName}`,
         html: htmlContent
       })

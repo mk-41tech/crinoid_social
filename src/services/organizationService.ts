@@ -424,19 +424,55 @@ export const requestToJoinBrand = async ({
     throw new Error(`Failed to record join request: ${memberError.message}`);
   }
 
-  // Step 4: Notify the brand admin / org admin via Resend
+  // Step 4: Notify both Brand Admins and Org Admins via Email
   try {
+    const origin = window.location.origin;
+    const recipientEmails = new Set<string>();
+
+    // 1. Fetch Org Admins from users table
+    const { data: orgAdmins } = await supabase
+      .from('users')
+      .select('email')
+      .eq('is_org_admin', true);
+
+    if (orgAdmins) {
+      orgAdmins.forEach(u => {
+        if (u.email) recipientEmails.add(u.email.trim().toLowerCase());
+      });
+    }
+
+    // 2. Fetch Brand Admins for this brand from brand_members
+    const { data: brandAdmins } = await supabase
+      .from('brand_members')
+      .select('users:user_id(email)')
+      .eq('brand_id', brandId)
+      .eq('status', 'active')
+      .in('role', ['brand_admin', 'Brand Admin']);
+
+    if (brandAdmins) {
+      brandAdmins.forEach((m: any) => {
+        if (m.users?.email) recipientEmails.add(m.users.email.trim().toLowerCase());
+      });
+    }
+
+    // 3. Fetch Brand creator
     const { data: brand } = await supabase
       .from('brands')
-      .select('name, created_by, users:created_by(email, full_name)')
+      .select('name, created_by, users:created_by(email)')
       .eq('id', brandId)
       .single();
 
-    const adminEmail = (brand as any)?.users?.email || 'crinoidsocial@gmail.com';
-    const origin = window.location.origin;
+    if ((brand as any)?.users?.email) {
+      recipientEmails.add((brand as any).users.email.trim().toLowerCase());
+    }
+
+    // Fallback if none found
+    if (recipientEmails.size === 0) {
+      recipientEmails.add('crinoidsocial@gmail.com');
+    }
 
     await sendJoinRequestNotificationEmail({
-      toAdminEmail: adminEmail,
+      toAdminEmail: Array.from(recipientEmails),
       requesterName: fullName,
       requesterEmail: cleanEmail,
       brandName: brand?.name || 'Workspace',
