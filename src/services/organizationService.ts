@@ -1,5 +1,10 @@
 import { supabase } from './supabase';
-import { sendBrandInviteEmail, sendJoinRequestNotificationEmail, sendJoinApprovalSuccessEmail } from './emailService';
+import { 
+  sendBrandInviteEmail, 
+  sendJoinRequestNotificationEmail, 
+  sendJoinApprovalSuccessEmail,
+  sendJoinRequestApplicantConfirmationEmail 
+} from './emailService';
 
 export interface CreateOrgParams {
   orgName: string;
@@ -424,58 +429,91 @@ export const requestToJoinBrand = async ({
     throw new Error(`Failed to record join request: ${memberError.message}`);
   }
 
-  // Step 4: Notify both Brand Admins and Org Admins via Email
+  // Step 4: Dispatch emails:
+  // 1. Immediate acknowledgment to the APPLICANT confirming application receipt
+  // 2. Notification to both Brand Admins and Org Admins alerting them to review
   try {
     const origin = window.location.origin;
-    const recipientEmails = new Set<string>();
 
-    // 1. Fetch Org Admins from users table
-    const { data: orgAdmins } = await supabase
-      .from('users')
-      .select('email')
-      .eq('is_org_admin', true);
-
-    if (orgAdmins) {
-      orgAdmins.forEach(u => {
-        if (u.email) recipientEmails.add(u.email.trim().toLowerCase());
-      });
-    }
-
-    // 2. Fetch Brand Admins for this brand from brand_members
-    const { data: brandAdmins } = await supabase
-      .from('brand_members')
-      .select('users:user_id(email)')
-      .eq('brand_id', brandId)
-      .eq('status', 'active')
-      .in('role', ['brand_admin', 'Brand Admin']);
-
-    if (brandAdmins) {
-      brandAdmins.forEach((m: any) => {
-        if (m.users?.email) recipientEmails.add(m.users.email.trim().toLowerCase());
-      });
-    }
-
-    // 3. Fetch Brand creator
     const { data: brand } = await supabase
       .from('brands')
-      .select('name, created_by, users:created_by(email)')
+      .select('name, created_by')
       .eq('id', brandId)
-      .single();
+      .maybeSingle();
 
-    if ((brand as any)?.users?.email) {
-      recipientEmails.add((brand as any).users.email.trim().toLowerCase());
+    const brandName = brand?.name || 'Workspace';
+
+    // 4.1 Dispatch immediate confirmation to the APPLICANT
+    try {
+      await sendJoinRequestApplicantConfirmationEmail({
+        toApplicantEmail: cleanEmail,
+        applicantName: fullName.trim(),
+        brandName
+      });
+    } catch (appAckErr) {
+      console.warn('Could not dispatch applicant acknowledgment email:', appAckErr);
+    }
+
+    // 4.2 Dispatch review alerts to Brand Admins & Org Admins
+    const adminEmails = new Set<string>();
+
+    // A. Query Org Admins from users table
+    try {
+      const { data: orgAdmins } = await supabase
+        .from('users')
+        .select('email')
+        .eq('is_org_admin', true);
+
+      (orgAdmins || []).forEach(u => {
+        if (u.email) adminEmails.add(u.email.trim().toLowerCase());
+      });
+    } catch {}
+
+    // B. Query Brand Admins from brand_members
+    try {
+      const { data: bMembers } = await supabase
+        .from('brand_members')
+        .select('user_id')
+        .eq('brand_id', brandId)
+        .eq('status', 'active')
+        .in('role', ['brand_admin', 'Brand Admin']);
+
+      if (bMembers && bMembers.length > 0) {
+        const adminIds = bMembers.map(m => m.user_id).filter(Boolean);
+        if (adminIds.length > 0) {
+          const { data: bUsers } = await supabase
+            .from('users')
+            .select('email')
+            .in('id', adminIds);
+          (bUsers || []).forEach(u => {
+            if (u.email) adminEmails.add(u.email.trim().toLowerCase());
+          });
+        }
+      }
+    } catch {}
+
+    // C. Query Brand Creator
+    if (brand?.created_by) {
+      try {
+        const { data: creator } = await supabase
+          .from('users')
+          .select('email')
+          .eq('id', brand.created_by)
+          .maybeSingle();
+        if (creator?.email) adminEmails.add(creator.email.trim().toLowerCase());
+      } catch {}
     }
 
     // Fallback if none found
-    if (recipientEmails.size === 0) {
-      recipientEmails.add('crinoidsocial@gmail.com');
+    if (adminEmails.size === 0) {
+      adminEmails.add('crinoidsocial@gmail.com');
     }
 
     await sendJoinRequestNotificationEmail({
-      toAdminEmail: Array.from(recipientEmails),
-      requesterName: fullName,
+      toAdminEmail: Array.from(adminEmails),
+      requesterName: fullName.trim(),
       requesterEmail: cleanEmail,
-      brandName: brand?.name || 'Workspace',
+      brandName,
       requesterJobTitle: jobTitle,
       reviewUrl: `${origin}/`
     });

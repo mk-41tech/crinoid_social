@@ -27,6 +27,12 @@ export interface SendJoinApprovalSuccessEmailParams {
   loginUrl: string;
 }
 
+export interface SendJoinRequestApplicantConfirmationParams {
+  toApplicantEmail: string;
+  applicantName: string;
+  brandName: string;
+}
+
 /**
  * Sends a branded invitation email via Resend API
  */
@@ -282,5 +288,86 @@ export const sendJoinApprovalSuccessEmail = async ({
     return { success: true, id: data.id };
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to dispatch approval notification' };
+  }
+};
+
+/**
+ * Sends an immediate acknowledgment email to the applicant confirming their join request was received
+ */
+export const sendJoinRequestApplicantConfirmationEmail = async ({
+  toApplicantEmail,
+  applicantName,
+  brandName
+}: SendJoinRequestApplicantConfirmationParams): Promise<{ success: boolean; id?: string; error?: string }> => {
+  try {
+    const htmlContent = `
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 580px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden;">
+        <div style="background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%); padding: 32px 24px; text-align: center; color: #ffffff;">
+          <h1 style="margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.02em;">Crinoid Social</h1>
+          <p style="margin: 6px 0 0; font-size: 14px; opacity: 0.95;">Join Request Received</p>
+        </div>
+        
+        <div style="padding: 32px 28px; color: #1e293b; line-height: 1.6;">
+          <h2 style="margin: 0 0 16px; font-size: 20px; font-weight: 700; color: #0f172a;">Application Submitted!</h2>
+          <p style="margin: 0 0 16px; font-size: 15px;">
+            Hello <strong>${applicantName}</strong>, thank you for submitting your request to join <strong>${brandName}</strong> on Crinoid Social.
+          </p>
+          
+          <div style="background-color: #f8fafc; border-left: 4px solid #4f46e5; padding: 14px 18px; border-radius: 6px; margin-bottom: 24px;">
+            <p style="margin: 0 0 6px; font-size: 13.5px; color: #334155;">
+              <strong>Target Brand:</strong> ${brandName}
+            </p>
+            <p style="margin: 0 0 6px; font-size: 13.5px; color: #334155;">
+              <strong>Application Status:</strong> Pending Administrator Review
+            </p>
+            <p style="margin: 0; font-size: 13.5px; color: #334155;">
+              <strong>Registered Email:</strong> ${toApplicantEmail}
+            </p>
+          </div>
+
+          <h3 style="margin: 0 0 12px; font-size: 16px; font-weight: 700; color: #0f172a;">What happens next?</h3>
+          <ul style="margin: 0 0 24px; padding-left: 20px; font-size: 14px; color: #475569; line-height: 1.6;">
+            <li>The Brand Admin and Organization Admin have been notified of your request.</li>
+            <li>They will review your profile and assign your workspace role and approval permissions.</li>
+            <li><strong>You will receive another email as soon as your access is approved</strong>, after which you can log in directly using your password.</li>
+          </ul>
+
+          <div style="padding: 12px 16px; border-radius: 8px; background-color: #fffbeb; border: 1px solid #fef3c7; color: #92400e; font-size: 13px;">
+            <strong>Note:</strong> Until your request is reviewed, login to this brand remains temporarily locked. No further action is required from you at this time.
+          </div>
+        </div>
+
+        <div style="background-color: #f1f5f9; padding: 16px 24px; text-align: center; font-size: 12px; color: #64748b; border-top: 1px solid #e2e8f0;">
+          &copy; ${new Date().getFullYear()} Crinoid Social. All rights reserved.
+        </div>
+      </div>
+    `;
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+    const res = await fetch('/api/send-email', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      signal: controller.signal,
+      body: JSON.stringify({
+        from: 'Crinoid Social <onboarding@resend.dev>',
+        to: [toApplicantEmail],
+        subject: `Request Received: Your request to join ${brandName} on Crinoid Social`,
+        html: htmlContent
+      })
+    });
+    clearTimeout(timeoutId);
+
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      return { success: false, error: data.error || data.message || 'Failed to send acknowledgment email' };
+    }
+
+    return { success: true, id: data.id };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Failed to dispatch acknowledgment email' };
   }
 };
