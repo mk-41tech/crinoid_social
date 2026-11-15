@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { sendBrandInviteEmail, sendJoinRequestNotificationEmail } from './emailService';
+import { sendBrandInviteEmail, sendJoinRequestNotificationEmail, sendJoinApprovalSuccessEmail } from './emailService';
 
 export interface CreateOrgParams {
   orgName: string;
@@ -575,6 +575,35 @@ export const reviewBrandJoinRequest = async ({
       await supabase.from('users').update({
         job_title: roleTitle
       }).eq('id', data.user_id);
+
+      // Dispatch approval confirmation email to the applicant
+      try {
+        const { data: userProfile } = await supabase
+          .from('users')
+          .select('email, full_name')
+          .eq('id', data.user_id)
+          .maybeSingle();
+
+        const { data: brandData } = await supabase
+          .from('brands')
+          .select('name')
+          .eq('id', data.brand_id)
+          .maybeSingle();
+
+        if (userProfile?.email) {
+          const origin = window.location.origin;
+          await sendJoinApprovalSuccessEmail({
+            toEmail: userProfile.email,
+            userName: userProfile.full_name || 'Team Member',
+            brandName: brandData?.name || 'Workspace',
+            assignedRole: roleTitle,
+            canApprove,
+            loginUrl: `${origin}/login`
+          });
+        }
+      } catch (emailErr) {
+        console.warn('Could not dispatch join approval confirmation email', emailErr);
+      }
     }
 
     return data;
