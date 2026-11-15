@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import nodemailer from 'nodemailer';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -14,263 +15,7 @@ if (!fs.existsSync(DATA_DIR)) {
 
 // Initial seed records
 function getInitialSeedData() {
-  const now = new Date();
-  const formatISO = (offsetHours) => new Date(now.getTime() + offsetHours * 3600000).toISOString();
-
-  const baseItems = [
-    {
-      id: 'APP-501',
-      brandId: 'brand-nexus',
-      organizationId: 'org-crinoid',
-      caption: '✨ Launching our new high-performance activewear line this Friday! Breathable, sustainable, and designed to move with you everywhere. Pre-order link in bio! #NexusLife #Activewear',
-      mediaUrls: ['https://images.unsplash.com/photo-1518611012118-696072aa579a?w=600&auto=format&fit=crop&q=80'],
-      mediaType: 'image',
-      thumbnailUrl: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=600&auto=format&fit=crop&q=80',
-      platforms: ['instagram', 'facebook'],
-      author: {
-        id: 'u-2',
-        name: 'Priya',
-        role: 'Content Creator',
-        avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&auto=format&fit=crop&q=80'
-      },
-      assignedApprover: {
-        id: 'u-3',
-        name: 'Karthik',
-        role: 'Approver',
-        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80'
-      },
-      status: 'in_review',
-      submittedAt: formatISO(-3),
-      reviewedAt: formatISO(-2),
-      scheduledAt: formatISO(48),
-      campaign: 'Spring Active 2026',
-      version: 1,
-      requiresClientApproval: false,
-      steps: [
-        {
-          stepNumber: 1,
-          title: 'Review & Sign-Off',
-          assignedRole: 'Approver',
-          assignedApproverName: 'Karthik',
-          status: 'pending'
-        }
-      ],
-      history: [
-        {
-          id: 'hist-501-1',
-          type: 'submission',
-          action: 'Submitted for Approval',
-          user: { id: 'u-2', name: 'Priya', role: 'Content Creator' },
-          timestamp: formatISO(-3),
-          note: 'Submitted post copy and high-res apparel media for campaign review.'
-        }
-      ],
-      comments: [
-        {
-          id: 'comm-1',
-          authorId: 'u-2',
-          authorName: 'Priya',
-          authorRole: 'Content Creator',
-          content: 'Submitted post copy and high-res apparel media for campaign review. @Karthik',
-          timestamp: formatISO(-3),
-          type: 'comment'
-        }
-      ]
-    },
-    {
-      id: 'APP-502',
-      brandId: 'brand-nexus',
-      organizationId: 'org-crinoid',
-      caption: '💡 5 Quick Tips for high-converting social media creatives in 2026. Bookmark this carousel for your marketing team!',
-      mediaUrls: ['https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&auto=format&fit=crop&q=80'],
-      mediaType: 'image',
-      thumbnailUrl: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&auto=format&fit=crop&q=80',
-      platforms: ['instagram', 'facebook', 'linkedin'],
-      author: {
-        id: 'u-2',
-        name: 'Priya',
-        role: 'Content Creator',
-        avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&auto=format&fit=crop&q=80'
-      },
-      assignedApprover: {
-        id: 'u-3',
-        name: 'Karthik',
-        role: 'Approver',
-        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80'
-      },
-      status: 'in_review',
-      submittedAt: formatISO(-1),
-      scheduledAt: formatISO(72),
-      campaign: 'Tech Highlights',
-      version: 1,
-      requiresClientApproval: false,
-      steps: [
-        {
-          stepNumber: 1,
-          title: 'Review & Sign-Off',
-          assignedRole: 'Approver',
-          assignedApproverName: 'Karthik',
-          status: 'pending'
-        }
-      ],
-      history: [
-        {
-          id: 'hist-502-1',
-          type: 'submission',
-          action: 'Submitted for Approval',
-          user: { id: 'u-2', name: 'Priya', role: 'Content Creator' },
-          timestamp: formatISO(-1),
-          note: 'Carousel tips ready for review and scheduling.'
-        }
-      ],
-      comments: []
-    },
-    {
-      id: 'APP-504',
-      brandId: 'brand-nexus',
-      organizationId: 'org-crinoid',
-      caption: '🚀 Excited to announce our next-generation social suite! Multi-platform publishing is finally here.',
-      mediaUrls: ['https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=80'],
-      mediaType: 'image',
-      thumbnailUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=80',
-      platforms: ['instagram', 'facebook'],
-      author: {
-        id: 'u-1',
-        name: 'Muthukumar',
-        role: 'Social Lead',
-        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80'
-      },
-      assignedApprover: {
-        id: 'u-3',
-        name: 'Karthik',
-        role: 'Approver',
-        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80'
-      },
-      status: 'approved',
-      submittedAt: formatISO(-24),
-      reviewedAt: formatISO(-20),
-      scheduledAt: formatISO(-18),
-      campaign: 'Product Launch 2026',
-      version: 1,
-      requiresClientApproval: false,
-      steps: [
-        {
-          stepNumber: 1,
-          title: 'Internal Review',
-          assignedRole: 'Approver',
-          assignedApproverName: 'Karthik',
-          status: 'approved',
-          completedAt: formatISO(-20)
-        }
-      ],
-      history: [
-        {
-          id: 'hist-504-1',
-          type: 'submission',
-          action: 'Submitted for Approval',
-          user: { id: 'u-1', name: 'Muthukumar', role: 'Social Lead' },
-          timestamp: formatISO(-24),
-          note: 'Product launch announcement copy submitted.'
-        },
-        {
-          id: 'hist-504-2',
-          type: 'decision',
-          action: 'Approved (Final Sign-off)',
-          user: { id: 'u-3', name: 'Karthik', role: 'Approver' },
-          timestamp: formatISO(-20),
-          note: 'Looks great! Approved for automated distribution.'
-        }
-      ],
-      comments: [
-        {
-          id: 'comm-5',
-          authorId: 'u-3',
-          authorName: 'Karthik',
-          authorRole: 'Approver',
-          content: 'Looks great! Approved for automated distribution.',
-          timestamp: formatISO(-20),
-          type: 'decision',
-          decision: 'approved'
-        }
-      ]
-    },
-    {
-      id: 'APP-505',
-      brandId: 'brand-nexus',
-      organizationId: 'org-crinoid',
-      caption: 'Unverified coupon discount code flash sale: Get 70% off with coupon code CRN70 today only!',
-      mediaUrls: [],
-      mediaType: 'text',
-      platforms: ['facebook'],
-      author: {
-        id: 'u-2',
-        name: 'Priya',
-        role: 'Content Creator',
-        avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&auto=format&fit=crop&q=80'
-      },
-      assignedApprover: {
-        id: 'u-3',
-        name: 'Karthik',
-        role: 'Approver',
-        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80'
-      },
-      status: 'rejected',
-      submittedAt: formatISO(-30),
-      reviewedAt: formatISO(-28),
-      campaign: 'Promotions',
-      version: 1,
-      requiresClientApproval: false,
-      steps: [
-        {
-          stepNumber: 1,
-          title: 'Review & Sign-Off',
-          assignedRole: 'Approver',
-          assignedApproverName: 'Karthik',
-          status: 'rejected',
-          completedAt: formatISO(-28)
-        }
-      ],
-      history: [
-        {
-          id: 'hist-505-1',
-          type: 'submission',
-          action: 'Submitted for Approval',
-          user: { id: 'u-2', name: 'Priya', role: 'Content Creator' },
-          timestamp: formatISO(-30),
-          note: 'Flash sale copy submitted for review.'
-        },
-        {
-          id: 'hist-505-2',
-          type: 'decision',
-          action: 'Rejected',
-          user: { id: 'u-3', name: 'Karthik', role: 'Approver' },
-          timestamp: formatISO(-28),
-          note: 'Discount codes above 50% violate marketing guidelines without finance sign-off.'
-        }
-      ],
-      comments: [
-        {
-          id: 'comm-6',
-          authorId: 'u-3',
-          authorName: 'Karthik',
-          authorRole: 'Approver',
-          content: 'Rejected: Discount codes above 50% violate marketing guidelines without finance sign-off.',
-          timestamp: formatISO(-28),
-          type: 'decision',
-          decision: 'rejected'
-        }
-      ]
-    }
-  ];
-
-  // Also duplicate for brand-crinoid
-  const crinoidItems = baseItems.map(item => ({
-    ...item,
-    id: item.id.replace('APP-', 'CRN-'),
-    brandId: 'brand-crinoid'
-  }));
-
-  return [...baseItems, ...crinoidItems];
+  return [];
 }
 
 // Database helper functions with atomic writes
@@ -300,28 +45,40 @@ function writeDatabase(data) {
 }
 
 // Authoritative Brand Approvers configuration
-const AUTHORIZED_APPROVERS = {
-  'brand-nexus': [
-    {
-      id: 'u-3',
-      name: 'Karthik',
-      email: 'karthik@crinoid.social',
-      role: 'Approver',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80',
-      brandId: 'brand-nexus'
+function getResendApiKey() {
+  if (process.env.VITE_RESEND_API_KEY) return process.env.VITE_RESEND_API_KEY;
+  if (process.env.RESEND_API_KEY) return process.env.RESEND_API_KEY;
+  try {
+    const envPath = path.resolve(__dirname, '../.env');
+    if (fs.existsSync(envPath)) {
+      const content = fs.readFileSync(envPath, 'utf-8');
+      const match = content.match(/VITE_RESEND_API_KEY\s*=\s*([^\r\n]+)/);
+      if (match) return match[1].trim();
     }
-  ],
-  'brand-crinoid': [
-    {
-      id: 'u-3',
-      name: 'Karthik',
-      email: 'karthik@crinoid.social',
-      role: 'Approver',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80',
-      brandId: 'brand-crinoid'
+  } catch {}
+  return '';
+}
+
+function getGmailCredentials() {
+  let user = process.env.GMAIL_USER;
+  let pass = process.env.GMAIL_APP_PASSWORD;
+  try {
+    const envPath = path.resolve(__dirname, '../.env');
+    if (fs.existsSync(envPath)) {
+      const content = fs.readFileSync(envPath, 'utf-8');
+      const userMatch = content.match(/GMAIL_USER\s*=\s*([^\r\n]+)/);
+      const passMatch = content.match(/GMAIL_APP_PASSWORD\s*=\s*([^\r\n]+)/);
+      if (userMatch) user = userMatch[1].trim();
+      if (passMatch) pass = passMatch[1].trim().replace(/\s+/g, '');
     }
-  ]
-};
+  } catch {}
+  return {
+    user: user || 'crinoidsocial@gmail.com',
+    pass: pass ? pass.replace(/\s+/g, '') : null
+  };
+}
+
+const AUTHORIZED_APPROVERS = {};
 
 function parseBody(req) {
   return new Promise((resolve) => {
@@ -379,7 +136,102 @@ async function handleApiRequests(req, res, next) {
   }
 
   try {
-    // 0. POST /api/schedule/validate
+    // 0. POST /api/send-email (Direct Gmail SMTP dispatch or Resend fallback)
+    if (pathname === '/api/send-email' && req.method === 'POST') {
+      const body = await parseBody(req);
+      const { to, subject, html, from, reply_to } = body;
+
+      if (!to || !subject || !html) {
+        return sendJson(res, 400, {
+          success: false,
+          error: 'Missing required email fields (to, subject, html)'
+        });
+      }
+
+      const recipients = Array.isArray(to) ? to : [to];
+      const gmail = getGmailCredentials();
+
+      // Priority 1: If Gmail App Password is configured, dispatch via Gmail SMTP directly to ANY recipient!
+      if (gmail.pass) {
+        try {
+          const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+              user: gmail.user,
+              pass: gmail.pass
+            }
+          });
+
+          const mailOptions = {
+            from: `Crinoid Social <${gmail.user}>`,
+            to: recipients.join(', '),
+            replyTo: reply_to || gmail.user,
+            subject: subject,
+            html: html
+          };
+
+          const info = await transporter.sendMail(mailOptions);
+          console.log('[Gmail SMTP] Email successfully sent to:', recipients, 'Message ID:', info.messageId);
+
+          return sendJson(res, 200, {
+            success: true,
+            id: info.messageId,
+            via: 'gmail'
+          });
+        } catch (gmailErr) {
+          console.error('[Gmail SMTP] Dispatch failed:', gmailErr);
+          // If Gmail fails, proceed to try Resend below
+        }
+      }
+
+      // Priority 2: Resend API dispatch
+      const apiKey = getResendApiKey();
+      try {
+        const payload = {
+          from: from || 'Crinoid Social <onboarding@resend.dev>',
+          to: recipients,
+          subject,
+          html
+        };
+        if (reply_to) {
+          payload.reply_to = reply_to;
+        }
+
+        const resendRes = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const resendData = await resendRes.json();
+
+        if (!resendRes.ok) {
+          console.warn('[Resend Server] API response error:', resendData);
+          return sendJson(res, 200, {
+            success: false,
+            error: resendData.message || 'Resend error: Failed to dispatch email'
+          });
+        }
+
+        console.log('[Resend Server] Email successfully sent:', resendData.id);
+        return sendJson(res, 200, {
+          success: true,
+          id: resendData.id,
+          via: 'resend'
+        });
+      } catch (err) {
+        console.error('[Resend Server] Request exception:', err);
+        return sendJson(res, 200, {
+          success: false,
+          error: err.message || 'Server error communicating with Resend API'
+        });
+      }
+    }
+
+    // 0.1 POST /api/schedule/validate
     if (pathname === '/api/schedule/validate' && req.method === 'POST') {
       const body = await parseBody(req);
       const { date, time, timezone, scheduledAt } = body;
@@ -495,15 +347,13 @@ async function handleApiRequests(req, res, next) {
 
       // Backend Approver Role Validation:
       // Must assign an authorized approver for the brand
-      const brandApprovers = AUTHORIZED_APPROVERS[brandId] || AUTHORIZED_APPROVERS['brand-nexus'];
       const assignedId = body.assignedApprover?.id;
-      const validApprover = brandApprovers.find(a => a.id === assignedId || a.role.toLowerCase() === 'approver');
-
-      if (!validApprover) {
-        return sendJson(res, 400, { 
-          error: 'Invalid approver. Only users with the authorized Approver role (Karthik) can be assigned.' 
-        });
-      }
+      const validApprover = body.assignedApprover || {
+        id: assignedId || 'approver',
+        name: body.assignedApprover?.name || 'Brand Approver',
+        role: body.assignedApprover?.role || 'Approver',
+        avatar: body.assignedApprover?.avatar || ''
+      };
 
       const db = readDatabase();
       const nowIso = new Date().toISOString();
@@ -517,9 +367,9 @@ async function handleApiRequests(req, res, next) {
         mediaType: body.mediaType || 'image',
         thumbnailUrl: body.thumbnailUrl || (body.mediaUrls && body.mediaUrls[0]) || '',
         author: {
-          id: body.author?.id || 'u-1',
-          name: body.author?.name || 'Muthukumar',
-          role: body.author?.role || 'Social Lead',
+          id: body.author?.id || 'user',
+          name: body.author?.name || 'Workspace User',
+          role: body.author?.role || 'Content Creator',
           avatar: body.author?.avatar
         },
         assignedApprover: {
@@ -548,7 +398,7 @@ async function handleApiRequests(req, res, next) {
             id: `hist-${Date.now()}`,
             type: 'submission',
             action: 'Submitted for Approval',
-            user: body.author || { id: 'u-1', name: 'Muthukumar', role: 'Social Lead' },
+            user: body.author || { id: 'user', name: 'Workspace User', role: 'Content Creator' },
             timestamp: nowIso,
             note: 'Submitted post for approval review.'
           }
@@ -580,8 +430,8 @@ async function handleApiRequests(req, res, next) {
       const item = db[itemIndex];
       const nowIso = new Date().toISOString();
       const reviewer = {
-        id: userId || 'u-3',
-        name: userName || 'Karthik',
+        id: userId || 'approver',
+        name: userName || 'Brand Approver',
         role: userRole || 'Approver',
         avatar: userAvatar
       };
@@ -757,8 +607,8 @@ async function handleApiRequests(req, res, next) {
           type: 'resubmission',
           action: `Resubmitted (Version ${item.version})`,
           user: {
-            id: body.userId || 'u-2',
-            name: body.userName || 'Priya',
+            id: body.userId || 'user',
+            name: body.userName || 'Content Creator',
             role: body.userRole || 'Content Creator'
           },
           timestamp: nowIso,

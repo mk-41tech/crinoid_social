@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { DUMMY_LOGIN_ACCOUNTS } from '../../config/mockData';
+import { supabase } from '../../services/supabase';
 import { APP_NAME } from '../../config/appConfig';
 import { 
   Sparkles, 
@@ -16,31 +16,138 @@ import {
 } from 'lucide-react';
 
 export const LoginView: React.FC = () => {
-  const { login, setCurrentView } = useApp();
-  const [email, setEmail] = useState('muthu@crinoid.social');
-  const [password, setPassword] = useState('crinoid2025');
+  const { loginWithRealUser, setCurrentView } = useApp();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setIsSubmitting(true);
 
-    setTimeout(() => {
-      const res = login(email, password);
-      if (!res.success) {
-        setError(res.error || 'Authentication failed. Please verify demo credentials.');
-      }
-      setIsSubmitting(false);
-    }, 250);
-  };
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPassword = password.trim();
 
-  const handleQuickFill = (accEmail: string, accPass: string) => {
-    setEmail(accEmail);
-    setPassword(accPass);
-    setError(null);
+    if (!cleanEmail || !cleanPassword) {
+      setError('Please enter both your email address and password.');
+      setIsSubmitting(false);
+      return;
+    }
+
+    try {
+      // 1. Authenticate with real Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email: cleanEmail,
+        password: cleanPassword
+      });
+
+      if (authError || !authData.user) {
+        setError(authError?.message || 'Invalid email or password. Please verify credentials.');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // 2. Fetch user profile from public.users
+      const { data: userProfile } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', authData.user.id)
+        .maybeSingle();
+
+      const isOrgAdmin = userProfile?.is_org_admin === true;
+
+      // 3. Fetch user's brand memberships
+      let userBrands: any[] = [];
+      let assignedRole = isOrgAdmin ? 'Brand Director' : 'Content Creator';
+
+      if (isOrgAdmin) {
+        // Org Admin sees all active database brands
+        const { data: allDbBrands } = await supabase
+          .from('brands')
+          .select('*')
+          .eq('status', 'active')
+          .order('created_at', { ascending: false });
+
+        userBrands = (allDbBrands || []).map(b => ({
+          id: b.id,
+          name: b.name,
+          logo: b.logo_url || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=120&auto=format&fit=crop&q=80',
+          tagline: b.brand_description || 'Active Brand',
+          color: b.brand_color || '#4f46e5',
+          users: [],
+          accounts: []
+        }));
+      } else {
+        // Regular user or Brand Admin: ONLY see the brands they were invited to in brand_members!
+        const { data: memberships } = await supabase
+          .from('brand_members')
+          .select('brand_id, role, brands(*, brand_members(*))')
+          .eq('user_id', authData.user.id)
+          .eq('status', 'active');
+
+        if (memberships && memberships.length > 0) {
+          assignedRole = memberships[0].role;
+          userBrands = memberships
+            .map((m: any) => m.brands)
+            .filter(Boolean)
+            .map((b: any) => ({
+              id: b.id,
+              name: b.name,
+              logo: b.logo_url || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=120&auto=format&fit=crop&q=80',
+              tagline: b.brand_description || 'Active Brand',
+              color: b.brand_color || '#4f46e5',
+              users: (b.brand_members || []).map((m: any) => ({
+                id: m.user_id,
+                name: m.role,
+                email: '',
+                role: m.role,
+                avatar: '',
+                brandId: b.id
+              })),
+              accounts: []
+            }));
+        } else {
+          // Check if user has a pending join request awaiting admin approval
+          const { data: pendingRequests } = await supabase
+            .from('brand_members')
+            .select('brand_id, role, brands(name)')
+            .eq('user_id', authData.user.id)
+            .eq('status', 'pending_approval');
+
+          // Immediately terminate the session so unapproved users cannot access the workspace
+          await supabase.auth.signOut();
+
+          if (pendingRequests && pendingRequests.length > 0) {
+            const requestedBrand = (pendingRequests[0].brands as any)?.name || 'the brand';
+            setError(`Your request to join "${requestedBrand}" is pending Admin approval. You will be able to log in once an administrator assigns your role and approves your access.`);
+          } else {
+            setError('Access restricted: You do not currently belong to any active brand. Please contact your administrator.');
+          }
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
+      const primaryBrand = userBrands[0] || null;
+
+      loginWithRealUser({
+        id: authData.user.id,
+        name: userProfile?.full_name || authData.user.email?.split('@')[0] || 'User',
+        email: authData.user.email || cleanEmail,
+        role: assignedRole as any,
+        is_org_admin: isOrgAdmin,
+        avatar: userProfile?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
+        brandId: primaryBrand?.id || ''
+      }, userBrands);
+
+      setIsSubmitting(false);
+    } catch (err: any) {
+      setError(err.message || 'Authentication error. Please try again.');
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -243,59 +350,6 @@ export const LoginView: React.FC = () => {
             </p>
           </div>
 
-          {/* Quick-fill credentials callout */}
-          <div
-            style={{
-              padding: '14px 16px',
-              borderRadius: 'var(--radius-md)',
-              backgroundColor: 'var(--bg-subtle)',
-              border: '1px solid var(--border-subtle)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '10px'
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Quick-Fill Demo Credentials
-              </span>
-              <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>1-Click Fill</span>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              {DUMMY_LOGIN_ACCOUNTS.map((acc) => (
-                <button
-                  key={acc.email}
-                  type="button"
-                  onClick={() => handleQuickFill(acc.email, acc.password)}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '8px 10px',
-                    borderRadius: 'var(--radius-sm)',
-                    backgroundColor: email === acc.email ? 'var(--color-primary-light)' : '#ffffff',
-                    border: `1px solid ${email === acc.email ? 'var(--color-primary-border)' : 'var(--border-subtle)'}`,
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                    transition: 'all var(--transition-fast)'
-                  }}
-                >
-                  <div>
-                    <div style={{ fontSize: '12.5px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                      {acc.name} <span style={{ fontSize: '11px', fontWeight: 400, color: 'var(--text-muted)' }}>({acc.role})</span>
-                    </div>
-                    <div style={{ fontSize: '11px', color: 'var(--text-secondary)', fontFamily: 'monospace' }}>
-                      {acc.email}
-                    </div>
-                  </div>
-                  <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-primary)' }}>
-                    Use &rarr;
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-
           {/* Error alert */}
           {error && (
             <div
@@ -331,7 +385,7 @@ export const LoginView: React.FC = () => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@crinoid.social"
+                  placeholder="name@company.com"
                   required
                   style={{
                     width: '100%',
@@ -423,8 +477,27 @@ export const LoginView: React.FC = () => {
             </button>
           </form>
 
+          {/* Register Link */}
+          <div style={{ textAlign: 'center', marginTop: '14px', fontSize: '13.5px', color: '#475569' }}>
+            Don't have an account?{' '}
+            <button
+              type="button"
+              onClick={() => setCurrentView('register')}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#4f46e5',
+                fontWeight: 700,
+                cursor: 'pointer',
+                padding: 0
+              }}
+            >
+              Register here &rarr;
+            </button>
+          </div>
+
           <div style={{ textAlign: 'center', fontSize: '12px', color: 'var(--text-muted)' }}>
-            This is a frontend mock authentication screen for development. No production server is connected.
+            Protected by Supabase authentication &amp; Row Level Security.
           </div>
         </div>
       </div>

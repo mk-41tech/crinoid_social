@@ -181,7 +181,7 @@ export const ConnectedChannelsView: React.FC = () => {
           const config = PLATFORM_CONFIG[platform];
           const connectedAccount = currentBrandAccounts.find(a => a.platform === platform);
           const isConnected = !!connectedAccount;
-          const catalog = (BRAND_CHANNELS_CATALOG[currentBrand.id] || BRAND_CHANNELS_CATALOG['brand-crinoid'])[platform];
+          const catalog = BRAND_CHANNELS_CATALOG[currentBrand.id][platform];
 
           return (
             <div

@@ -1,4 +1,4 @@
-﻿import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useApp } from "../../context/AppContext";
 import { SocialPlatform } from "../../types";
 import { PLATFORM_CONFIG } from "../../config/platformsConfig";
@@ -50,6 +50,7 @@ export const CreatePostView: React.FC = () => {
   const {
     currentBrand,
     currentBrandAccounts,
+    currentUser,
     draft,
     updateDraft,
     setCurrentView,
@@ -186,7 +187,7 @@ export const CreatePostView: React.FC = () => {
       publishMode === "now" ? new Date().toISOString() : scheduleDate + "T" + scheduleTime + ":00",
     thumbnailUrl: mediaUrls[0] || "",
     mediaType,
-    author: { id: "u-1", name: "Muthukumar", role: "Social Lead" },
+    author: { id: currentUser?.id || "user", name: currentUser?.name || "Workspace User", role: currentUser?.role || "Content Creator" },
     campaign: "General",
     createdAt: new Date().toISOString(),
   });

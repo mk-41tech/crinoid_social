@@ -39,19 +39,19 @@ export const ApprovalRulesTab: React.FC<ApprovalRulesTabProps> = ({
     if (!ruleName.trim()) return;
 
     let steps: { order: number; title: string; role: string; approverName: string; isClientStep?: boolean }[] = [
-      { order: 1, title: 'Internal Content Check', role: 'Social Lead', approverName: 'Muthukumar' }
+      { order: 1, title: 'Internal Content Check', role: 'Social Lead', approverName: 'Content Lead' }
     ];
 
     if (selectedTemplate === 'agency_client') {
       steps = [
-        { order: 1, title: 'Agency Lead Review', role: 'Social Lead', approverName: 'Muthukumar' },
-        { order: 2, title: 'Client Sign-Off', role: 'Brand Director', approverName: 'Nexus Brand Client', isClientStep: true }
+        { order: 1, title: 'Agency Lead Review', role: 'Social Lead', approverName: 'Content Lead' },
+        { order: 2, title: 'Client Sign-Off', role: 'Brand Director', approverName: 'Client Reviewer', isClientStep: true }
       ];
     } else if (selectedTemplate === 'enterprise_multi') {
       steps = [
-        { order: 1, title: 'Copy & Media Verification', role: 'Content Editor', approverName: 'Priya' },
-        { order: 2, title: 'Legal & Brand Guidelines', role: 'Compliance Lead', approverName: 'Karthik' },
-        { order: 3, title: 'Executive Approval', role: 'Social Lead', approverName: 'Muthukumar' }
+        { order: 1, title: 'Copy & Media Verification', role: 'Content Editor', approverName: 'Content Reviewer' },
+        { order: 2, title: 'Legal & Brand Guidelines', role: 'Compliance Lead', approverName: 'Compliance Officer' },
+        { order: 3, title: 'Executive Approval', role: 'Social Lead', approverName: 'Brand Director' }
       ];
     }
 

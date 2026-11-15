@@ -47,7 +47,7 @@ export const SimulatedAuthView: React.FC = () => {
 
   const platform = simulatedAuthPlatform;
   const config = PLATFORM_CONFIG[platform];
-  const catalog = (BRAND_CHANNELS_CATALOG[currentBrand.id] || BRAND_CHANNELS_CATALOG['brand-crinoid'])[platform];
+  const catalog = BRAND_CHANNELS_CATALOG[currentBrand.id][platform];
 
   const getPlatformIcon = (size = 28) => {
     switch (platform) {

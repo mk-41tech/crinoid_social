@@ -255,7 +255,7 @@ export const PostDetailDrawer: React.FC<PostDetailDrawerProps> = ({
             <div>
               <p style={{ margin: '0 0 2px', fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>Author / Creator</p>
               <p style={{ margin: 0, fontSize: '12.5px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                {post.author?.name || 'Muthukumar'}
+                {post.author?.name || 'Author'}
               </p>
             </div>
             <div>

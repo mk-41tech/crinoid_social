@@ -19,9 +19,10 @@ export interface BrandUser {
   id: string;
   name: string;
   email: string;
-  role: 'Social Lead' | 'Content Creator' | 'Copywriter' | 'Approver' | 'Brand Manager' | 'Brand Approver' | 'Compliance Lead' | 'Brand Director';
+  role: 'Social Lead' | 'Content Creator' | 'Copywriter' | 'Approver' | 'Brand Manager' | 'Brand Approver' | 'Compliance Lead' | 'Brand Director' | 'brand_admin' | 'content_creator' | 'approver' | 'client_approver';
   avatar: string;
   brandId: string;
+  is_org_admin?: boolean;
 }
 
 export interface Brand {

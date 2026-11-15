@@ -24,7 +24,7 @@ export interface ApprovalComment {
   authorRole: string;
   authorAvatar?: string;
   content: string;
-  mentions?: string[]; // e.g. ["@Muthukumar", "@Priya"]
+  mentions?: string[]; // e.g. ["@User1", "@User2"]
   timestamp: string;
   type: 'comment' | 'decision';
   decision?: 'approved' | 'rejected' | 'changes_requested' | 'resubmitted';

@@ -474,10 +474,10 @@ export const ComposerView: React.FC<ComposerViewProps> = ({
             thumbnailUrl: cleanThumbnail,
             platforms: [...selectedPlatforms],
             author: {
-              id: currentUser?.id || 'u-1',
-              name: currentUser?.name || 'Muthukumar',
-              role: currentUser?.role || 'Social Lead',
-              avatar: currentUser?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80'
+              id: currentUser?.id || 'user',
+              name: currentUser?.name || 'Workspace User',
+              role: currentUser?.role || 'Content Creator',
+              avatar: currentUser?.avatar || ''
             },
             createdDate: new Date().toISOString(),
             publishedDate: new Date().toISOString(),
@@ -535,10 +535,10 @@ export const ComposerView: React.FC<ComposerViewProps> = ({
       thumbnailUrl: simCleanThumbnail,
       platforms: [...selectedPlatforms],
       author: {
-        id: currentUser?.id || 'u-1',
-        name: currentUser?.name || 'Muthukumar',
-        role: currentUser?.role || 'Social Lead',
-        avatar: currentUser?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80'
+        id: currentUser?.id || 'user',
+        name: currentUser?.name || 'Workspace User',
+        role: currentUser?.role || 'Content Creator',
+        avatar: currentUser?.avatar || ''
       },
       createdDate: new Date().toISOString(),
       publishedDate: new Date().toISOString(),
@@ -593,8 +593,8 @@ export const ComposerView: React.FC<ComposerViewProps> = ({
       assignedReviewerId: reviewerId
     });
 
-    const reviewer = currentBrand.users.find(u => u.id === reviewerId) || { id: 'u-3', name: 'Karthik', role: 'Approver' as const, avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80' };
-    const authorUser = currentUser || { id: 'u-1', name: 'Muthukumar', role: 'Social Lead' as const, avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80' };
+    const reviewer = currentBrand.users.find(u => u.id === reviewerId) || { id: reviewerId || 'reviewer', name: 'Brand Approver', role: 'Approver' as const, avatar: '' };
+    const authorUser = currentUser || { id: 'user', name: 'Workspace User', role: 'Content Creator' as const, avatar: '' };
     const nowIso = new Date().toISOString();
 
     const approvalPost = {
@@ -653,7 +653,7 @@ export const ComposerView: React.FC<ComposerViewProps> = ({
           stepNumber: 1,
           title: 'Copy & Content Review',
           assignedRole: 'Content Editor',
-          assignedApproverName: 'Priya',
+          assignedApproverName: 'Content Reviewer',
           status: 'in_progress'
         },
         {

@@ -2,6 +2,8 @@ import React from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import { LandingPage } from './components/layout/LandingPage';
 import { LoginView } from './components/auth/LoginView';
+import { RegisterView } from './components/auth/RegisterView';
+import { InviteAcceptView } from './components/auth/InviteAcceptView';
 import { Topbar } from './components/layout/Topbar';
 import { Sidebar } from './components/layout/Sidebar';
 import { HomeView } from './components/layout/HomeView';
@@ -20,7 +22,7 @@ import { TermsOfServiceView } from './components/legal/TermsOfServiceView';
 import { ToastContainer } from './components/common/Toast';
 
 const AppContent: React.FC = () => {
-  const { isAuthenticated, currentView } = useApp();
+  const { isAuthenticated, currentView, inviteToken } = useApp();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
   // =========================================================================
@@ -64,7 +66,32 @@ const AppContent: React.FC = () => {
     );
   }
 
-  // 2. DEDICATED LOGIN SCREEN (Route '/login' or unauthenticated protected access)
+  // =========================================================================
+  // 2. REGISTRATION SCREEN ('/register')
+  // Allows creating an Organization or requesting to Join a Brand
+  // =========================================================================
+  if (currentView === 'register') {
+    return (
+      <>
+        <RegisterView />
+        <ToastContainer />
+      </>
+    );
+  }
+
+  // =========================================================================
+  // 3. TEAM MEMBER INVITATION ONBOARDING ('/?token=...')
+  // =========================================================================
+  if (currentView === 'invite') {
+    return (
+      <>
+        <InviteAcceptView token={inviteToken} />
+        <ToastContainer />
+      </>
+    );
+  }
+
+  // 4. DEDICATED LOGIN SCREEN (Route '/login' or unauthenticated protected access)
   if (currentView === 'login' || !isAuthenticated) {
     return (
       <>

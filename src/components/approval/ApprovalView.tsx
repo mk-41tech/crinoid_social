@@ -33,362 +33,8 @@ import {
 const STORAGE_APPROVAL_POSTS = 'crinoid_approval_posts_v1';
 const STORAGE_APPROVAL_RULES = 'crinoid_approval_rules_v1';
 
-const getInitialApprovalItems = (brandId: string): ApprovalPostItem[] => {
-  const now = new Date();
-  const formatISO = (offsetHours: number) => {
-    return new Date(now.getTime() + offsetHours * 3600000).toISOString();
-  };
-
-  return [
-    {
-      id: 'APP-501',
-      brandId,
-      caption: '✨ Launching our new high-performance activewear line this Friday! Breathable, sustainable, and designed to move with you everywhere. Pre-order link in bio! #NexusLife #Activewear',
-      mediaUrls: ['https://images.unsplash.com/photo-1518611012118-696072aa579a?w=600&auto=format&fit=crop&q=80'],
-      mediaType: 'image',
-      thumbnailUrl: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=600&auto=format&fit=crop&q=80',
-      platforms: ['instagram', 'facebook'],
-      author: {
-        id: 'u-2',
-        name: 'Priya',
-        role: 'Content Creator'
-      },
-      assignedApprover: {
-        id: 'u-3',
-        name: 'Karthik',
-        role: 'Approver'
-      },
-      status: 'in_review',
-      submittedAt: formatISO(-3),
-      reviewedAt: formatISO(-2),
-      scheduledAt: formatISO(48),
-      campaign: 'Spring Active 2026',
-      version: 1,
-      requiresClientApproval: true,
-      clientName: 'Nexus Brand Director',
-      currentStepIndex: 1,
-      steps: [
-        {
-          stepNumber: 1,
-          title: 'Copy & Media Verification',
-          assignedRole: 'Social Lead',
-          assignedApproverName: 'Muthukumar',
-          status: 'approved',
-          completedAt: formatISO(-2)
-        },
-        {
-          stepNumber: 2,
-          title: 'Client Sign-Off',
-          assignedRole: 'Brand Client',
-          assignedApproverName: 'Nexus Brand Director',
-          status: 'in_progress',
-          isClientStep: true
-        }
-      ],
-      history: [
-        {
-          id: 'hist-501-1',
-          type: 'submission',
-          action: 'Submitted for Approval',
-          user: { id: 'u-2', name: 'Priya', role: 'Content Creator' },
-          timestamp: formatISO(-3),
-          note: 'Submitted post copy and high-res apparel media for client campaign review.'
-        },
-        {
-          id: 'hist-501-2',
-          type: 'decision',
-          action: 'Step 1 Approved: Copy & Media Verification',
-          user: { id: 'u-1', name: 'Muthukumar', role: 'Social Lead' },
-          timestamp: formatISO(-2),
-          stepNumber: 1,
-          stepTitle: 'Copy & Media Verification',
-          note: 'Step 1 copy and hashtags look solid. Approved and routed to Client review.'
-        }
-      ],
-      comments: [
-        {
-          id: 'comm-1',
-          authorId: 'u-2',
-          authorName: 'Priya',
-          authorRole: 'Content Creator',
-          content: 'Submitted post copy and high-res apparel media for client campaign review. @Karthik @Muthukumar',
-          timestamp: formatISO(-3),
-          type: 'comment'
-        },
-        {
-          id: 'comm-2',
-          authorId: 'u-1',
-          authorName: 'Muthukumar',
-          authorRole: 'Social Lead',
-          content: 'Step 1 copy and hashtags look solid. Approved and routed to Client review.',
-          timestamp: formatISO(-2),
-          type: 'decision',
-          decision: 'approved'
-        }
-      ]
-    },
-    {
-      id: 'APP-502',
-      brandId,
-      caption: '💡 5 Quick Tips for high-converting social media creatives in 2026. Bookmark this carousel for your marketing team!',
-      mediaUrls: ['https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&auto=format&fit=crop&q=80'],
-      mediaType: 'image',
-      thumbnailUrl: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&auto=format&fit=crop&q=80',
-      platforms: ['instagram', 'facebook', 'linkedin'],
-      author: {
-        id: 'u-2',
-        name: 'Priya',
-        role: 'Content Creator'
-      },
-      assignedApprover: {
-        id: 'u-3',
-        name: 'Karthik',
-        role: 'Approver'
-      },
-      status: 'in_review',
-      submittedAt: formatISO(-1),
-      scheduledAt: formatISO(72),
-      campaign: 'Tech Highlights',
-      version: 1,
-      requiresClientApproval: false,
-      steps: [
-        {
-          stepNumber: 1,
-          title: 'Peer Review',
-          assignedRole: 'Approver',
-          assignedApproverName: 'Karthik',
-          status: 'pending'
-        }
-      ],
-      history: [
-        {
-          id: 'hist-502-1',
-          type: 'submission',
-          action: 'Submitted for Approval',
-          user: { id: 'u-2', name: 'Priya', role: 'Content Creator' },
-          timestamp: formatISO(-1),
-          note: 'Carousel slides and copy ready for review.'
-        }
-      ],
-      comments: [
-        {
-          id: 'comm-3',
-          authorId: 'u-2',
-          authorName: 'Priya',
-          authorRole: 'Content Creator',
-          content: 'Carousel slides and copy ready for review. @Karthik',
-          timestamp: formatISO(-1),
-          type: 'comment'
-        }
-      ]
-    },
-    {
-      id: 'APP-503',
-      brandId,
-      caption: '🌿 Weekend special: Explore our mindful wellness collection with free express shipping across all regions.',
-      mediaUrls: ['https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=600&auto=format&fit=crop&q=80'],
-      mediaType: 'image',
-      thumbnailUrl: 'https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=600&auto=format&fit=crop&q=80',
-      platforms: ['instagram'],
-      author: {
-        id: 'u-2',
-        name: 'Priya',
-        role: 'Content Creator'
-      },
-      assignedApprover: {
-        id: 'u-3',
-        name: 'Karthik',
-        role: 'Approver'
-      },
-      status: 'changes_requested',
-      submittedAt: formatISO(-12),
-      reviewedAt: formatISO(-10),
-      campaign: 'Weekend Drops',
-      version: 2,
-      currentStepIndex: 0,
-      requiresClientApproval: false,
-      versions: [
-        {
-          version: 1,
-          caption: '🌿 Weekend special: Explore our mindful wellness collection with free express shipping across all regions.',
-          mediaUrls: ['https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=600&auto=format&fit=crop&q=80'],
-          changedAt: formatISO(-12),
-          changedBy: { id: 'u-2', name: 'Priya', role: 'Content Creator' },
-          changeNote: 'Initial post submission'
-        }
-      ],
-      steps: [
-        {
-          stepNumber: 1,
-          title: 'Brand Tone Review',
-          assignedRole: 'Approver',
-          assignedApproverName: 'Karthik',
-          status: 'changes_requested'
-        }
-      ],
-      history: [
-        {
-          id: 'hist-503-1',
-          type: 'submission',
-          action: 'Submitted for Approval',
-          user: { id: 'u-2', name: 'Priya', role: 'Content Creator' },
-          timestamp: formatISO(-12),
-          note: 'Weekend promo post submitted.'
-        },
-        {
-          id: 'hist-503-2',
-          type: 'changes_requested',
-          action: 'Changes Requested',
-          user: { id: 'u-3', name: 'Karthik', role: 'Approver' },
-          timestamp: formatISO(-10),
-          note: 'Please update the free shipping terms and highlight eco-friendly packaging.'
-        }
-      ],
-      comments: [
-        {
-          id: 'comm-4',
-          authorId: 'u-3',
-          authorName: 'Karthik',
-          authorRole: 'Approver',
-          content: 'Please update the free shipping terms and highlight eco-friendly packaging.',
-          timestamp: formatISO(-10),
-          type: 'decision',
-          decision: 'changes_requested'
-        }
-      ]
-    },
-    {
-      id: 'APP-504',
-      brandId,
-      caption: '🚀 Excited to announce our next-generation social suite! Multi-platform publishing is finally here.',
-      mediaUrls: ['https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=80'],
-      mediaType: 'image',
-      thumbnailUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=80',
-      platforms: ['instagram', 'facebook'],
-      author: {
-        id: 'u-1',
-        name: 'Muthukumar',
-        role: 'Social Lead'
-      },
-      assignedApprover: {
-        id: 'u-3',
-        name: 'Karthik',
-        role: 'Approver'
-      },
-      status: 'approved',
-      submittedAt: formatISO(-24),
-      reviewedAt: formatISO(-20),
-      scheduledAt: formatISO(-18),
-      campaign: 'Product Launch 2026',
-      version: 1,
-      requiresClientApproval: false,
-      steps: [
-        {
-          stepNumber: 1,
-          title: 'Internal Review',
-          assignedRole: 'Approver',
-          assignedApproverName: 'Karthik',
-          status: 'approved',
-          completedAt: formatISO(-20)
-        }
-      ],
-      history: [
-        {
-          id: 'hist-504-1',
-          type: 'submission',
-          action: 'Submitted for Approval',
-          user: { id: 'u-1', name: 'Muthukumar', role: 'Social Lead' },
-          timestamp: formatISO(-24),
-          note: 'Product launch announcement copy submitted.'
-        },
-        {
-          id: 'hist-504-2',
-          type: 'decision',
-          action: 'Approved (Final Sign-off)',
-          user: { id: 'u-3', name: 'Karthik', role: 'Approver' },
-          timestamp: formatISO(-20),
-          note: 'Looks great! Approved for automated distribution.'
-        }
-      ],
-      comments: [
-        {
-          id: 'comm-5',
-          authorId: 'u-3',
-          authorName: 'Karthik',
-          authorRole: 'Approver',
-          content: 'Looks great! Approved for automated distribution.',
-          timestamp: formatISO(-20),
-          type: 'decision',
-          decision: 'approved'
-        }
-      ]
-    },
-    {
-      id: 'APP-505',
-      brandId,
-      caption: '🔥 Massive 70% flash discount on all accessories this afternoon only! Use promo code FLASH70.',
-      mediaUrls: ['https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&auto=format&fit=crop&q=80'],
-      mediaType: 'image',
-      thumbnailUrl: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&auto=format&fit=crop&q=80',
-      platforms: ['facebook'],
-      author: {
-        id: 'u-2',
-        name: 'Priya',
-        role: 'Content Creator'
-      },
-      assignedApprover: {
-        id: 'u-3',
-        name: 'Karthik',
-        role: 'Approver'
-      },
-      status: 'rejected',
-      submittedAt: formatISO(-30),
-      reviewedAt: formatISO(-28),
-      campaign: 'Promotions',
-      version: 1,
-      requiresClientApproval: false,
-      steps: [
-        {
-          stepNumber: 1,
-          title: 'Compliance Check',
-          assignedRole: 'Social Lead',
-          assignedApproverName: 'Muthukumar',
-          status: 'rejected',
-          completedAt: formatISO(-28)
-        }
-      ],
-      history: [
-        {
-          id: 'hist-505-1',
-          type: 'submission',
-          action: 'Submitted for Approval',
-          user: { id: 'u-2', name: 'Priya', role: 'Content Creator' },
-          timestamp: formatISO(-30),
-          note: 'Flash sale copy submitted for compliance check.'
-        },
-        {
-          id: 'hist-505-2',
-          type: 'decision',
-          action: 'Rejected',
-          user: { id: 'u-1', name: 'Muthukumar', role: 'Social Lead' },
-          timestamp: formatISO(-28),
-          note: 'Discount codes above 50% violate marketing guidelines without finance sign-off.'
-        }
-      ],
-      comments: [
-        {
-          id: 'comm-6',
-          authorId: 'u-1',
-          authorName: 'Muthukumar',
-          authorRole: 'Social Lead',
-          content: 'Rejected: Discount codes above 50% violate marketing guidelines without finance sign-off.',
-          timestamp: formatISO(-28),
-          type: 'decision',
-          decision: 'rejected'
-        }
-      ]
-    }
-  ];
+const getInitialApprovalItems = (_brandId: string): ApprovalPostItem[] => {
+  return [];
 };
 
 const getInitialApprovalRules = (): ApprovalRule[] => [
@@ -402,7 +48,7 @@ const getInitialApprovalRules = (): ApprovalRule[] => [
     workflowType: 'standard',
     appliesTo: 'all',
     steps: [
-      { order: 1, title: 'Editorial & Quality Check', role: 'Social Lead', approverName: 'Muthukumar' }
+      { order: 1, title: 'Editorial & Quality Check', role: 'Social Lead', approverName: 'Content Lead' }
     ]
   },
   {
@@ -415,8 +61,8 @@ const getInitialApprovalRules = (): ApprovalRule[] => [
     workflowType: 'agency_client',
     appliesTo: 'campaigns',
     steps: [
-      { order: 1, title: 'Internal Copy & Hashtags', role: 'Social Lead', approverName: 'Muthukumar' },
-      { order: 2, title: 'Client Sign-Off', role: 'Brand Director', approverName: 'Nexus Brand Director', isClientStep: true }
+      { order: 1, title: 'Internal Copy & Hashtags', role: 'Social Lead', approverName: 'Content Lead' },
+      { order: 2, title: 'Client Sign-Off', role: 'Brand Director', approverName: 'Client Reviewer', isClientStep: true }
     ]
   },
   {
@@ -429,9 +75,9 @@ const getInitialApprovalRules = (): ApprovalRule[] => [
     workflowType: 'enterprise_multi',
     appliesTo: 'all',
     steps: [
-      { order: 1, title: 'Copy & Media Verification', role: 'Content Editor', approverName: 'Priya' },
-      { order: 2, title: 'Legal & Guidelines Check', role: 'Compliance Lead', approverName: 'Karthik' },
-      { order: 3, title: 'Executive Approval', role: 'Social Lead', approverName: 'Muthukumar', isClientStep: true }
+      { order: 1, title: 'Copy & Media Verification', role: 'Content Editor', approverName: 'Content Reviewer' },
+      { order: 2, title: 'Legal & Guidelines Check', role: 'Compliance Lead', approverName: 'Compliance Officer' },
+      { order: 3, title: 'Executive Approval', role: 'Social Lead', approverName: 'Brand Director', isClientStep: true }
     ]
   }
 ];
@@ -540,7 +186,7 @@ export const ApprovalView: React.FC = () => {
           item.assignedApprover?.id === currentUser?.id ||
           item.assignedApprover?.name?.toLowerCase() === currentUser?.name?.toLowerCase() ||
           !item.assignedApprover ||
-          item.steps.some(s => s.assignedApproverName?.toLowerCase().includes('karthik'))
+          item.steps.some(s => s.assignedRole?.toLowerCase().includes('approver'))
         );
       }
       if (isCreator) {
@@ -619,7 +265,7 @@ export const ApprovalView: React.FC = () => {
 
   // Review Decisions with multi-step enforcement, timestamps, and history logging
   const handleApprove = async (postId: string, note = 'Approved post for scheduling and publishing.') => {
-    const actor = currentUser || { id: 'u-3', name: 'Karthik', role: 'Approver' as const, avatar: '' };
+    const actor = currentUser || { id: 'approver', name: 'Approver', role: 'Approver' as const, avatar: '' };
     const nowIso = new Date().toISOString();
 
     // Persist decision to shared backend
@@ -705,7 +351,7 @@ export const ApprovalView: React.FC = () => {
   };
 
   const handleReject = async (postId: string, reason: string) => {
-    const actor = currentUser || { id: 'u-3', name: 'Karthik', role: 'Approver' as const, avatar: '' };
+    const actor = currentUser || { id: 'approver', name: 'Approver', role: 'Approver' as const, avatar: '' };
     const nowIso = new Date().toISOString();
 
     try {
@@ -764,7 +410,7 @@ export const ApprovalView: React.FC = () => {
   };
 
   const handleRequestChanges = async (postId: string, feedback: string) => {
-    const actor = currentUser || { id: 'u-3', name: 'Karthik', role: 'Approver' as const, avatar: '' };
+    const actor = currentUser || { id: 'approver', name: 'Approver', role: 'Approver' as const, avatar: '' };
     const nowIso = new Date().toISOString();
 
     try {
@@ -822,7 +468,7 @@ export const ApprovalView: React.FC = () => {
   };
 
   const handleResubmit = async (postId: string, newCaption?: string) => {
-    const actor = currentUser || { id: 'u-2', name: 'Priya', role: 'Content Creator' as const, avatar: '' };
+    const actor = currentUser || { id: 'creator', name: 'Content Creator', role: 'Content Creator' as const, avatar: '' };
     const nowIso = new Date().toISOString();
 
     try {
@@ -891,7 +537,7 @@ export const ApprovalView: React.FC = () => {
   };
 
   const handleAssignApprover = (postId: string, user: { id: string; name: string; role: string; avatar?: string }) => {
-    const actor = currentUser || { id: 'u-1', name: 'Muthukumar', role: 'Social Lead' as const, avatar: '' };
+    const actor = currentUser || { id: 'lead', name: 'Team Lead', role: 'Social Lead' as const, avatar: '' };
     const nowIso = new Date().toISOString();
 
     setItems(prev => prev.map(item => {
@@ -925,7 +571,7 @@ export const ApprovalView: React.FC = () => {
   };
 
   const handleAddComment = async (postId: string, commentText: string, mentions: string[]) => {
-    const actor = currentUser || { id: 'u-1', name: 'Muthukumar', role: 'Social Lead' as const, avatar: '' };
+    const actor = currentUser || { id: 'lead', name: 'Team Lead', role: 'Social Lead' as const, avatar: '' };
     const nowIso = new Date().toISOString();
 
     try {

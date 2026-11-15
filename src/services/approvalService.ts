@@ -1,14 +1,47 @@
 import { ApprovalPostItem, ApprovalComment, ApprovalStatus } from '../components/approval/types';
 import { BrandUser } from '../types';
+import { supabase } from './supabase';
 
 const STORAGE_APPROVAL_POSTS = 'crinoid_approval_posts_v1';
 
 export class ApprovalService {
   /**
-   * Fetch authorized approvers for a given brand from the backend API.
-   * Only users with the authorized approver role are returned.
+   * Fetch authorized approvers for a given brand from Supabase brand_members table.
+   * Only users with the authorized approver role or can_approve=true are returned.
    */
   async getBrandApprovers(brandId: string): Promise<BrandUser[]> {
+    try {
+      const { data: members, error } = await supabase
+        .from('brand_members')
+        .select('user_id, role, can_approve, users:user_id(id, full_name, email, avatar_url)')
+        .eq('brand_id', brandId)
+        .eq('status', 'active');
+
+      if (!error && members && members.length > 0) {
+        const approverMembers = members.filter((m: any) => 
+          m.can_approve || 
+          m.role === 'brand_admin' || 
+          m.role === 'approver' || 
+          m.role === 'client_approver' ||
+          m.role === 'Brand Director' ||
+          m.role === 'Brand Approver'
+        );
+
+        if (approverMembers.length > 0) {
+          return approverMembers.map((m: any) => ({
+            id: m.users?.id || m.user_id,
+            name: m.users?.full_name || m.users?.email || 'Brand Approver',
+            email: m.users?.email || '',
+            role: m.role,
+            avatar: m.users?.avatar_url || '',
+            brandId
+          }));
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to fetch brand approvers from Supabase', e);
+    }
+
     try {
       const res = await fetch(`/api/brands/${encodeURIComponent(brandId)}/approvers`);
       if (res.ok) {
@@ -18,36 +51,10 @@ export class ApprovalService {
         }
       }
     } catch (e) {
-      console.warn('Failed to fetch brand approvers from API, using authoritative fallback', e);
+      console.warn('Failed to fetch brand approvers from API', e);
     }
 
-    // Authoritative approvers for Crinoid Tech & Nexus Lifestyle across all multi-stage steps:
-    return [
-      {
-        id: 'u-3',
-        name: 'Karthik',
-        email: 'karthik@crinoid.social',
-        role: 'Approver',
-        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80',
-        brandId
-      },
-      {
-        id: 'u-4',
-        name: 'Kavitha (Brand Client)',
-        email: 'kavitha@nexuslife.io',
-        role: 'Brand Approver' as any,
-        avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&auto=format&fit=crop&q=80',
-        brandId
-      },
-      {
-        id: 'u-5',
-        name: 'Suresh (Compliance Lead)',
-        email: 'compliance@crinoid.social',
-        role: 'Compliance Lead' as any,
-        avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&auto=format&fit=crop&q=80',
-        brandId
-      }
-    ];
+    return [];
   }
 
   /**

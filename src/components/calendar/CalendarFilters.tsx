@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { CalendarFilterState, PostCalendarStatus } from './types';
 import { SocialPlatform } from '../../types';
@@ -30,16 +30,9 @@ export const CalendarFilters: React.FC<CalendarFiltersProps> = ({
   filters,
   onFilterChange,
   onClearFilters,
-  campaigns = ['Product Launch 2026', 'Brand Awareness', 'Spring Sale', 'Tech Highlights', 'Community Spotlight'],
-  authors = [
-    { id: 'u-1', name: 'Muthukumar (Social Lead)' },
-    { id: 'u-2', name: 'Priya (Content Creator)' },
-    { id: 'u-3', name: 'Karthik (Approver)' }
-  ],
-  approvers = [
-    { id: 'u-3', name: 'Karthik (Approver)' },
-    { id: 'u-1', name: 'Muthukumar (Social Lead)' }
-  ]
+  campaigns = ['Product Launch', 'Brand Awareness', 'Spring Campaign', 'Community Spotlight'],
+  authors = [],
+  approvers = []
 }) => {
   const { brands, currentBrandAccounts, switchBrand } = useApp();
   const [isExpanded, setIsExpanded] = useState(false);

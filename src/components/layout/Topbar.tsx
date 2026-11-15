@@ -2,12 +2,15 @@ import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { APP_NAME } from '../../config/appConfig';
 import { Avatar } from '../common/Avatar';
+import { BrandManagementModal } from '../organization/BrandManagementModal';
 import { 
   Sparkles, 
   ChevronDown, 
   Check, 
   LogOut, 
-  Menu 
+  Menu,
+  Building,
+  Plus
 } from 'lucide-react';
 
 interface TopbarProps {
@@ -27,9 +30,14 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleMobileMenu }) => {
 
   const [isBrandDropdownOpen, setIsBrandDropdownOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+  const [isBrandManageModalOpen, setIsBrandManageModalOpen] = useState(false);
 
-  // Per requirement 3: Show brand selector ONLY on Composer page
-  const showBrandSelector = currentView === 'composer';
+  const isOrgAdmin = (currentUser as any)?.is_org_admin === true || currentUser?.role === 'Brand Director' as any;
+  const isBrandAdmin = currentUser?.role === 'brand_admin' as any || currentUser?.role === 'Brand Admin' as any;
+  const canManageBrand = isOrgAdmin || isBrandAdmin;
+
+  // Show brand selector across internal brand workspace pages
+  const showBrandSelector = true;
 
   return (
     <header
@@ -127,7 +135,7 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleMobileMenu }) => {
                     {currentBrand.name}
                   </span>
                   <span style={{ fontSize: '10.5px', color: 'var(--text-muted)', fontWeight: 500 }}>
-                    {currentBrand.users.length} Brand Users
+                    {currentBrand.users?.length || 0} Brand Users
                   </span>
                 </div>
                 <ChevronDown size={14} color="var(--text-muted)" />
@@ -181,7 +189,7 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleMobileMenu }) => {
                               {brand.name}
                             </div>
                             <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                              {brand.users.length} Users &bull; {brand.accounts.length} Channels
+                              {brand.users?.length || 0} Users &bull; {brand.accounts?.length || 0} Channels
                             </div>
                           </div>
                         </div>
@@ -189,6 +197,39 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleMobileMenu }) => {
                       </button>
                     );
                   })}
+
+                  {canManageBrand && (
+                    <>
+                      <div style={{ margin: '8px 0', borderTop: '1px solid var(--border-subtle)' }} />
+                      
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsBrandDropdownOpen(false);
+                          setIsBrandManageModalOpen(true);
+                        }}
+                        style={{
+                          width: '100%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          padding: '9px 10px',
+                          borderRadius: 'var(--radius-md)',
+                          border: '1px dashed var(--color-primary)',
+                          backgroundColor: 'rgba(79, 70, 229, 0.05)',
+                          color: 'var(--color-primary)',
+                          cursor: 'pointer',
+                          fontSize: '12.5px',
+                          fontWeight: 600,
+                          justifyContent: 'center',
+                          transition: 'all 150ms ease'
+                        }}
+                      >
+                        <Plus size={15} />
+                        <span>{isOrgAdmin ? 'Create Brand / Invite Team' : 'Invite Team Members'}</span>
+                      </button>
+                    </>
+                  )}
                 </div>
               )}
             </div>
@@ -278,6 +319,12 @@ export const Topbar: React.FC<TopbarProps> = ({ onToggleMobileMenu }) => {
           </div>
         )}
       </div>
+
+      {/* Brand & Team Member Management Modal */}
+      <BrandManagementModal 
+        isOpen={isBrandManageModalOpen} 
+        onClose={() => setIsBrandManageModalOpen(false)} 
+      />
     </header>
   );
 };

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Brand, BrandUser, PostDraft, SocialPlatform, SocialAccount } from '../types';
 import { MOCK_BRANDS, DUMMY_LOGIN_ACCOUNTS, BRAND_CHANNELS_CATALOG } from '../config/mockData';
+import { supabase } from '../services/supabase';
 
 interface ToastItem {
   id: string;
@@ -8,19 +9,23 @@ interface ToastItem {
   message: string;
 }
 
-export type AppView = 'landing' | 'login' | 'composer' | 'create-post' | 'calendar' | 'posts' | 'approval' | 'content-library' | 'home' | 'channels' | 'app-home' | 'simulated-auth' | 'auth-callback' | 'privacy' | 'terms';
+export type AppView = 'landing' | 'login' | 'register' | 'invite' | 'composer' | 'create-post' | 'calendar' | 'posts' | 'approval' | 'content-library' | 'home' | 'channels' | 'app-home' | 'simulated-auth' | 'auth-callback' | 'privacy' | 'terms';
 
 interface AppContextType {
   isAuthenticated: boolean;
   currentUser: BrandUser | null;
-  login: (email: string, password: string) => { success: boolean; error?: string };
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  loginWithRealUser: (user: BrandUser, initialBrands?: Brand[]) => void;
   logout: () => void;
   enterDemoWorkspace: () => void;
   currentBrand: Brand;
   brands: Brand[];
   switchBrand: (brandId: string) => void;
+  addBrand: (newBrand: Brand) => void;
   currentView: AppView;
   setCurrentView: (view: AppView) => void;
+  inviteToken: string;
+  setInviteToken: (token: string) => void;
   draft: PostDraft;
   updateDraft: (updates: Partial<PostDraft>) => void;
   resetDraft: () => void;
@@ -72,13 +77,28 @@ const createDefaultDraft = (brandId: string, initialPlatforms: SocialPlatform[] 
   updatedAt: new Date().toISOString()
 });
 
+const DEFAULT_FALLBACK_BRAND: Brand = {
+  id: 'no-brand',
+  name: 'No Brand Selected',
+  logo: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=120&auto=format&fit=crop&q=80',
+  tagline: 'Social Media Management',
+  color: '#4F46E5',
+  users: [],
+  accounts: []
+};
+
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [brands] = useState<Brand[]>(MOCK_BRANDS);
+  const [brands, setBrands] = useState<Brand[]>([]);
   
   const [currentBrandId, setCurrentBrandId] = useState<string>(() => {
-    return localStorage.getItem(STORAGE_KEY_BRAND) || MOCK_BRANDS[0].id;
+    const saved = localStorage.getItem(STORAGE_KEY_BRAND);
+    if (saved && (saved.startsWith('brand-crinoid') || saved.startsWith('brand-nexus') || saved.startsWith('brand-horizon'))) {
+      localStorage.removeItem(STORAGE_KEY_BRAND);
+      return '';
+    }
+    return saved || '';
   });
 
   // Connected accounts per brand persisted to localStorage
@@ -88,15 +108,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       try {
         return JSON.parse(saved);
       } catch {
-        // Fallback to initial mock brands structure
+        return {};
       }
     }
-    // Default initial state: brand-crinoid starts with [] to demonstrate connection flow
-    const initial: Record<string, SocialAccount[]> = {};
-    MOCK_BRANDS.forEach(b => {
-      initial[b.id] = b.accounts;
-    });
-    return initial;
+    return {};
   });
 
   // Save connected accounts whenever they change
@@ -108,7 +123,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const currentBrandAccounts = connectedAccounts[currentBrandId] || [];
 
   // Active brand with dynamic accounts injected
-  const rawBrand = brands.find(b => b.id === currentBrandId) || brands[0];
+  const rawBrand = brands.find(b => b.id === currentBrandId) || brands[0] || DEFAULT_FALLBACK_BRAND;
   const currentBrand: Brand = {
     ...rawBrand,
     accounts: currentBrandAccounts
@@ -127,10 +142,22 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     return null;
   });
 
+  const [inviteToken, setInviteToken] = useState<string>(() => {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get('token') || '';
+    } catch {
+      return '';
+    }
+  });
+
   const isAuthenticated = !!currentUser;
   const [currentView, setCurrentView] = useState<AppView>(() => {
     const path = window.location.pathname.toLowerCase();
     const hash = window.location.hash.toLowerCase();
+    const search = window.location.search.toLowerCase();
+    if (search.includes('token=') || path.includes('invite')) return 'invite';
+    if (path.includes('register') || hash.includes('register')) return 'register';
     if (path.includes('privacy') || hash.includes('privacy')) return 'privacy';
     if (path.includes('terms') || hash.includes('terms')) return 'terms';
     if (path.includes('auth/callback') || path.includes('callback') || hash.includes('access_token')) return 'auth-callback';
@@ -256,13 +283,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     platform: SocialPlatform,
     customData?: { username?: string; name?: string; avatar?: string; accessToken?: string; channelId?: string; followers?: string | number }
   ): Promise<SocialAccount> => {
-    const brandCatalog = BRAND_CHANNELS_CATALOG[brandId] || BRAND_CHANNELS_CATALOG['brand-crinoid'];
+    const brandCatalog = BRAND_CHANNELS_CATALOG[brandId];
     const catalogItem = brandCatalog?.[platform] || {
       platform,
       name: `${currentBrand.name} ${platform.toUpperCase()}`,
       username: `@${currentBrand.name.toLowerCase().replace(/\s+/g, '')}.${platform}`,
       avatar: currentBrand.logo,
-      authProfileName: currentUser?.name || 'Muthukumar',
+      authProfileName: currentUser?.name || 'User',
       authProfileAvatar: currentUser?.avatar || currentBrand.logo,
       description: `${platform} Social Account`
     };
@@ -340,7 +367,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       }));
       showToast('info', 'All channels disconnected for ' + currentBrand.name);
     } else {
-      const brandCatalog = BRAND_CHANNELS_CATALOG[brandId] || BRAND_CHANNELS_CATALOG['brand-crinoid'];
+      const brandCatalog = BRAND_CHANNELS_CATALOG[brandId];
       const defaultPlatforms: SocialPlatform[] = ['instagram', 'facebook', 'linkedin', 'youtube'];
       const newAccounts: SocialAccount[] = defaultPlatforms.map(p => {
         const item = brandCatalog[p];
@@ -367,7 +394,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
-  const login = (email: string, password: string) => {
+  const login = async (email: string, password: string) => {
     const cleanEmail = email.trim().toLowerCase();
     const cleanPassword = password.trim();
 
@@ -375,77 +402,142 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       return { success: false, error: 'Please enter both email and password.' };
     }
 
-    const matched = DUMMY_LOGIN_ACCOUNTS.find(
-      acc => acc.email.toLowerCase() === cleanEmail && acc.password === cleanPassword
-    );
+    try {
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email: cleanEmail,
+        password: cleanPassword
+      });
 
-    if (!matched) {
-      return {
-        success: false,
-        error: 'Invalid credentials. Please use the documented dummy credentials provided.'
-      };
-    }
-
-    const userMeta: Record<string, { id: string; avatar: string }> = {
-      'muthu@crinoid.social': {
-        id: 'u-1',
-        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80'
-      },
-      'priya@crinoid.social': {
-        id: 'u-2',
-        avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=120&auto=format&fit=crop&q=80'
-      },
-      'karthik@crinoid.social': {
-        id: 'u-3',
-        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80'
-      },
-      'kavitha@nexuslife.io': {
-        id: 'u-4',
-        avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&auto=format&fit=crop&q=80'
-      },
-      'compliance@crinoid.social': {
-        id: 'u-5',
-        avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&auto=format&fit=crop&q=80'
+      if (authError || !authData.user) {
+        return { success: false, error: authError?.message || 'Invalid credentials. Please verify your email and password.' };
       }
-    };
 
-    const meta = userMeta[cleanEmail] || {
-      id: 'usr-' + matched.name.toLowerCase().replace(/\\s+/g, '-'),
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80'
-    };
+      // Fetch user profile from public.users
+      const { data: userProfile } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', authData.user.id)
+        .maybeSingle();
 
-    const user: BrandUser = {
-      id: meta.id,
-      name: matched.name,
-      email: matched.email,
-      role: matched.role as BrandUser['role'],
-      avatar: meta.avatar,
-      brandId: currentBrand.id
-    };
+      const isOrgAdmin = userProfile?.is_org_admin === true;
 
+      // Fetch user's permitted brands strictly from Supabase
+      let userBrands: Brand[] = [];
+      let assignedRole = isOrgAdmin ? 'Brand Director' : 'Content Creator';
+
+      if (isOrgAdmin) {
+        const { data: allDbBrands } = await supabase
+          .from('brands')
+          .select('*, brand_members(*)')
+          .eq('status', 'active')
+          .order('created_at', { ascending: false });
+
+        userBrands = (allDbBrands || []).map(b => ({
+          id: b.id,
+          name: b.name,
+          logo: b.logo_url || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=120&auto=format&fit=crop&q=80',
+          tagline: b.brand_description || 'Active Brand',
+          color: b.brand_color || '#4f46e5',
+          users: (b.brand_members || []).map((m: any) => ({
+            id: m.user_id,
+            name: m.role,
+            email: '',
+            role: m.role,
+            avatar: '',
+            brandId: b.id
+          })),
+          accounts: []
+        }));
+      } else {
+        const { data: memberships } = await supabase
+          .from('brand_members')
+          .select('brand_id, role, brands(*)')
+          .eq('user_id', authData.user.id)
+          .eq('status', 'active');
+
+        if (memberships && memberships.length > 0) {
+          assignedRole = memberships[0].role;
+          userBrands = memberships
+            .map((m: any) => m.brands)
+            .filter(Boolean)
+            .map((b: any) => ({
+              id: b.id,
+              name: b.name,
+              logo: b.logo_url || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=120&auto=format&fit=crop&q=80',
+              tagline: b.brand_description || 'Active Brand',
+              color: b.brand_color || '#4f46e5',
+              users: [],
+              accounts: []
+            }));
+        } else {
+          // Check if user has a pending join request awaiting admin approval
+          const { data: pendingRequests } = await supabase
+            .from('brand_members')
+            .select('brand_id, role, brands(name)')
+            .eq('user_id', authData.user.id)
+            .eq('status', 'pending_approval');
+
+          // Log out immediately
+          await supabase.auth.signOut();
+
+          if (pendingRequests && pendingRequests.length > 0) {
+            const requestedBrand = (pendingRequests[0].brands as any)?.name || 'the brand';
+            return {
+              success: false,
+              error: `Your request to join "${requestedBrand}" is pending Admin approval. You will be able to log in once an administrator assigns your role and approves your access.`
+            };
+          }
+          return {
+            success: false,
+            error: 'Access restricted: You do not currently belong to any active brand. Please contact your administrator.'
+          };
+        }
+      }
+
+      const primaryBrand = userBrands[0] || null;
+
+      loginWithRealUser({
+        id: authData.user.id,
+        name: userProfile?.full_name || authData.user.email?.split('@')[0] || 'User',
+        email: authData.user.email || cleanEmail,
+        role: assignedRole as any,
+        avatar: userProfile?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
+        brandId: primaryBrand?.id || ''
+      }, userBrands);
+
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Authentication error.' };
+    }
+  };
+
+  const loginWithRealUser = (user: BrandUser, initialBrands?: Brand[]) => {
     setCurrentUser(user);
     localStorage.setItem(STORAGE_KEY_AUTH, JSON.stringify(user));
 
-    // Check if the current brand has connected accounts
-    const brandAccounts = connectedAccounts[currentBrand.id] || [];
-    if (brandAccounts.length === 0) {
-      // Per requirement 2: If the current brand has no connected accounts, display a simple Connect Channels dialog
-      setShowConnectModal(true);
+    if (initialBrands && initialBrands.length > 0) {
+      setBrands(initialBrands);
+      setCurrentBrandId(initialBrands[0].id);
+      localStorage.setItem(STORAGE_KEY_BRAND, initialBrands[0].id);
     }
 
     setCurrentView('composer');
-    showToast('success', `Welcome back, ${user.name}!`);
-    return { success: true };
+    showToast('success', `Welcome, ${user.name}!`);
   };
 
   const enterDemoWorkspace = () => {
-    const demo = DUMMY_LOGIN_ACCOUNTS[0]; // Muthukumar
-    login(demo.email, demo.password);
+    showToast('info', 'Please sign up or log in with your Supabase credentials.');
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await supabase.auth.signOut();
+    } catch {}
     setCurrentUser(null);
     localStorage.removeItem(STORAGE_KEY_AUTH);
+    localStorage.removeItem(STORAGE_KEY_BRAND);
+    setBrands([]);
+    setCurrentBrandId('');
     setCurrentView('landing');
     showToast('info', 'You have been logged out.');
   };
@@ -465,19 +557,155 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
+  const addBrand = (newBrand: Brand) => {
+    setBrands((prev: Brand[]) => {
+      if (prev.some((b: Brand) => b.id === newBrand.id)) return prev;
+      return [newBrand, ...prev];
+    });
+    setCurrentBrandId(newBrand.id);
+    localStorage.setItem(STORAGE_KEY_BRAND, newBrand.id);
+    updateDraft({
+      brandId: newBrand.id,
+      platforms: []
+    });
+    showToast('success', `Active brand set to "${newBrand.name}"`);
+  };
+
+  // Automatically load database brands strictly for the authenticated user
+  useEffect(() => {
+    const loadUserBrandsFromDb = async () => {
+      if (!currentUser?.id) {
+        setBrands([]);
+        return;
+      }
+
+      try {
+        // 1. Check if user is Org Admin
+        const { data: userProfile } = await supabase
+          .from('users')
+          .select('is_org_admin')
+          .eq('id', currentUser.id)
+          .maybeSingle();
+
+        const isOrgAdmin = userProfile?.is_org_admin === true || (currentUser as any)?.is_org_admin === true;
+
+        let userBrands: Brand[] = [];
+
+        if (isOrgAdmin) {
+          // Org Admin sees all active database brands
+          const { data: allBrands } = await supabase
+            .from('brands')
+            .select('*, brand_members(*)')
+            .eq('status', 'active')
+            .order('created_at', { ascending: false });
+
+          userBrands = (allBrands || []).map(b => ({
+            id: b.id,
+            name: b.name,
+            logo: b.logo_url || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=120&auto=format&fit=crop&q=80',
+            tagline: b.brand_description || 'Active Brand',
+            color: b.brand_color || '#4f46e5',
+            users: (b.brand_members || []).map((m: any) => ({
+              id: m.user_id,
+              name: m.role,
+              email: '',
+              role: m.role,
+              avatar: '',
+              brandId: b.id
+            })),
+            accounts: []
+          }));
+        } else {
+          // Regular user / Brand Admin: STRICTLY only brands they belong to in brand_members
+          const { data: memberships } = await supabase
+            .from('brand_members')
+            .select('brand_id, role, brands(*, brand_members(*))')
+            .eq('user_id', currentUser.id)
+            .eq('status', 'active');
+
+          if (memberships && memberships.length > 0) {
+            userBrands = memberships
+              .map((m: any) => m.brands)
+              .filter(Boolean)
+              .map((b: any) => ({
+                id: b.id,
+                name: b.name,
+                logo: b.logo_url || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=120&auto=format&fit=crop&q=80',
+                tagline: b.brand_description || 'Active Brand',
+                color: b.brand_color || '#4f46e5',
+                users: (b.brand_members || []).map((m: any) => ({
+                  id: m.user_id,
+                  name: m.role,
+                  email: '',
+                  role: m.role,
+                  avatar: '',
+                  brandId: b.id
+                })),
+                accounts: []
+              }));
+          }
+        }
+
+        setBrands(userBrands);
+
+        // Ensure active brand is valid for this user
+        if (userBrands.length > 0) {
+          if (!userBrands.some(b => b.id === currentBrandId)) {
+            setCurrentBrandId(userBrands[0].id);
+            localStorage.setItem(STORAGE_KEY_BRAND, userBrands[0].id);
+          }
+        } else if (!isOrgAdmin) {
+          // If a non-org admin user has 0 active brands, log them out completely
+          const { data: pending } = await supabase
+            .from('brand_members')
+            .select('id, brand_id, brands(name)')
+            .eq('user_id', currentUser.id)
+            .eq('status', 'pending_approval');
+
+          try {
+            await supabase.auth.signOut();
+          } catch {}
+          setCurrentUser(null);
+          localStorage.removeItem(STORAGE_KEY_AUTH);
+          localStorage.removeItem(STORAGE_KEY_BRAND);
+          setBrands([]);
+          setCurrentBrandId('');
+          setCurrentView('login');
+          if (pending && pending.length > 0) {
+            showToast('error', `Your join request for "${(pending[0].brands as any)?.name || 'the brand'}" is awaiting Admin approval.`);
+          } else {
+            showToast('error', 'Access restricted: You do not have access to any active brand.');
+          }
+          return;
+        } else {
+          setCurrentBrandId('');
+          localStorage.removeItem(STORAGE_KEY_BRAND);
+        }
+      } catch (err) {
+        console.warn('Error loading user brands from Supabase:', err);
+      }
+    };
+
+    loadUserBrandsFromDb();
+  }, [currentUser?.id]);
+
   return (
     <AppContext.Provider
       value={{
         isAuthenticated,
         currentUser,
         login,
+        loginWithRealUser,
         logout,
         enterDemoWorkspace,
         currentBrand,
         brands,
         switchBrand,
+        addBrand,
         currentView,
         setCurrentView,
+        inviteToken,
+        setInviteToken,
         draft,
         updateDraft,
         resetDraft,

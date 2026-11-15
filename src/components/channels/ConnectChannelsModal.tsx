@@ -142,7 +142,7 @@ export const ConnectChannelsModal: React.FC = () => {
           {ALL_PLATFORMS.map(platform => {
             const config = PLATFORM_CONFIG[platform];
             const connected = isConnected(platform);
-            const catalog = (BRAND_CHANNELS_CATALOG[currentBrand.id] || BRAND_CHANNELS_CATALOG['brand-crinoid'])[platform];
+            const catalog = BRAND_CHANNELS_CATALOG[currentBrand.id][platform];
 
             return (
               <div

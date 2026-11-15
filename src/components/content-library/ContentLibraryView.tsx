@@ -71,7 +71,7 @@ export const ContentLibraryView: React.FC = () => {
   const loadLibraryData = () => {
     setIsLoading(true);
     try {
-      const brandId = currentBrand?.id || 'brand-crinoid';
+      const brandId = currentBrand?.id || currentBrand?.name || 'workspace';
       const brandName = currentBrand?.name || 'Crinoid Social';
       const loadedFolders = contentLibraryDb.getFolders(brandId);
       const loadedAssets = contentLibraryDb.getAssets(brandId, brandName);
@@ -171,11 +171,11 @@ export const ContentLibraryView: React.FC = () => {
     if (!files || files.length === 0) return;
     setIsUploading(true);
 
-    const brandId = currentBrand?.id || 'brand-crinoid';
+    const brandId = currentBrand?.id || currentBrand?.name || 'workspace';
     const brandName = currentBrand?.name || 'Crinoid Social';
     const uploader = {
       id: currentUser?.id || 'usr-default',
-      name: currentUser?.name || 'Muthukumar',
+      name: currentUser?.name || 'Workspace User',
       role: currentUser?.role || 'Social Lead',
       avatar: currentUser?.avatar
     };
@@ -258,7 +258,7 @@ export const ContentLibraryView: React.FC = () => {
   // Folder Creation Handler
   const handleCreateFolder = (name: string) => {
     try {
-      const brandId = currentBrand?.id || 'brand-crinoid';
+      const brandId = currentBrand?.id || currentBrand?.name || 'workspace';
       const newFolder = contentLibraryDb.createFolder(brandId, name);
       setFolders(prev => [...prev, newFolder]);
       showToast('success', `Created folder "${newFolder.name}".`);
