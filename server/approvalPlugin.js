@@ -78,6 +78,26 @@ function getGmailCredentials() {
   };
 }
 
+function htmlToPlainText(html) {
+  if (!html) return '';
+  return html
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+    .replace(/<a\s+[^>]*href=["']([^"']*)["'][^>]*>(.*?)<\/a>/gi, '$2 ($1)')
+    .replace(/<br\s*[\/]?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n\n')
+    .replace(/<\/div>/gi, '\n')
+    .replace(/<\/li>/gi, '\n')
+    .replace(/<li[^>]*>/gi, '• ')
+    .replace(/<[^>]+>/gi, '')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&bull;/gi, '• ')
+    .replace(/&copy;/gi, '©')
+    .replace(/&rarr;/gi, '->')
+    .replace(/\n\s*\n\s*\n/g, '\n\n')
+    .trim();
+}
+
 const AUTHORIZED_APPROVERS = {};
 
 function parseBody(req) {
@@ -167,7 +187,12 @@ async function handleApiRequests(req, res, next) {
             to: recipients.join(', '),
             replyTo: reply_to || gmail.user,
             subject: subject,
-            html: html
+            text: htmlToPlainText(html),
+            html: html,
+            headers: {
+              'X-Mailer': 'Crinoid Social Workspace',
+              'X-Auto-Response-Suppress': 'OOF, AutoReply'
+            }
           };
 
           const info = await transporter.sendMail(mailOptions);

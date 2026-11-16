@@ -28,6 +28,26 @@ function sendJson(res, statusCode, data) {
   res.end(JSON.stringify(data));
 }
 
+function htmlToPlainText(html) {
+  if (!html) return '';
+  return html
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+    .replace(/<a\s+[^>]*href=["']([^"']*)["'][^>]*>(.*?)<\/a>/gi, '$2 ($1)')
+    .replace(/<br\s*[\/]?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n\n')
+    .replace(/<\/div>/gi, '\n')
+    .replace(/<\/li>/gi, '\n')
+    .replace(/<li[^>]*>/gi, '• ')
+    .replace(/<[^>]+>/gi, '')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&bull;/gi, '• ')
+    .replace(/&copy;/gi, '©')
+    .replace(/&rarr;/gi, '->')
+    .replace(/\n\s*\n\s*\n/g, '\n\n')
+    .trim();
+}
+
 export default async function handler(req, res) {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -45,7 +65,7 @@ export default async function handler(req, res) {
   }
 
   const body = await parseBody(req);
-  const { to, subject, html, from, reply_to } = body || {};
+  const { to, subject, html, text, from, reply_to } = body || {};
 
   if (!to || !subject || !html) {
     return sendJson(res, 400, {
@@ -54,6 +74,7 @@ export default async function handler(req, res) {
     });
   }
 
+  const plainText = text || htmlToPlainText(html);
   const recipients = Array.isArray(to) ? to : [to];
 
   // Priority 1: Gmail SMTP Dispatch
@@ -76,7 +97,12 @@ export default async function handler(req, res) {
         to: recipients.join(', '),
         replyTo: reply_to || gmailUser,
         subject: subject,
-        html: html
+        text: plainText,
+        html: html,
+        headers: {
+          'X-Mailer': 'Crinoid Social Workspace',
+          'X-Auto-Response-Suppress': 'OOF, AutoReply'
+        }
       };
 
       const info = await transporter.sendMail(mailOptions);
@@ -109,6 +135,7 @@ export default async function handler(req, res) {
         from: from || 'Crinoid Social <onboarding@resend.dev>',
         to: recipients,
         subject,
+        text: plainText,
         html
       };
       if (reply_to) {
