@@ -185,14 +185,10 @@ async function handleApiRequests(req, res, next) {
           const mailOptions = {
             from: `Crinoid Social <${gmail.user}>`,
             to: recipients.join(', '),
-            replyTo: reply_to || gmail.user,
+            replyTo: `Crinoid Social <${gmail.user}>`,
             subject: subject,
             text: htmlToPlainText(html),
-            html: html,
-            headers: {
-              'X-Mailer': 'Crinoid Social Workspace',
-              'X-Auto-Response-Suppress': 'OOF, AutoReply'
-            }
+            html: html
           };
 
           const info = await transporter.sendMail(mailOptions);

@@ -95,14 +95,10 @@ export default async function handler(req, res) {
       const mailOptions = {
         from: `Crinoid Social <${gmailUser}>`,
         to: recipients.join(', '),
-        replyTo: reply_to || gmailUser,
+        replyTo: `Crinoid Social <${gmailUser}>`,
         subject: subject,
         text: plainText,
-        html: html,
-        headers: {
-          'X-Mailer': 'Crinoid Social Workspace',
-          'X-Auto-Response-Suppress': 'OOF, AutoReply'
-        }
+        html: html
       };
 
       const info = await transporter.sendMail(mailOptions);
