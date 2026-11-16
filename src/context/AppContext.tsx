@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { Brand, BrandUser, PostDraft, SocialPlatform, SocialAccount } from '../types';
 import { MOCK_BRANDS, DUMMY_LOGIN_ACCOUNTS, BRAND_CHANNELS_CATALOG } from '../config/mockData';
 import { supabase } from '../services/supabase';
+import { fetchBrandsForUser } from '../services/organizationService';
 
 interface ToastItem {
   id: string;
@@ -433,14 +434,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       let userBrands: Brand[] = [];
       let assignedRole = isOrgAdmin ? 'Brand Director' : 'Content Creator';
 
-      if (isOrgAdmin) {
-        const { data: allDbBrands } = await supabase
-          .from('brands')
-          .select('*, brand_members(*)')
-          .eq('status', 'active')
-          .order('created_at', { ascending: false });
+      const dbBrands = await fetchBrandsForUser(authData.user.id, isOrgAdmin);
 
-        userBrands = (allDbBrands || []).map(b => ({
+      if (dbBrands && dbBrands.length > 0) {
+        if (!isOrgAdmin) {
+          assignedRole = (dbBrands[0] as any)?.brand_members?.[0]?.role || 'Content Creator';
+        }
+        userBrands = dbBrands.map((b: any) => ({
           id: b.id,
           name: b.name,
           logo: b.logo_url || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=120&auto=format&fit=crop&q=80',
@@ -456,28 +456,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           })),
           accounts: []
         }));
-      } else {
-        const { data: memberships } = await supabase
-          .from('brand_members')
-          .select('brand_id, role, brands(*)')
-          .eq('user_id', authData.user.id)
-          .eq('status', 'active');
-
-        if (memberships && memberships.length > 0) {
-          assignedRole = memberships[0].role;
-          userBrands = memberships
-            .map((m: any) => m.brands)
-            .filter(Boolean)
-            .map((b: any) => ({
-              id: b.id,
-              name: b.name,
-              logo: b.logo_url || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=120&auto=format&fit=crop&q=80',
-              tagline: b.brand_description || 'Active Brand',
-              color: b.brand_color || '#4f46e5',
-              users: [],
-              accounts: []
-            }));
-        } else {
+      } else if (!isOrgAdmin) {
+        // Check if user has a pending join request awaiting admin approval
           // Check if user has a pending join request awaiting admin approval
           const { data: pendingRequests } = await supabase
             .from('brand_members')
@@ -500,7 +480,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             error: 'Access restricted: You do not currently belong to any active brand. Please contact your administrator.'
           };
         }
-      }
 
       const primaryBrand = userBrands[0] || null;
 
@@ -610,60 +589,24 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
         let userBrands: Brand[] = [];
 
-        if (isOrgAdmin) {
-          // Org Admin sees all active database brands
-          const { data: allBrands } = await supabase
-            .from('brands')
-            .select('*, brand_members(*)')
-            .eq('status', 'active')
-            .order('created_at', { ascending: false });
+        const dbBrands = await fetchBrandsForUser(currentUser.id, isOrgAdmin);
 
-          userBrands = (allBrands || []).map(b => ({
-            id: b.id,
-            name: b.name,
-            logo: b.logo_url || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=120&auto=format&fit=crop&q=80',
-            tagline: b.brand_description || 'Active Brand',
-            color: b.brand_color || '#4f46e5',
-            users: (b.brand_members || []).map((m: any) => ({
-              id: m.user_id,
-              name: m.role,
-              email: '',
-              role: m.role,
-              avatar: '',
-              brandId: b.id
-            })),
-            accounts: []
-          }));
-        } else {
-          // Regular user / Brand Admin: STRICTLY only brands they belong to in brand_members
-          const { data: memberships } = await supabase
-            .from('brand_members')
-            .select('brand_id, role, brands(*, brand_members(*))')
-            .eq('user_id', currentUser.id)
-            .eq('status', 'active');
-
-          if (memberships && memberships.length > 0) {
-            userBrands = memberships
-              .map((m: any) => m.brands)
-              .filter(Boolean)
-              .map((b: any) => ({
-                id: b.id,
-                name: b.name,
-                logo: b.logo_url || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=120&auto=format&fit=crop&q=80',
-                tagline: b.brand_description || 'Active Brand',
-                color: b.brand_color || '#4f46e5',
-                users: (b.brand_members || []).map((m: any) => ({
-                  id: m.user_id,
-                  name: m.role,
-                  email: '',
-                  role: m.role,
-                  avatar: '',
-                  brandId: b.id
-                })),
-                accounts: []
-              }));
-          }
-        }
+        userBrands = (dbBrands || []).map((b: any) => ({
+          id: b.id,
+          name: b.name,
+          logo: b.logo_url || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=120&auto=format&fit=crop&q=80',
+          tagline: b.brand_description || 'Active Brand',
+          color: b.brand_color || '#4f46e5',
+          users: (b.brand_members || []).map((m: any) => ({
+            id: m.user_id,
+            name: m.role,
+            email: '',
+            role: m.role,
+            avatar: '',
+            brandId: b.id
+          })),
+          accounts: []
+        }));
 
         setBrands(userBrands);
 

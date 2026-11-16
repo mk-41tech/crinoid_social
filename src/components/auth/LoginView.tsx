@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { supabase } from '../../services/supabase';
+import { fetchBrandsForUser } from '../../services/organizationService';
 import { APP_NAME } from '../../config/appConfig';
 import { 
   Sparkles, 
@@ -63,72 +64,47 @@ export const LoginView: React.FC = () => {
       let userBrands: any[] = [];
       let assignedRole = isOrgAdmin ? 'Brand Director' : 'Content Creator';
 
-      if (isOrgAdmin) {
-        // Org Admin sees all active database brands
-        const { data: allDbBrands } = await supabase
-          .from('brands')
-          .select('*')
-          .eq('status', 'active')
-          .order('created_at', { ascending: false });
+      const dbBrands = await fetchBrandsForUser(authData.user.id, isOrgAdmin);
 
-        userBrands = (allDbBrands || []).map(b => ({
+      if (dbBrands && dbBrands.length > 0) {
+        if (!isOrgAdmin) {
+          assignedRole = (dbBrands[0] as any)?.brand_members?.[0]?.role || 'Content Creator';
+        }
+        userBrands = dbBrands.map((b: any) => ({
           id: b.id,
           name: b.name,
           logo: b.logo_url || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=120&auto=format&fit=crop&q=80',
           tagline: b.brand_description || 'Active Brand',
           color: b.brand_color || '#4f46e5',
-          users: [],
+          users: (b.brand_members || []).map((m: any) => ({
+            id: m.user_id,
+            name: m.role,
+            email: '',
+            role: m.role,
+            avatar: '',
+            brandId: b.id
+          })),
           accounts: []
         }));
-      } else {
-        // Regular user or Brand Admin: ONLY see the brands they were invited to in brand_members!
-        const { data: memberships } = await supabase
+      } else if (!isOrgAdmin) {
+        // Check if user has a pending join request awaiting admin approval
+        const { data: pendingRequests } = await supabase
           .from('brand_members')
-          .select('brand_id, role, brands(*, brand_members(*))')
+          .select('brand_id, role, brands(name)')
           .eq('user_id', authData.user.id)
-          .eq('status', 'active');
+          .eq('status', 'pending_approval');
 
-        if (memberships && memberships.length > 0) {
-          assignedRole = memberships[0].role;
-          userBrands = memberships
-            .map((m: any) => m.brands)
-            .filter(Boolean)
-            .map((b: any) => ({
-              id: b.id,
-              name: b.name,
-              logo: b.logo_url || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=120&auto=format&fit=crop&q=80',
-              tagline: b.brand_description || 'Active Brand',
-              color: b.brand_color || '#4f46e5',
-              users: (b.brand_members || []).map((m: any) => ({
-                id: m.user_id,
-                name: m.role,
-                email: '',
-                role: m.role,
-                avatar: '',
-                brandId: b.id
-              })),
-              accounts: []
-            }));
+        // Immediately terminate the session so unapproved users cannot access the workspace
+        await supabase.auth.signOut();
+
+        if (pendingRequests && pendingRequests.length > 0) {
+          const requestedBrand = (pendingRequests[0].brands as any)?.name || 'the brand';
+          setError(`Your request to join "${requestedBrand}" is pending Admin approval. You will be able to log in once an administrator assigns your role and approves your access.`);
         } else {
-          // Check if user has a pending join request awaiting admin approval
-          const { data: pendingRequests } = await supabase
-            .from('brand_members')
-            .select('brand_id, role, brands(name)')
-            .eq('user_id', authData.user.id)
-            .eq('status', 'pending_approval');
-
-          // Immediately terminate the session so unapproved users cannot access the workspace
-          await supabase.auth.signOut();
-
-          if (pendingRequests && pendingRequests.length > 0) {
-            const requestedBrand = (pendingRequests[0].brands as any)?.name || 'the brand';
-            setError(`Your request to join "${requestedBrand}" is pending Admin approval. You will be able to log in once an administrator assigns your role and approves your access.`);
-          } else {
-            setError('Access restricted: You do not currently belong to any active brand. Please contact your administrator.');
-          }
-          setIsSubmitting(false);
-          return;
+          setError('Access restricted: You do not currently belong to any active brand. Please contact your administrator.');
         }
+        setIsSubmitting(false);
+        return;
       }
 
       const primaryBrand = userBrands[0] || null;

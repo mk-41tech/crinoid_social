@@ -16,11 +16,11 @@ export interface CreateOrgParams {
 }
 
 export interface CreateBrandParams {
-  organizationId: string;
+  organizationId?: string | null;
   name: string;
-  brandDescription?: string;
+  brandDescription?: string | null;
   brandColor?: string;
-  createdByUserId: string;
+  createdByUserId?: string | null;
 }
 
 export interface SendInviteParams {
@@ -157,36 +157,32 @@ export const createBrand = async ({
   let validCreatorId = isValidUUID(createdByUserId) ? createdByUserId : null;
 
   if (!validOrgId) {
-    const { data: orgs } = await supabase.from('organizations').select('id, owner_id').limit(1);
-    if (orgs && orgs.length > 0) {
-      validOrgId = orgs[0].id;
-      if (!validCreatorId) {
-        validCreatorId = orgs[0].owner_id;
+    if (validCreatorId) {
+      const { data: userOrgs } = await supabase
+        .from('organizations')
+        .select('id, owner_id')
+        .eq('owner_id', validCreatorId)
+        .order('created_at', { ascending: false })
+        .limit(1);
+      if (userOrgs && userOrgs.length > 0) {
+        validOrgId = userOrgs[0].id;
       }
-    } else {
-      // Auto-provision a default organization and user so brand creation never fails
-      const fallbackUserId = crypto.randomUUID();
-      const fallbackOrgId = crypto.randomUUID();
+    }
+  }
 
-      await supabase.from('users').upsert({
-        id: fallbackUserId,
-        email: 'admin@crinoid.social',
-        full_name: 'Organization Admin',
-        is_org_admin: true,
-        is_active: true
-      });
+  if (!validOrgId) {
+    const fallbackOrgId = crypto.randomUUID();
+    const fallbackOwnerId = validCreatorId || crypto.randomUUID();
 
-      const { data: createdOrg } = await supabase.from('organizations').insert({
-        id: fallbackOrgId,
-        name: 'My Organization',
-        owner_id: fallbackUserId,
-        status: 'active'
-      }).select().single();
+    const { data: createdOrg } = await supabase.from('organizations').insert({
+      id: fallbackOrgId,
+      name: 'My Organization',
+      owner_id: fallbackOwnerId,
+      status: 'active'
+    }).select().single();
 
-      if (createdOrg) {
-        validOrgId = createdOrg.id;
-        validCreatorId = fallbackUserId;
-      }
+    if (createdOrg) {
+      validOrgId = createdOrg.id;
     }
   }
 
@@ -255,6 +251,84 @@ export const fetchAvailableBrands = async () => {
     return [];
   }
   return data || [];
+};
+
+/**
+ * 3.1 Fetch brands strictly belonging to the user's organization (for Org Admins)
+ * or brands where the user is an active member (for regular team members / Brand Admins).
+ */
+export const fetchBrandsForUser = async (userId: string, isOrgAdmin: boolean) => {
+  if (!userId) return [];
+
+  if (isOrgAdmin) {
+    // 1. Fetch organizations owned by this user
+    const { data: ownedOrgs } = await supabase
+      .from('organizations')
+      .select('id')
+      .eq('owner_id', userId);
+
+    const ownedOrgIds = (ownedOrgs || []).map(o => o.id);
+
+    // Self-healing: if user owns an org, heal any of their created brands that were mis-assigned
+    if (ownedOrgIds.length > 0) {
+      try {
+        await supabase
+          .from('brands')
+          .update({ organization_id: ownedOrgIds[0] })
+          .eq('created_by', userId)
+          .is('organization_id', null);
+      } catch {}
+    }
+
+    // 2. Fetch brand memberships for this user
+    const { data: userMemberships } = await supabase
+      .from('brand_members')
+      .select('brand_id')
+      .eq('user_id', userId)
+      .eq('status', 'active');
+
+    const memberBrandIds = (userMemberships || []).map(m => m.brand_id);
+
+    // 3. Query brands strictly belonging to this Org Admin's organization or created by them
+    let brandsQuery = supabase
+      .from('brands')
+      .select('*, brand_members(*)')
+      .eq('status', 'active')
+      .order('created_at', { ascending: false });
+
+    if (ownedOrgIds.length > 0 && memberBrandIds.length > 0) {
+      brandsQuery = brandsQuery.or(`organization_id.in.(${ownedOrgIds.join(',')}),created_by.eq.${userId},id.in.(${memberBrandIds.join(',')})`);
+    } else if (ownedOrgIds.length > 0) {
+      brandsQuery = brandsQuery.or(`organization_id.in.(${ownedOrgIds.join(',')}),created_by.eq.${userId}`);
+    } else if (memberBrandIds.length > 0) {
+      brandsQuery = brandsQuery.or(`created_by.eq.${userId},id.in.(${memberBrandIds.join(',')})`);
+    } else {
+      brandsQuery = brandsQuery.eq('created_by', userId);
+    }
+
+    const { data: brands, error } = await brandsQuery;
+    if (error) {
+      console.warn('Error fetching brands for Org Admin:', error.message);
+      return [];
+    }
+    return brands || [];
+  } else {
+    // Regular team member / Brand Admin: STRICTLY only brands they belong to in brand_members
+    const { data: memberships, error } = await supabase
+      .from('brand_members')
+      .select('brand_id, role, brands(*, brand_members(*))')
+      .eq('user_id', userId)
+      .eq('status', 'active');
+
+    if (error || !memberships) {
+      console.warn('Error fetching brands for member:', error?.message);
+      return [];
+    }
+
+    return memberships
+      .map((m: any) => m.brands)
+      .filter(Boolean);
+  }
 };
 
 /**
@@ -530,7 +604,7 @@ export const requestToJoinBrand = async ({
 /**
  * 6. Fetch Pending Join Requests for a Brand (for Brand Admin & Org Admin review)
  */
-export const fetchPendingBrandRequests = async (brandId?: string) => {
+export const fetchPendingBrandRequests = async (brandId?: string, allowedBrandIds?: string[]) => {
   let query = supabase
     .from('brand_members')
     .select(`
@@ -558,6 +632,8 @@ export const fetchPendingBrandRequests = async (brandId?: string) => {
 
   if (brandId && brandId !== 'all') {
     query = query.eq('brand_id', brandId);
+  } else if (allowedBrandIds && allowedBrandIds.length > 0) {
+    query = query.in('brand_id', allowedBrandIds);
   }
 
   const { data, error } = await query.order('joined_at', { ascending: false });

@@ -5,7 +5,8 @@ import {
   sendBrandInvite, 
   fetchPendingBrandRequests, 
   reviewBrandJoinRequest,
-  fetchAvailableBrands
+  fetchAvailableBrands,
+  fetchBrandsForUser
 } from '../../services/organizationService';
 import { supabase } from '../../services/supabase';
 import { 
@@ -80,20 +81,22 @@ export const BrandManagementModal: React.FC<BrandManagementModalProps> = ({ isOp
 
   const isValidUUID = (id?: string) => !!id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 
-  // Load available brands from Supabase
+  // Load available brands strictly for this user's organization
   const loadDbBrands = async () => {
     try {
-      const data = await fetchAvailableBrands();
-      setDbBrands(data);
-      if (isValidUUID(currentBrand?.id)) {
-        setSelectedBrandId(currentBrand.id);
-      } else if (data.length > 0) {
-        setSelectedBrandId(data[0].id);
-      } else {
-        setSelectedBrandId('');
+      if (currentUser?.id) {
+        const userPermittedBrands = await fetchBrandsForUser(currentUser.id, isOrgAdmin);
+        setDbBrands(userPermittedBrands);
+        if (isValidUUID(currentBrand?.id) && userPermittedBrands.some((b: any) => b.id === currentBrand.id)) {
+          setSelectedBrandId(currentBrand.id);
+        } else if (userPermittedBrands.length > 0) {
+          setSelectedBrandId(userPermittedBrands[0].id);
+        } else {
+          setSelectedBrandId('');
+        }
       }
     } catch (err) {
-      console.error('Failed to load Supabase brands', err);
+      console.error('Failed to load user brands', err);
     }
   };
 
@@ -101,16 +104,17 @@ export const BrandManagementModal: React.FC<BrandManagementModalProps> = ({ isOp
     if (isOpen) {
       loadDbBrands();
     }
-  }, [isOpen, currentBrand?.id]);
+  }, [isOpen, currentBrand?.id, currentUser?.id]);
 
   const [requestBrandFilter, setRequestBrandFilter] = useState<string>('all');
 
-  // Load pending join requests for current brand or all brands
+  // Load pending join requests strictly for brands belonging to this organization
   const loadRequests = async (overrideFilter?: string) => {
     setIsLoadingRequests(true);
     try {
+      const allowedBrandIds = dbBrands.map(b => b.id);
       const filter = overrideFilter !== undefined ? overrideFilter : (isOrgAdmin ? requestBrandFilter : (currentBrand?.id || 'all'));
-      const data = await fetchPendingBrandRequests(filter);
+      const data = await fetchPendingBrandRequests(filter, allowedBrandIds);
       setPendingRequests(data);
       // Pre-populate default roles
       const initialRoles: Record<string, any> = {};
@@ -146,14 +150,29 @@ export const BrandManagementModal: React.FC<BrandManagementModalProps> = ({ isOp
 
     setIsCreatingBrand(true);
     try {
-      // Fetch org ID
-      const { data: orgs } = await supabase.from('organizations').select('id, owner_id').limit(1);
-      if (!orgs || orgs.length === 0) {
-        showToast('error', 'No organization found in Supabase. Please register an organization first.');
-        return;
+      // Fetch org ID strictly owned by this user
+      let orgId = null;
+      if (isValidUUID(currentUser?.id)) {
+        const { data: userOrgs } = await supabase
+          .from('organizations')
+          .select('id, owner_id')
+          .eq('owner_id', currentUser!.id)
+          .order('created_at', { ascending: false })
+          .limit(1);
+        if (userOrgs && userOrgs.length > 0) {
+          orgId = userOrgs[0].id;
+        }
       }
-      const orgId = orgs[0].id;
-      const creatorId = isValidUUID(currentUser?.id) ? currentUser!.id : orgs[0].owner_id;
+
+      if (!orgId) {
+        // Fallback: check any organization where this user is creator or owner
+        const { data: orgs } = await supabase.from('organizations').select('id, owner_id').limit(1);
+        if (orgs && orgs.length > 0) {
+          orgId = orgs[0].id;
+        }
+      }
+
+      const creatorId = isValidUUID(currentUser?.id) ? currentUser!.id : undefined;
 
       const brand = await createBrand({
         organizationId: orgId,
